@@ -53,6 +53,37 @@ class MigrationsTest {
         }
     }
 
+    @Test
+    fun migrate2To3KeepsEntriesAndAddsCareTables() {
+        helper.createDatabase(dbPath, 2).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO expense (id, vehicleId, categoryId, dateTime, zoneId, amountPaise, isAutoCreated,
+                    createdAt, updatedAt, deviceId)
+                VALUES ('e1', 'safari', 'c1', 5, 'Asia/Kolkata', 485000, 0, 5, 5, 'd1')
+                """.trimIndent(),
+            )
+        }
+
+        helper.runMigrationsAndValidate(dbPath, 3, true, Migrations.MIGRATION_2_3).use { db ->
+            db.query("SELECT amountPaise FROM expense WHERE id = 'e1'").use { c ->
+                assertThat(c.moveToFirst()).isTrue()
+                assertThat(c.getLong(0)).isEqualTo(485_000L)
+            }
+            val auto = """
+                INSERT OR IGNORE INTO expense (id, vehicleId, categoryId, dateTime, zoneId, amountPaise, recurrenceId,
+                    isAutoCreated, createdAt, updatedAt, deviceId)
+                VALUES (?, 'safari', 'c1', 100, 'Asia/Kolkata', 1200000, 'emi', 1, 6, 6, 'd1')
+            """.trimIndent()
+            db.execSQL(auto, arrayOf<Any>("a1"))
+            db.execSQL(auto, arrayOf<Any>("a2"))
+            db.query("SELECT COUNT(*) FROM expense WHERE recurrenceId = 'emi'").use { c ->
+                c.moveToFirst()
+                assertThat(c.getInt(0)).isEqualTo(1)
+            }
+        }
+    }
+
     // An absolute path: on Windows the helper otherwise compares a bare name with the resolved path and refuses.
     private val dbPath: String =
         ApplicationProvider.getApplicationContext<android.content.Context>().getDatabasePath(DB).absolutePath

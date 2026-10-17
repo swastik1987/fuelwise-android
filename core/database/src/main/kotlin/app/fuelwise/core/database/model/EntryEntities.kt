@@ -38,7 +38,15 @@ data class RefuelEntity(
 )
 
 /** PRD §7 `expense`. Tolls set [tollPlaza]. Recurring expenses (M6) fill [recurrenceId] and [isAutoCreated]. */
-@Entity(tableName = "expense", indices = [Index("vehicleId", "dateTime"), Index("categoryId")])
+@Entity(
+    tableName = "expense",
+    indices = [
+        Index("vehicleId", "dateTime"),
+        Index("categoryId"),
+        // A recurring expense is created at most once per due date, even after a restore (PRD F-04.3 AC).
+        Index(value = ["recurrenceId", "dateTime"], unique = true),
+    ],
+)
 data class ExpenseEntity(
     @PrimaryKey val id: String,
     val vehicleId: String,

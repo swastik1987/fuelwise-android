@@ -10,6 +10,7 @@ dependencies {
     implementation(projects.core.datastore)
     implementation(libs.kotlinx.coroutines.core)
     api(libs.androidx.paging.runtime)
+    implementation(libs.tink.android)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)

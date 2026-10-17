@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.database.dao.CategoryDao
+import app.fuelwise.core.database.dao.DocumentDao
+import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.RecurrenceDao
+import app.fuelwise.core.database.dao.ReminderDao
 import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
@@ -38,4 +42,16 @@ object DatabaseModule {
 
     @Provides
     fun logbookDao(db: FuelwiseDatabase): LogbookDao = db.logbookDao()
+
+    @Provides
+    fun reminderDao(db: FuelwiseDatabase): ReminderDao = db.reminderDao()
+
+    @Provides
+    fun documentDao(db: FuelwiseDatabase): DocumentDao = db.documentDao()
+
+    @Provides
+    fun recurrenceDao(db: FuelwiseDatabase): RecurrenceDao = db.recurrenceDao()
+
+    @Provides
+    fun fastagDao(db: FuelwiseDatabase): FastagDao = db.fastagDao()
 }

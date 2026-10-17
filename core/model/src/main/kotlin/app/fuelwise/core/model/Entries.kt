@@ -45,6 +45,8 @@ data class Expense(
     val notes: String? = null,
     val tollPlaza: String? = null,
     val isAutoCreated: Boolean = false,
+    /** Set on entries a recurring expense created; with the date it keeps creation idempotent (PRD F-04.3). */
+    val recurrenceId: String? = null,
 )
 
 enum class PaymentMethod { Upi, Card, Cash, FastagWallet, FleetCard }

@@ -4,10 +4,21 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.fuelwise.core.database.dao.CategoryDao
+import app.fuelwise.core.database.dao.DocumentDao
+import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.RecurrenceDao
+import app.fuelwise.core.database.dao.ReminderDao
 import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
+import app.fuelwise.core.database.model.AttachmentEntity
 import app.fuelwise.core.database.model.CategoryEntity
+import app.fuelwise.core.database.model.DocumentEntity
+import app.fuelwise.core.database.model.FastagAccountEntity
+import app.fuelwise.core.database.model.FastagRechargeEntity
+import app.fuelwise.core.database.model.RecurrenceEntity
+import app.fuelwise.core.database.model.ReminderCompletionEntity
+import app.fuelwise.core.database.model.ReminderEntity
 import app.fuelwise.core.database.model.ExpenseEntity
 import app.fuelwise.core.database.model.RefuelEntity
 import app.fuelwise.core.database.model.TankEntity
@@ -24,8 +35,15 @@ import app.fuelwise.core.database.model.VehicleEntity
         CategoryEntity::class,
         RefuelEntity::class,
         ExpenseEntity::class,
+        ReminderEntity::class,
+        ReminderCompletionEntity::class,
+        DocumentEntity::class,
+        AttachmentEntity::class,
+        RecurrenceEntity::class,
+        FastagAccountEntity::class,
+        FastagRechargeEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class FuelwiseDatabase : RoomDatabase() {
@@ -36,6 +54,14 @@ abstract class FuelwiseDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
 
     abstract fun logbookDao(): LogbookDao
+
+    abstract fun reminderDao(): ReminderDao
+
+    abstract fun documentDao(): DocumentDao
+
+    abstract fun recurrenceDao(): RecurrenceDao
+
+    abstract fun fastagDao(): FastagDao
 
     companion object {
         const val NAME = "fuelwise.db"

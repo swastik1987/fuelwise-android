@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "updated": "2026-10-01",
+  "note": "Defaults only. Legal validity periods change (PRD F-11.2): every value is editable on the reminder, and this file can be replaced by the price/rules feed.",
+  "odometerWindowKm": { "car": 300, "twoWheeler": 150 },
+  "puc": {
+    "defaultMonths": 6,
+    "monthsByNorm": { "BS3": 6, "BS4": 6, "BS6": 12 },
+    "notifyDaysBefore": [15, 7, 1],
+    "source": "Central Motor Vehicles Rules r.115; state practice varies. A July 2026 MoRTH draft proposes longer validity for BS-VI private vehicles under 6 years."
+  },
+  "presets": {
+    "Insurance": { "notifyDaysBefore": [30, 15, 7, 1] },
+    "Service": {
+      "months": 12, "km": 10000, "notifyDaysBefore": [15, 3],
+      "twoWheeler": { "months": 6, "km": 3000 }
+    },
+    "EngineOil": {
+      "months": 12, "km": 10000, "notifyDaysBefore": [7],
+      "twoWheeler": { "months": 6, "km": 3000 }
+    },
+    "Tyres": { "km": 10000, "notifyDaysBefore": [7] },
+    "Battery": { "months": 6, "notifyDaysBefore": [7] },
+    "Coolant": { "months": 24, "km": 40000, "notifyDaysBefore": [7] },
+    "Wipers": { "months": 12, "notifyDaysBefore": [7] },
+    "Rc": { "months": 180, "notifyDaysBefore": [60, 30, 7] },
+    "Fitness": { "months": 24, "notifyDaysBefore": [30, 7, 1] },
+    "Licence": { "notifyDaysBefore": [60, 30, 7] },
+    "Warranty": { "notifyDaysBefore": [30, 7] },
+    "FastagLowBalance": { "notifyDaysBefore": [] },
+    "Custom": { "notifyDaysBefore": [7, 1] }
+  }
+}

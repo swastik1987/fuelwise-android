@@ -2,7 +2,19 @@ package app.fuelwise.core.data.di
 
 import app.fuelwise.core.data.DataStoreDeviceIdProvider
 import app.fuelwise.core.data.DeviceIdProvider
+import app.fuelwise.core.data.repository.AssetRulesRepository
 import app.fuelwise.core.data.repository.CategoryRepository
+import app.fuelwise.core.data.repository.DocumentRepository
+import app.fuelwise.core.data.repository.FastagRepository
+import app.fuelwise.core.data.repository.OfflineDocumentRepository
+import app.fuelwise.core.data.repository.OfflineFastagRepository
+import app.fuelwise.core.data.repository.OfflineRecurrenceRepository
+import app.fuelwise.core.data.repository.OfflineReminderRepository
+import app.fuelwise.core.data.repository.RecurrenceRepository
+import app.fuelwise.core.data.repository.ReminderRepository
+import app.fuelwise.core.data.repository.RulesRepository
+import app.fuelwise.core.data.vault.AttachmentStore
+import app.fuelwise.core.data.vault.TinkAttachmentStore
 import app.fuelwise.core.data.repository.DataStoreUserDataRepository
 import app.fuelwise.core.data.repository.EntitlementRepository
 import app.fuelwise.core.data.repository.EntryRepository
@@ -41,6 +53,24 @@ internal interface DataModule {
 
     @Binds
     fun entitlementRepository(impl: FreeTierEntitlementRepository): EntitlementRepository
+
+    @Binds
+    fun reminderRepository(impl: OfflineReminderRepository): ReminderRepository
+
+    @Binds
+    fun documentRepository(impl: OfflineDocumentRepository): DocumentRepository
+
+    @Binds
+    fun recurrenceRepository(impl: OfflineRecurrenceRepository): RecurrenceRepository
+
+    @Binds
+    fun fastagRepository(impl: OfflineFastagRepository): FastagRepository
+
+    @Binds
+    fun rulesRepository(impl: AssetRulesRepository): RulesRepository
+
+    @Binds
+    fun attachmentStore(impl: TinkAttachmentStore): AttachmentStore
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider

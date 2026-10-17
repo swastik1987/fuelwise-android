@@ -79,6 +79,7 @@ internal fun ExpenseEntity.toModel() = Expense(
     notes = notes,
     tollPlaza = tollPlaza,
     isAutoCreated = isAutoCreated,
+    recurrenceId = recurrenceId,
 )
 
 internal fun Expense.toEntity(sync: SyncMeta) = ExpenseEntity(
@@ -93,7 +94,7 @@ internal fun Expense.toEntity(sync: SyncMeta) = ExpenseEntity(
     notes = notes?.trim()?.ifEmpty { null },
     tripId = null,
     tollPlaza = tollPlaza?.trim()?.ifEmpty { null },
-    recurrenceId = null,
+    recurrenceId = recurrenceId,
     isAutoCreated = isAutoCreated,
     sync = sync,
 )

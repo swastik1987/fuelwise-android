@@ -1,0 +1,33 @@
+# Normalise line endings: LF everywhere (matches .editorconfig), regardless of core.autocrlf
+* text=auto eol=lf
+
+# Windows scripts need CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Unix scripts must stay LF
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Binary files
+*.jar binary
+*.aar binary
+*.apk binary
+*.aab binary
+*.so binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.keystore binary
+*.jks binary
+*.pbf binary
+*.db binary

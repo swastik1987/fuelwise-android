@@ -1,6 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="garage_title">Garage</string>
     <string name="garage_empty_title">No vehicles yet</string>
     <string name="garage_empty_body">Add your car, scooter or bike to start tracking what it costs.</string>
     <string name="garage_empty_action">Add vehicle</string>
+    <string name="garage_km">%1$s km</string>
+    <string name="garage_archived">Archived · %1$d</string>
+    <string name="garage_deleted">%1$s deleted</string>
+    <string name="garage_undo">Undo</string>
+
+    <string name="editor_title_first">Add your first vehicle</string>
+    <string name="editor_title_add">Add vehicle</string>
+    <string name="editor_title_edit">Edit vehicle</string>
+    <string name="editor_back">Back</string>
+    <string name="editor_type">Type</string>
+    <string name="editor_fuel">Fuel</string>
+    <string name="editor_fuel_locked">Fuel can\'t be changed after adding a vehicle.</string>
+    <string name="editor_name">Name</string>
+    <string name="editor_name_placeholder">e.g. Safari, Activa</string>
+    <string name="editor_odometer">Current odometer</string>
+    <string name="editor_start_odometer">Odometer when added</string>
+    <string name="editor_more">More details (optional)</string>
+    <string name="editor_more_hint">Tank size, reg number, emission norm, claimed mileage</string>
+    <string name="editor_tank">%1$s tank</string>
+    <string name="editor_battery">Usable battery</string>
+    <string name="editor_bifuel_hint">The first fuel is primary. You can pick the tank on every fill-up.</string>
+    <string name="editor_registration">Registration number</string>
+    <string name="editor_registration_placeholder">KA 01 AB 1234</string>
+    <string name="editor_emission_norm">Emission norm</string>
+    <string name="editor_claimed">Claimed mileage</string>
+    <string name="editor_claimed_unit">km/%1$s</string>
+    <string name="editor_add">Add vehicle</string>
+    <string name="editor_save">Save changes</string>
+    <string name="editor_error_name">Give it a name, like Safari or Activa.</string>
+    <string name="editor_error_name_long">Keep the name under 40 characters.</string>
+    <string name="editor_error_odometer">Enter the reading on your odometer.</string>
+    <string name="editor_error_odometer_negative">The odometer can\'t be negative.</string>
+    <string name="editor_error_capacity">Enter a size above zero, or leave it empty.</string>
+    <string name="editor_error_registration">That doesn\'t look like an Indian number. Try KA 01 AB 1234 or 22 BH 1234 AA.</string>
+    <string name="editor_error_claimed">Enter a figure above zero, or leave it empty.</string>
+    <string name="norm_bs3">BS-III</string>
+    <string name="norm_bs4">BS-IV</string>
+    <string name="norm_bs6">BS-VI</string>
+
+    <string name="detail_edit">Edit vehicle</string>
+    <string name="detail_energy">Energy setup</string>
+    <string name="detail_primary">primary</string>
+    <string name="detail_not_set">Not set</string>
+    <string name="detail_efficiency">Efficiency</string>
+    <string name="detail_registration">Registration</string>
+    <string name="detail_archive">Archive vehicle</string>
+    <string name="detail_unarchive">Restore from archive</string>
+    <string name="detail_archive_hint">Hides it; history stays in stats and exports</string>
+    <string name="detail_delete">Delete vehicle</string>
+    <string name="detail_delete_title">Delete %1$s?</string>
+    <string name="detail_delete_body">This removes %1$s and everything logged for it. Type the name to confirm. You can undo for 10 seconds.</string>
+    <string name="detail_delete_field">Vehicle name</string>
+    <string name="detail_delete_confirm">Delete</string>
+    <string name="detail_cancel">Cancel</string>
 </resources>

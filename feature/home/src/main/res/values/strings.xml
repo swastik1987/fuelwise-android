@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="home_no_vehicle_title">Add your first vehicle</string>
+    <string name="home_no_vehicle_body">Car, scooter, bike or EV. It takes a few seconds.</string>
+    <string name="home_no_vehicle_action">Add vehicle</string>
     <string name="home_unlock_overline">Your real mileage</string>
     <string name="home_unlock_title">Log 2 full-tank fill-ups to unlock your real mileage</string>
     <string name="home_step_baseline">1 · Baseline tank</string>

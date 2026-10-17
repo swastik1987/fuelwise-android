@@ -22,4 +22,4 @@ google-services.json
 .claude/settings.local.json
 
 # Roborazzi output recorded on a dev machine. Goldens are recorded on CI (Linux) so fonts match.
-core/*/src/test/screenshots/
+**/src/test/screenshots/

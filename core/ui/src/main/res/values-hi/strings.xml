@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="vehicle_type_car">कार</string>
+    <string name="vehicle_type_scooter">स्कूटर</string>
+    <string name="vehicle_type_motorcycle">मोटरसाइकिल</string>
+    <string name="vehicle_type_auto">ऑटो</string>
+    <string name="vehicle_type_van">वैन</string>
+    <string name="vehicle_type_truck">ट्रक</string>
+    <string name="vehicle_type_other">अन्य</string>
+
+    <string name="energy_petrol">पेट्रोल</string>
+    <string name="energy_diesel">डीज़ल</string>
+    <string name="energy_cng">CNG</string>
+    <string name="energy_lpg">LPG</string>
+    <string name="energy_electric">इलेक्ट्रिक</string>
+    <string name="energy_ethanol">इथेनॉल / फ़्लेक्स</string>
+    <string name="fuel_setup_cng_petrol">CNG + पेट्रोल</string>
+    <string name="fuel_setup_lpg_petrol">LPG + पेट्रोल</string>
+    <string name="fuel_setup_other">अन्य</string>
+
+    <string name="unit_litre">L</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_kwh">kWh</string>
+    <string name="unit_km">km</string>
+
+    <string name="vehicle_switcher_title">आपकी गाड़ियाँ</string>
+    <string name="vehicle_switcher_all">सभी गाड़ियाँ</string>
+    <string name="vehicle_switcher_cd">%1$s. गाड़ी बदलें</string>
+    <string name="vehicle_add">गाड़ी जोड़ें</string>
+</resources>

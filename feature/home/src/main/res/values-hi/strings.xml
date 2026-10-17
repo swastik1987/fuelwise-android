@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="home_no_vehicle_title">अपनी पहली गाड़ी जोड़ें</string>
+    <string name="home_no_vehicle_body">कार, स्कूटर, बाइक या EV। बस कुछ सेकंड लगेंगे।</string>
+    <string name="home_no_vehicle_action">गाड़ी जोड़ें</string>
     <string name="home_unlock_overline">आपका असली माइलेज</string>
     <string name="home_unlock_title">असली माइलेज देखने के लिए 2 बार टंकी फ़ुल कराकर दर्ज करें</string>
     <string name="home_step_baseline">1 · पहली फ़ुल टंकी</string>

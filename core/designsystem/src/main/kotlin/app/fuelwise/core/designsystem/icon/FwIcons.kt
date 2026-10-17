@@ -51,4 +51,30 @@ object FwIcons {
     @DrawableRes val Toll = R.drawable.fw_ic_toll
 
     @DrawableRes val Service = R.drawable.fw_ic_build
+
+    @DrawableRes val Car = R.drawable.fw_ic_directions_car
+
+    @DrawableRes val Scooter = R.drawable.fw_ic_moped
+
+    @DrawableRes val Motorcycle = R.drawable.fw_ic_two_wheeler
+
+    @DrawableRes val AutoRickshaw = R.drawable.fw_ic_electric_rickshaw
+
+    @DrawableRes val Truck = R.drawable.fw_ic_local_shipping
+
+    @DrawableRes val Archive = R.drawable.fw_ic_archive
+
+    @DrawableRes val Unarchive = R.drawable.fw_ic_unarchive
+
+    @DrawableRes val Delete = R.drawable.fw_ic_delete
+
+    @DrawableRes val Edit = R.drawable.fw_ic_edit
+
+    @DrawableRes val Check = R.drawable.fw_ic_check
+
+    @DrawableRes val MoreVert = R.drawable.fw_ic_more_vert
+
+    @DrawableRes val Bolt = R.drawable.fw_ic_bolt
+
+    @DrawableRes val Route = R.drawable.fw_ic_route
 }

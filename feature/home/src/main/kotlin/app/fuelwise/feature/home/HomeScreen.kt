@@ -5,39 +5,106 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwCard
+import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwInkButton
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
+import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
+
+@Composable
+internal fun HomeScreen(onLogFuel: () -> Unit, onAddVehicle: () -> Unit, viewModel: HomeViewModel = hiltViewModel()) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeContent(state, onLogFuel, onAddVehicle, viewModel::selectVehicle)
+}
 
 /**
- * Home (design.md screen 5). Until vehicles and fill-ups exist (M2–M3) it shows the brand-new-vehicle state
- * from screen 05b: log two full tanks to unlock real mileage.
+ * Home (design.md screen 5). Until fill-ups exist (M3) a vehicle shows the brand-new state from screen 05b:
+ * log two full tanks to unlock real mileage.
  */
 @Composable
-internal fun HomeScreen(onLogFuel: () -> Unit, modifier: Modifier = Modifier) {
+internal fun HomeContent(
+    state: HomeUiState,
+    onLogFuel: () -> Unit,
+    onAddVehicle: () -> Unit,
+    onSelectVehicle: (String?) -> Unit,
+) {
+    var switcherOpen by rememberSaveable { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
+        when (state) {
+            HomeUiState.Loading -> Unit
+
+            HomeUiState.NoVehicles -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                FwEmptyState(
+                    icon = FwIcons.Car,
+                    headline = stringResource(R.string.home_no_vehicle_title),
+                    body = stringResource(R.string.home_no_vehicle_body),
+                    actionLabel = stringResource(R.string.home_no_vehicle_action),
+                    onAction = onAddVehicle,
+                )
+            }
+
+            is HomeUiState.Ready -> {
+                Row(
+                    Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).height(64.dp)
+                        .padding(horizontal = FwTheme.spacing.gutter),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    VehicleSwitcherPill(state.vehicle, onClick = { switcherOpen = true })
+                }
+                BrandNewVehicle(onLogFuel)
+                if (switcherOpen) {
+                    VehicleSwitcherSheet(
+                        vehicles = state.vehicles,
+                        selectedId = state.vehicle.id,
+                        onSelect = {
+                            onSelectVehicle(it)
+                            switcherOpen = false
+                        },
+                        onAddVehicle = {
+                            switcherOpen = false
+                            onAddVehicle()
+                        },
+                        onDismiss = { switcherOpen = false },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BrandNewVehicle(onLogFuel: () -> Unit) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(FwTheme.colors.bg)
+        modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.m),
         verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
@@ -105,5 +172,5 @@ private fun BaselineProgress(completedSteps: Int, modifier: Modifier = Modifier)
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    FuelwiseTheme { HomeScreen(onLogFuel = {}) }
+    FuelwiseTheme { HomeContent(HomeUiState.NoVehicles, onLogFuel = {}, onAddVehicle = {}, onSelectVehicle = {}) }
 }

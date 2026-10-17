@@ -18,13 +18,18 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
+import app.fuelwise.feature.garage.VehicleDetailRoute
+import app.fuelwise.feature.garage.VehicleEditorRoute
 import app.fuelwise.feature.garage.garageScreen
+import app.fuelwise.feature.garage.vehicleDetailScreen
+import app.fuelwise.feature.garage.vehicleEditorScreen
 import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
 import app.fuelwise.feature.insights.insightsScreen
 import app.fuelwise.feature.logbook.logbookScreen
 
-/** App shell: bottom nav + FAB around a single NavHost. */
+/** App shell: bottom nav + FAB around a single NavHost. Feature modules only see callbacks, never each other. */
 @Composable
 fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -32,21 +37,26 @@ fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
     val destinations = TopLevelDestination.entries
     val selectedIndex = destinations.indexOfFirst { dest ->
         currentDestination?.hierarchy?.any { it.hasRoute(dest.routeClass) } == true
-    }.coerceAtLeast(0)
+    }
+    // The bar belongs to the four tabs; detail and editor screens get the full height.
+    val showBottomBar = currentDestination == null || selectedIndex >= 0
 
-    // The add-entry sheet (F-02) arrives in M3; until then "+" and the empty-state actions have nothing to open.
+    // The add-entry sheet (F-02) arrives in M3; until then "+" and "Log fuel" have nothing to open.
     val openAddEntry: () -> Unit = {}
+    val openVehicleEditor: () -> Unit = { navController.navigate(VehicleEditorRoute()) }
 
     Scaffold(
         containerColor = FwTheme.colors.bg,
         bottomBar = {
-            FwBottomBar(
-                items = destinations.map { FwNavItem(stringResource(it.label), it.icon, it.selectedIcon) },
-                selectedIndex = selectedIndex,
-                onSelect = { index -> navController.navigateToTopLevel(destinations[index]) },
-                onFabClick = openAddEntry,
-                fabContentDescription = stringResource(R.string.nav_add_entry),
-            )
+            if (showBottomBar) {
+                FwBottomBar(
+                    items = destinations.map { FwNavItem(stringResource(it.label), it.icon, it.selectedIcon) },
+                    selectedIndex = selectedIndex.coerceAtLeast(0),
+                    onSelect = { index -> navController.navigateToTopLevel(destinations[index]) },
+                    onFabClick = openAddEntry,
+                    fabContentDescription = stringResource(R.string.nav_add_entry),
+                )
+            }
         },
     ) { padding ->
         NavHost(
@@ -54,10 +64,26 @@ fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
             startDestination = HomeRoute,
             modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
-            homeScreen(onLogFuel = openAddEntry)
+            homeScreen(onLogFuel = openAddEntry, onAddVehicle = openVehicleEditor)
             logbookScreen(onPrimaryAction = openAddEntry)
             insightsScreen(onPrimaryAction = openAddEntry)
-            garageScreen(onPrimaryAction = {})
+            garageScreen(
+                onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
+                onAddVehicle = openVehicleEditor,
+            )
+            vehicleEditorScreen(
+                onBack = navController::popBackStack,
+                onSaved = { _, _ -> navController.popBackStack() },
+            )
+            vehicleDetailScreen(
+                onBack = navController::popBackStack,
+                onEdit = { id -> navController.navigate(VehicleEditorRoute(vehicleId = id)) },
+                onDelete = { id ->
+                    // Garage performs the delete so it can show the undo snackbar.
+                    navController.popBackStack()
+                    navController.currentBackStackEntry?.savedStateHandle?.set(PENDING_DELETE_VEHICLE_ID, id)
+                },
+            )
         }
     }
 }

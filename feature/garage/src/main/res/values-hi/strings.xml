@@ -1,6 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="garage_title">गैराज</string>
     <string name="garage_empty_title">अभी कोई गाड़ी नहीं</string>
     <string name="garage_empty_body">अपनी कार, स्कूटर या बाइक जोड़ें और देखें कि उस पर कितना खर्च होता है।</string>
     <string name="garage_empty_action">गाड़ी जोड़ें</string>
+    <string name="garage_km">%1$s km</string>
+    <string name="garage_archived">आर्काइव · %1$d</string>
+    <string name="garage_deleted">%1$s हटा दी गई</string>
+    <string name="garage_undo">वापस लाएँ</string>
+
+    <string name="editor_title_first">अपनी पहली गाड़ी जोड़ें</string>
+    <string name="editor_title_add">गाड़ी जोड़ें</string>
+    <string name="editor_title_edit">गाड़ी बदलें</string>
+    <string name="editor_back">वापस</string>
+    <string name="editor_type">प्रकार</string>
+    <string name="editor_fuel">फ़्यूल</string>
+    <string name="editor_fuel_locked">गाड़ी जोड़ने के बाद फ़्यूल नहीं बदला जा सकता।</string>
+    <string name="editor_name">नाम</string>
+    <string name="editor_name_placeholder">जैसे Safari, Activa</string>
+    <string name="editor_odometer">अभी का ओडोमीटर</string>
+    <string name="editor_start_odometer">जोड़ते समय का ओडोमीटर</string>
+    <string name="editor_more">और जानकारी (ज़रूरी नहीं)</string>
+    <string name="editor_more_hint">टंकी का साइज़, नंबर प्लेट, एमिशन नॉर्म, कंपनी का बताया माइलेज</string>
+    <string name="editor_tank">%1$s टंकी</string>
+    <string name="editor_battery">इस्तेमाल लायक बैटरी</string>
+    <string name="editor_bifuel_hint">पहला फ़्यूल मुख्य है। हर बार फ़्यूल भरवाते समय टंकी चुन सकते हैं।</string>
+    <string name="editor_registration">रजिस्ट्रेशन नंबर</string>
+    <string name="editor_registration_placeholder">KA 01 AB 1234</string>
+    <string name="editor_emission_norm">एमिशन नॉर्म</string>
+    <string name="editor_claimed">कंपनी का बताया माइलेज</string>
+    <string name="editor_claimed_unit">km/%1$s</string>
+    <string name="editor_add">गाड़ी जोड़ें</string>
+    <string name="editor_save">बदलाव सेव करें</string>
+    <string name="editor_error_name">कोई नाम दें, जैसे Safari या Activa।</string>
+    <string name="editor_error_name_long">नाम 40 अक्षरों से छोटा रखें।</string>
+    <string name="editor_error_odometer">ओडोमीटर की रीडिंग डालें।</string>
+    <string name="editor_error_odometer_negative">ओडोमीटर शून्य से कम नहीं हो सकता।</string>
+    <string name="editor_error_capacity">शून्य से बड़ा साइज़ डालें, या खाली छोड़ दें।</string>
+    <string name="editor_error_registration">यह भारतीय नंबर जैसा नहीं लगता। KA 01 AB 1234 या 22 BH 1234 AA जैसा लिखें।</string>
+    <string name="editor_error_claimed">शून्य से बड़ा आँकड़ा डालें, या खाली छोड़ दें।</string>
+    <string name="norm_bs3">BS-III</string>
+    <string name="norm_bs4">BS-IV</string>
+    <string name="norm_bs6">BS-VI</string>
+
+    <string name="detail_edit">गाड़ी बदलें</string>
+    <string name="detail_energy">फ़्यूल सेटअप</string>
+    <string name="detail_primary">मुख्य</string>
+    <string name="detail_not_set">नहीं डाला</string>
+    <string name="detail_efficiency">माइलेज</string>
+    <string name="detail_registration">रजिस्ट्रेशन</string>
+    <string name="detail_archive">गाड़ी आर्काइव करें</string>
+    <string name="detail_unarchive">आर्काइव से वापस लाएँ</string>
+    <string name="detail_archive_hint">छिप जाएगी; पुराना हिसाब आँकड़ों और एक्सपोर्ट में रहेगा</string>
+    <string name="detail_delete">गाड़ी हटाएँ</string>
+    <string name="detail_delete_title">%1$s हटाएँ?</string>
+    <string name="detail_delete_body">इससे %1$s और उसका सारा दर्ज हिसाब हट जाएगा। पक्का करने के लिए नाम लिखें। 10 सेकंड तक वापस ला सकते हैं।</string>
+    <string name="detail_delete_field">गाड़ी का नाम</string>
+    <string name="detail_delete_confirm">हटाएँ</string>
+    <string name="detail_cancel">रद्द करें</string>
 </resources>

@@ -10,8 +10,9 @@ complexity:
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
     ignoreAnnotatedFunctions: ['Preview']
-    # A Room DAO is a list of queries; splitting it by count would only scatter one table's SQL.
-    ignoreAnnotated: ['Dao']
+    # A Room DAO is a list of queries, and a ViewModel has one function per user action; splitting either by count
+    # would only scatter one screen's logic.
+    ignoreAnnotated: ['Dao', 'HiltViewModel']
 
 naming:
   # Compose files pair a small type (route, UI model) with the composables that use it.

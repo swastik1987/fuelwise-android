@@ -40,6 +40,7 @@ dependencies {
     implementation(projects.feature.logbook)
     implementation(projects.feature.insights)
     implementation(projects.feature.garage)
+    implementation(projects.feature.onboarding)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

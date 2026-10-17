@@ -131,7 +131,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-01 Vehicles (Garage) — FREE · R1
 
-**F-01.1 Vehicle profile.** Fields:
+**F-01.1 Vehicle profile.** ✅ built (photo, accent colour, make/model/year and purchase details not yet) Fields:
 - Name (required, e.g., "Safari")
 - Type: car / motorcycle / scooter / auto-rickshaw / van / truck / other
 - Make, model, variant, year (optional, free text in R1)
@@ -142,17 +142,17 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Colour accent (auto from photo or picked)
 - Archived flag (sold vehicles stay in history)
 
-**F-01.2 Energy setup.**
+**F-01.2 Energy setup.** ✅ built (hybrid tag and default grade not yet)
 - **Single fuel:** petrol, diesel, CNG, LPG, electric, ethanol/flex.
 - **Bi-fuel:** two tanks, e.g., CNG (kg) + petrol (L). One is marked primary.
 - **Hybrid (HEV):** treated as single-fuel petrol with a "hybrid" tag.
 - **Per tank:** capacity (L, kg or usable kWh), default fuel grade (e.g., Petrol E20, Petrol premium/XP95, Diesel, CNG).
 
-**F-01.3 Claimed efficiency.** Optional ARAI/claimed figure (km/L, km/kg, km/kWh). Used for "your real vs claimed" comparisons.
+**F-01.3 Claimed efficiency.** ✅ built Optional ARAI/claimed figure (km/L, km/kg, km/kWh). Used for "your real vs claimed" comparisons.
 
-**F-01.4 Custom parameters.** The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
+**F-01.4 Custom parameters.** (stored; editing UI not yet) The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
 
-**F-01.5 Multiple vehicles.** Unlimited. A global vehicle switcher exists. "All vehicles" aggregate view is available for stats.
+**F-01.5 Multiple vehicles.** ✅ built ("All vehicles" view arrives with stats, M5) Unlimited. A global vehicle switcher exists. "All vehicles" aggregate view is available for stats.
 
 **AC**
 - Creating a vehicle requires only name, type, fuel setup and current odometer. Everything else is optional.

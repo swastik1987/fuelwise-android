@@ -77,4 +77,22 @@ object FwIcons {
     @DrawableRes val Bolt = R.drawable.fw_ic_bolt
 
     @DrawableRes val Route = R.drawable.fw_ic_route
+
+    @DrawableRes val NoAds = R.drawable.fw_ic_block
+
+    @DrawableRes val NoAccount = R.drawable.fw_ic_person_off
+
+    @DrawableRes val CloudDone = R.drawable.fw_ic_cloud_done
+
+    @DrawableRes val Search = R.drawable.fw_ic_search
+
+    @DrawableRes val UploadFile = R.drawable.fw_ic_upload_file
+
+    @DrawableRes val Spreadsheet = R.drawable.fw_ic_table_view
+
+    @DrawableRes val StartFresh = R.drawable.fw_ic_edit_note
+
+    @DrawableRes val Lock = R.drawable.fw_ic_lock
+
+    @DrawableRes val CheckCircleFilled = R.drawable.fw_ic_check_circle_filled
 }

@@ -28,18 +28,24 @@ import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
 import app.fuelwise.feature.insights.insightsScreen
 import app.fuelwise.feature.logbook.logbookScreen
+import app.fuelwise.feature.onboarding.HistoryRoute
+import app.fuelwise.feature.onboarding.PrivacyRoute
+import app.fuelwise.feature.onboarding.WelcomeRoute
+import app.fuelwise.feature.onboarding.historyScreen
+import app.fuelwise.feature.onboarding.privacyScreen
+import app.fuelwise.feature.onboarding.welcomeScreen
 
 /** App shell: bottom nav + FAB around a single NavHost. Feature modules only see callbacks, never each other. */
 @Composable
-fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
+fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val destinations = TopLevelDestination.entries
     val selectedIndex = destinations.indexOfFirst { dest ->
         currentDestination?.hierarchy?.any { it.hasRoute(dest.routeClass) } == true
     }
-    // The bar belongs to the four tabs; detail and editor screens get the full height.
-    val showBottomBar = currentDestination == null || selectedIndex >= 0
+    // The bar belongs to the four tabs; onboarding, detail and editor screens get the full height.
+    val showBottomBar = selectedIndex >= 0
 
     // The add-entry sheet (F-02) arrives in M3; until then "+" and "Log fuel" have nothing to open.
     val openAddEntry: () -> Unit = {}
@@ -61,9 +67,18 @@ fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = HomeRoute,
+            startDestination = if (startWithOnboarding) WelcomeRoute else HomeRoute,
             modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
+            welcomeScreen(onGetStarted = { navController.navigate(VehicleEditorRoute(onboarding = true)) })
+            historyScreen(onBack = navController::popBackStack, onContinue = { navController.navigate(PrivacyRoute) })
+            privacyScreen(
+                onBack = navController::popBackStack,
+                onDone = {
+                    // Onboarding leaves the back stack: Back from Home exits the app.
+                    navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } }
+                },
+            )
             homeScreen(onLogFuel = openAddEntry, onAddVehicle = openVehicleEditor)
             logbookScreen(onPrimaryAction = openAddEntry)
             insightsScreen(onPrimaryAction = openAddEntry)
@@ -73,7 +88,9 @@ fun FuelwiseApp(navController: NavHostController = rememberNavController()) {
             )
             vehicleEditorScreen(
                 onBack = navController::popBackStack,
-                onSaved = { _, _ -> navController.popBackStack() },
+                onSaved = { _, onboarding ->
+                    if (onboarding) navController.navigate(HistoryRoute) else navController.popBackStack()
+                },
             )
             vehicleDetailScreen(
                 onBack = navController::popBackStack,

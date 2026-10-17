@@ -67,7 +67,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - F-03.1 full-tank algorithm, F-03.2 units, F-03.3 bi-fuel (est.), F-03.4 EV SoC + full-charge fallback, F-03.5 cost metrics, F-03.6 predictions.
 - Golden vectors from PRD §F-03.7 as the first tests; property tests for ordering/back-dating; perf test (2,000 entries recompute < 200 ms).
 
-### M2 — Garage & onboarding, F-01 + screens 1–4, 21, 22 (≈1.5 weeks)
+### M2 — Garage & onboarding, F-01 + screens 1–4, 21, 22 (≈1.5 weeks) ✅ done (vehicle photo, purchase details and custom-parameter editing deferred; CSV import rows wait for M10, Drive restore for M7)
 - Room DB v1: `vehicle`, `tank`, `category` (+ presets), sync columns on every syncable table, exported schemas, migration-test harness.
 - Vehicle create/edit/archive/delete-with-name-confirm + 10 s undo; vehicle switcher.
 - Onboarding: Welcome, Add first vehicle (incl. bi-fuel/EV reveals), Bring history (import rows stubbed until M10), Privacy choices.

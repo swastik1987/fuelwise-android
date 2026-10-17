@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_continue">Continue</string>
+
+    <string name="welcome_brand" translatable="false">Fuelwise</string>
+    <string name="welcome_headline">What your vehicle really costs.</string>
+    <string name="welcome_sub">Log fuel in 10 seconds. Petrol, diesel, CNG or EV.</string>
+    <string name="welcome_trust_ads">No ads, ever</string>
+    <string name="welcome_trust_account">No account needed</string>
+    <string name="welcome_trust_drive">Backed up to your own Google Drive</string>
+    <string name="welcome_get_started">Get started</string>
+
+    <string name="history_title">Bring your history</string>
+    <string name="history_sub">Optional. You can import later from Settings.</string>
+    <string name="history_skip">Skip</string>
+    <string name="history_import_fuelio">Import from Fuelio (CSV)</string>
+    <string name="history_import_other">Import from another app / spreadsheet</string>
+    <string name="history_coming">Coming in a later update</string>
+    <string name="history_fresh">Start fresh</string>
+    <string name="history_fresh_sub">Begin from today\'s odometer</string>
+    <string name="history_city">Your city for fuel prices</string>
+    <string name="history_city_search">Search city</string>
+    <string name="history_city_privacy">We download one national price file and filter it on your phone. Your location is never sent.</string>
+
+    <string name="privacy_title">Your privacy choices</string>
+    <string name="privacy_sub">Change any of these later in Settings.</string>
+    <string name="privacy_weekly">Weekly digest</string>
+    <string name="privacy_weekly_sub">A Monday summary of last week\'s ₹/km.</string>
+    <string name="privacy_monthly">Monthly recap</string>
+    <string name="privacy_monthly_sub">On the 1st: what last month cost, in one card.</string>
+    <string name="privacy_note">Your data stays on this phone. We\'ll ask for location, camera or notifications only when you use something that needs them.</string>
+    <string name="privacy_done">Done</string>
+</resources>

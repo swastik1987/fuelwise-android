@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_back">वापस</string>
+    <string name="onboarding_continue">आगे बढ़ें</string>
+
+    <string name="welcome_headline">आपकी गाड़ी का असली खर्च।</string>
+    <string name="welcome_sub">10 सेकंड में फ़्यूल दर्ज करें। पेट्रोल, डीज़ल, CNG या EV।</string>
+    <string name="welcome_trust_ads">कोई विज्ञापन नहीं, कभी नहीं</string>
+    <string name="welcome_trust_account">अकाउंट की ज़रूरत नहीं</string>
+    <string name="welcome_trust_drive">बैकअप आपकी अपनी Google Drive में</string>
+    <string name="welcome_get_started">शुरू करें</string>
+
+    <string name="history_title">पुराना हिसाब लाएँ</string>
+    <string name="history_sub">ज़रूरी नहीं। बाद में सेटिंग्स से भी इम्पोर्ट कर सकते हैं।</string>
+    <string name="history_skip">छोड़ें</string>
+    <string name="history_import_fuelio">Fuelio से इम्पोर्ट करें (CSV)</string>
+    <string name="history_import_other">किसी दूसरे ऐप / स्प्रेडशीट से इम्पोर्ट करें</string>
+    <string name="history_coming">अगले अपडेट में आएगा</string>
+    <string name="history_fresh">नई शुरुआत</string>
+    <string name="history_fresh_sub">आज के ओडोमीटर से शुरू करें</string>
+    <string name="history_city">फ़्यूल के दाम के लिए आपका शहर</string>
+    <string name="history_city_search">शहर खोजें</string>
+    <string name="history_city_privacy">हम पूरे देश के दाम की एक फ़ाइल डाउनलोड करते हैं और आपके फ़ोन पर ही छाँटते हैं। आपकी लोकेशन कभी नहीं भेजी जाती।</string>
+
+    <string name="privacy_title">आपकी प्राइवेसी</string>
+    <string name="privacy_sub">इन्हें बाद में सेटिंग्स में बदल सकते हैं।</string>
+    <string name="privacy_weekly">हफ़्ते का सार</string>
+    <string name="privacy_weekly_sub">हर सोमवार पिछले हफ़्ते का ₹/km।</string>
+    <string name="privacy_monthly">महीने का हिसाब</string>
+    <string name="privacy_monthly_sub">हर 1 तारीख़ को: पिछले महीने का खर्च, एक कार्ड में।</string>
+    <string name="privacy_note">आपका डेटा इसी फ़ोन पर रहता है। लोकेशन, कैमरा या नोटिफ़िकेशन की इजाज़त तभी माँगेंगे जब आप ऐसी कोई सुविधा इस्तेमाल करेंगे।</string>
+    <string name="privacy_done">हो गया</string>
+</resources>

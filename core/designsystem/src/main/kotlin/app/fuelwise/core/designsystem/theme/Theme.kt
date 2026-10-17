@@ -33,10 +33,7 @@ object FwTheme {
  * but screens should read [FwTheme] directly rather than `MaterialTheme` defaults.
  */
 @Composable
-fun FuelwiseTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
+fun FuelwiseTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) DarkFwColors else LightFwColors
     val typography = FwTypography()
     CompositionLocalProvider(

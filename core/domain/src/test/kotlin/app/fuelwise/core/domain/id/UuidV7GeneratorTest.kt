@@ -1,11 +1,11 @@
 package app.fuelwise.core.domain.id
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
+import org.junit.jupiter.api.Test
 
 class UuidV7GeneratorTest {
     private val fixedInstant = Instant.parse("2026-10-16T04:30:00Z")

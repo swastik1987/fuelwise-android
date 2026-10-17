@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Placeholder brand (PRD D1). Keep it in this one string so a rename is a one-line change. -->
+    <string name="app_name" translatable="false">Fuelwise</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_logbook">Logbook</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_garage">Garage</string>
+    <string name="nav_add_entry">Add fuel</string>
+</resources>

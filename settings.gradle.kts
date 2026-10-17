@@ -13,6 +13,11 @@ pluginManagement {
     }
 }
 
+plugins {
+    // Provisions the JDK named in gradle/gradle-daemon-jvm.properties, so every machine builds on the same JDK.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {

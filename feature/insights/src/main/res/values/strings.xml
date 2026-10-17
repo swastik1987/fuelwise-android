@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insights_empty_title">No insights yet</string>
+    <string name="insights_empty_body">Log two full-tank fill-ups and your mileage, ₹/km and trends appear here.</string>
+    <string name="insights_empty_action">Log fuel</string>
+</resources>

@@ -16,9 +16,12 @@ internal fun VersionCatalog.pluginId(alias: String): String = findPlugin(alias).
 
 internal fun VersionCatalog.version(alias: String): String = findVersion(alias).get().requiredVersion
 
-/** SDK levels shared by every Android module. */
+/**
+ * SDK levels shared by every Android module. compileSdk follows what current AndroidX requires;
+ * targetSdk follows the Play Store requirement and only moves deliberately.
+ */
 internal object Sdk {
-    const val COMPILE = 36
+    const val COMPILE = 37
     const val TARGET = 36
     const val MIN = 26
 }

@@ -3,7 +3,9 @@ package app.fuelwise.core.data.di
 import app.fuelwise.core.data.DataStoreDeviceIdProvider
 import app.fuelwise.core.data.DeviceIdProvider
 import app.fuelwise.core.data.repository.AssetRulesRepository
+import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.CategoryRepository
+import app.fuelwise.core.data.repository.DataStoreBackupSettingsRepository
 import app.fuelwise.core.data.repository.DataStoreUserDataRepository
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntitlementRepository
@@ -71,6 +73,9 @@ internal interface DataModule {
 
     @Binds
     fun attachmentStore(impl: TinkAttachmentStore): AttachmentStore
+
+    @Binds
+    fun backupSettingsRepository(impl: DataStoreBackupSettingsRepository): BackupSettingsRepository
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider

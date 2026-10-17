@@ -10,6 +10,7 @@
     <string name="welcome_trust_account">No account needed</string>
     <string name="welcome_trust_drive">Backed up to your own Google Drive</string>
     <string name="welcome_get_started">Get started</string>
+    <string name="welcome_restore">Restore a backup</string>
 
     <string name="history_title">Bring your history</string>
     <string name="history_sub">Optional. You can import later from Settings.</string>

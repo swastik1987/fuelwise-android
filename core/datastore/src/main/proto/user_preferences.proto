@@ -21,6 +21,38 @@ message UserPreferences {
   FeatureFlags feature_flags = 10;
   // Milestone keys already celebrated (PRD F-17: shown once).
   repeated string shown_milestones = 11;
+  // Drive backup (PRD F-14). Restores never overwrite this block: it describes this device's backups.
+  BackupSettings backup = 12;
+}
+
+message BackupSettings {
+  BackupFrequency frequency = 1;
+  bool wifi_only = 2;
+  bool charging_only = 3;
+  // Passphrase-derived key; the key itself is kept wrapped by the Android Keystore, never here.
+  bool encrypted = 4;
+  string account_email = 5;
+  int64 last_success_at = 6;
+  int64 last_size_bytes = 7;
+  BackupError last_error = 8;
+  int64 last_attempt_at = 9;
+}
+
+// Daily is the default (PRD F-14.3), so it is the zero value.
+enum BackupFrequency {
+  BACKUP_FREQUENCY_DAILY = 0;
+  BACKUP_FREQUENCY_AFTER_CHANGES = 1;
+  BACKUP_FREQUENCY_WEEKLY = 2;
+  BACKUP_FREQUENCY_MANUAL = 3;
+}
+
+enum BackupError {
+  BACKUP_ERROR_NONE = 0;
+  BACKUP_ERROR_SIGN_IN = 1;
+  BACKUP_ERROR_OFFLINE = 2;
+  BACKUP_ERROR_STORAGE_FULL = 3;
+  BACKUP_ERROR_KEY_MISSING = 4;
+  BACKUP_ERROR_UNKNOWN = 5;
 }
 
 enum ThemeMode {

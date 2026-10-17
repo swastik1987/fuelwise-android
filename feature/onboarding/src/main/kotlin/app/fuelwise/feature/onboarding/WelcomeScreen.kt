@@ -26,15 +26,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.fuelwise.core.designsystem.component.FwLogoMark
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
+import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 
 /**
- * Welcome (design.md screen 1): the promise and three trust lines. "Restore from Google Drive" joins this screen
- * with backup and restore (F-14, M7).
+ * Welcome (design.md screen 1): the promise, three trust lines, and a way back in for people restoring a backup
+ * (PRD F-14.7).
  */
 @Composable
-internal fun WelcomeScreen(onGetStarted: () -> Unit) {
+internal fun WelcomeScreen(onGetStarted: () -> Unit, onRestore: () -> Unit = {}) {
     Column(
         Modifier
             .fillMaxSize()
@@ -77,7 +78,12 @@ internal fun WelcomeScreen(onGetStarted: () -> Unit) {
         FwPrimaryButton(
             text = stringResource(R.string.welcome_get_started),
             onClick = onGetStarted,
-            modifier = Modifier.padding(horizontal = FwTheme.spacing.l, vertical = FwTheme.spacing.m),
+            modifier = Modifier.padding(horizontal = FwTheme.spacing.l).padding(top = FwTheme.spacing.m),
+        )
+        FwTextButton(
+            stringResource(R.string.welcome_restore),
+            onRestore,
+            Modifier.align(Alignment.CenterHorizontally).padding(bottom = FwTheme.spacing.s),
         )
     }
 }

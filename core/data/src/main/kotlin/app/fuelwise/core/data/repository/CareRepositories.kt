@@ -73,6 +73,12 @@ interface DocumentRepository {
     suspend fun removeAttachment(attachment: Attachment)
 
     suspend fun readAttachment(attachment: Attachment): ByteArray
+
+    /** Every live attachment, for encrypted backups (PRD F-14.4). */
+    suspend fun allAttachments(): List<Attachment>
+
+    /** Puts a restored file back into the vault under its row (the row itself comes with the database). */
+    suspend fun restoreAttachmentFile(attachment: Attachment, bytes: ByteArray)
 }
 
 interface RecurrenceRepository {
@@ -255,6 +261,12 @@ internal class OfflineDocumentRepository @Inject constructor(
 
     override suspend fun readAttachment(attachment: Attachment): ByteArray =
         store.read(attachment.id, attachment.storedName)
+
+    override suspend fun allAttachments(): List<Attachment> = dao.allAttachments().map { it.toModel() }
+
+    override suspend fun restoreAttachmentFile(attachment: Attachment, bytes: ByteArray) {
+        store.write(attachment.id, bytes)
+    }
 }
 
 /** The reminder preset a document's expiry maps to. */

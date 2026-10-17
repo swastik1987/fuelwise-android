@@ -3,6 +3,7 @@ package app.fuelwise.feature.garage.list
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.DeletedVehicle
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntryRepository
@@ -38,8 +39,12 @@ sealed interface GarageUiState {
         val remindersDue: Int = 0,
         val documentsExpiring: Int = 0,
         val fastagEstimate: Money? = null,
+        val backup: BackupHealth = BackupHealth.Off,
     ) : GarageUiState
 }
+
+/** The status dot on the Backup & sync row. */
+enum class BackupHealth { Ok, Error, Off }
 
 sealed interface GarageEvent {
     data class VehicleDeleted(val name: String, val token: DeletedVehicle) : GarageEvent
@@ -53,6 +58,7 @@ class GarageViewModel @Inject constructor(
     documents: DocumentRepository,
     fastag: FastagRepository,
     entries: EntryRepository,
+    backupSettings: BackupSettingsRepository,
     clock: Clock,
 ) : ViewModel() {
     val uiState: StateFlow<GarageUiState> = combine(
@@ -62,7 +68,8 @@ class GarageViewModel @Inject constructor(
         combine(fastag.observeAccounts(), fastag.observeRecharges(), entries.observeAllExpenses()) { a, r, e ->
             a.takeIf { it.isNotEmpty() }?.map { it.balance(r, e).estimate }?.sum()
         },
-    ) { all, reminders, docs, fastagTotal ->
+        backupSettings.settings,
+    ) { all, reminders, docs, fastagTotal, backup ->
         val soon = clock.millis() + EXPIRING_MS
         GarageUiState.Ready(
             active = all.filterNot { it.isArchived },
@@ -70,6 +77,11 @@ class GarageViewModel @Inject constructor(
             remindersDue = reminders.count { it.urgency == Urgency.Overdue || it.urgency == Urgency.Due },
             documentsExpiring = docs.count { d -> d.expiryDateUtcMs?.let { it <= soon } == true },
             fastagEstimate = fastagTotal,
+            backup = when {
+                backup.lastError != null -> BackupHealth.Error
+                backup.lastSuccessUtcMs != null -> BackupHealth.Ok
+                else -> BackupHealth.Off
+            },
         )
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), GarageUiState.Loading)

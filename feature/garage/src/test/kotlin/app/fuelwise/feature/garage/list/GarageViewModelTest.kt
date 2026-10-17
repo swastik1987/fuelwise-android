@@ -7,6 +7,7 @@ import app.fuelwise.core.model.Document
 import app.fuelwise.core.model.DocumentType
 import app.fuelwise.core.model.Reminder
 import app.fuelwise.core.model.ReminderKind
+import app.fuelwise.core.testing.FakeBackupSettingsRepository
 import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFastagRepository
@@ -66,6 +67,7 @@ class GarageViewModelTest {
         documents,
         FakeFastagRepository(),
         entries,
+        FakeBackupSettingsRepository(),
         clock,
     )
 

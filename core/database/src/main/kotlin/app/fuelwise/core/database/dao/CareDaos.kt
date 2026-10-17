@@ -89,6 +89,9 @@ interface DocumentDao {
     @Query("SELECT * FROM attachment WHERE id = :id AND deletedAt IS NULL")
     suspend fun attachment(id: String): AttachmentEntity?
 
+    @Query("SELECT * FROM attachment WHERE deletedAt IS NULL")
+    suspend fun allAttachments(): List<AttachmentEntity>
+
     @Upsert
     suspend fun upsertAttachment(attachment: AttachmentEntity)
 

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">Backup &amp; sync</string>
+    <string name="backup_back">Back</string>
+    <string name="backup_status_ok">Backed up %1$s</string>
+    <string name="backup_status_never">Not backed up yet</string>
+    <string name="backup_status_error">Last backup didn\'t finish</string>
+    <string name="backup_not_connected">Not connected to Google Drive</string>
+    <string name="backup_encrypted_tag">Encrypted</string>
+    <string name="backup_not_configured">Google Drive backup isn\'t set up in this build yet. You can still save a backup file to your phone below.</string>
+    <string name="backup_connect_body">Backups go to a hidden folder in your own Google Drive. No Fuelwise account, no server.</string>
+    <string name="backup_connect">Connect Google Drive</string>
+    <string name="backup_frequency">Back up</string>
+    <string name="frequency_after_changes">After changes</string>
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_manual">Manual</string>
+    <string name="backup_wifi_only">Wi-Fi only</string>
+    <string name="backup_charging">Only while charging</string>
+    <string name="backup_encrypt">Encrypt backups</string>
+    <string name="backup_encrypt_body">With a passphrase only you know. Needed to back up your documents and their photos.</string>
+    <string name="backup_now">Back up now</string>
+    <string name="backup_restore">Restore from Drive</string>
+    <string name="backup_file_section">Backup file</string>
+    <string name="backup_file_body">A copy you keep anywhere, without signing in. Document photos stay on this phone.</string>
+    <string name="backup_save_file">Save backup file</string>
+    <string name="backup_open_file">Restore from file</string>
+    <string name="backup_hidden_folder">Drive backups live in a hidden app folder: you won\'t see them in Drive, and other apps can\'t read them.</string>
+    <string name="backup_disconnect">Disconnect Google Drive</string>
+    <string name="backup_reconnect">Reconnect</string>
+    <string name="backup_try_again">Try again</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_choose">Choose a backup</string>
+    <string name="backup_none_found">No backups in this Google account yet.</string>
+    <string name="backup_disable_title">Turn off encryption?</string>
+    <string name="backup_disable_body">Future backups won\'t be encrypted, and your documents will stay on this phone only. Existing encrypted backups still need the passphrase.</string>
+    <string name="backup_disable_confirm">Turn off</string>
+    <string name="backup_done_toast">Backed up</string>
+    <string name="backup_exported_toast">Backup file saved</string>
+    <plurals name="backup_restored_toast">
+        <item quantity="one">Restored. %1$d entry is back.</item>
+        <item quantity="other">Restored. %1$d entries are back.</item>
+    </plurals>
+    <string name="passphrase_title">Set a backup passphrase</string>
+    <string name="passphrase_warning">If you forget this passphrase, your encrypted backups can\'t be recovered. Nobody can reset it, not even us.</string>
+    <string name="passphrase_first">Passphrase</string>
+    <string name="passphrase_second">Type it again</string>
+    <plurals name="passphrase_too_short">
+        <item quantity="one">Use at least %1$d character</item>
+        <item quantity="other">Use at least %1$d characters</item>
+    </plurals>
+    <string name="passphrase_mismatch">The two don\'t match</string>
+    <string name="passphrase_save">Encrypt my backups</string>
+    <string name="restore_title">Restore this backup?</string>
+    <string name="restore_body">It replaces the vehicles and entries on this phone. If anything goes wrong, nothing is changed.</string>
+    <string name="restore_confirm">Restore</string>
+    <string name="restore_passphrase_title">Enter the backup passphrase</string>
+    <string name="restore_wrong_passphrase">That passphrase doesn\'t open this backup</string>
+    <string name="busy_connecting">Connecting…</string>
+    <string name="busy_backing_up">Backing up…</string>
+    <string name="busy_listing">Looking for backups…</string>
+    <string name="busy_restoring">Restoring…</string>
+    <string name="busy_encrypting">Setting up encryption…</string>
+    <string name="busy_exporting">Saving the file…</string>
+    <string name="error_sign_in">Couldn\'t reach Google Drive. Reconnect to keep backing up.</string>
+    <string name="error_offline">No connection. The backup will retry when you\'re online.</string>
+    <string name="error_storage_full">Your Google Drive is full. Free up space and back up again.</string>
+    <string name="error_key_missing">The encryption key is missing on this phone. Turn encryption off and on again with your passphrase.</string>
+    <string name="error_unknown">Something went wrong. Nothing was changed.</string>
+    <string name="ago_now">just now</string>
+    <plurals name="ago_minutes">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+</resources>

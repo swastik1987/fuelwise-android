@@ -256,10 +256,11 @@ private fun ArchivedRow(vehicle: Vehicle, onClick: () -> Unit) {
 private const val UNDO_WINDOW_MS = 10_000L
 
 /** Where the Garage utility rows lead; the app shell wires them to their feature screens. */
-internal data class GarageLinks(
+data class GarageLinks(
     val onReminders: () -> Unit = {},
     val onDocuments: () -> Unit = {},
     val onFastag: () -> Unit = {},
+    val onBackup: () -> Unit = {},
 )
 
 /** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) (design.md screen 21). */
@@ -299,6 +300,16 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
                 stringResource(R.string.garage_fastag_est, IndianNumberFormat.rupeesWhole(it))
             },
             links.onFastag,
+        )
+        UtilityRow(
+            FwIcons.CloudDone,
+            stringResource(R.string.garage_backup),
+            when (state.backup) {
+                BackupHealth.Ok -> stringResource(R.string.garage_backup_ok)
+                BackupHealth.Error -> stringResource(R.string.garage_backup_error)
+                BackupHealth.Off -> stringResource(R.string.garage_backup_off)
+            },
+            links.onBackup,
         )
     }
 }

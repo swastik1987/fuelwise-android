@@ -1,5 +1,6 @@
 package app.fuelwise.core.testing
 
+import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FastagRepository
@@ -14,6 +15,7 @@ import app.fuelwise.core.domain.reminder.PresetRule
 import app.fuelwise.core.domain.reminder.ReminderRules
 import app.fuelwise.core.domain.reminder.nextAfterCompletion
 import app.fuelwise.core.model.Attachment
+import app.fuelwise.core.model.BackupSettings
 import app.fuelwise.core.model.Document
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.Expense
@@ -142,6 +144,10 @@ class FakeDocumentRepository(initial: List<Document> = emptyList()) : DocumentRe
     }
 
     override suspend fun readAttachment(attachment: Attachment): ByteArray = ByteArray(0)
+
+    override suspend fun allAttachments(): List<Attachment> = attachments.value
+
+    override suspend fun restoreAttachmentFile(attachment: Attachment, bytes: ByteArray) = Unit
 }
 
 class FakeFastagRepository : FastagRepository {
@@ -198,3 +204,21 @@ fun reminderStatuses(
     EvaluateReminders(clock),
     zone,
 )
+
+class FakeBackupSettingsRepository(initial: BackupSettings = BackupSettings()) : BackupSettingsRepository {
+    private val state = MutableStateFlow(initial)
+    val imported = mutableListOf<Map<String, Any?>>()
+
+    override val settings: Flow<BackupSettings> = state
+
+    override suspend fun update(transform: (BackupSettings) -> BackupSettings) = state.update(transform)
+
+    override suspend fun exportPreferences(): Map<String, Any> = mapOf(
+        "homeCityId" to "bengaluru",
+        "hideAmounts" to false,
+    )
+
+    override suspend fun importPreferences(values: Map<String, Any?>) {
+        imported += values
+    }
+}

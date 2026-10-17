@@ -494,7 +494,7 @@ FREE users can generate a text/CSV version of each.
 
 ---
 
-### F-14 Backup and sync (Google Drive) — FREE backup R1 · PRO multi-device sync R2
+### F-14 Backup and sync (Google Drive) — FREE backup R1 · PRO multi-device sync R2 ✅ built R1 scope (M7: Credential Manager + AuthorizationClient, Drive REST v3 app folder over OkHttp, gzip JSON snapshots with every table and tombstones, Argon2id + AES-256-GCM, content-addressed attachments with HMAC names, retention 10 + monthly, WorkManager schedules and constraints, local backup file. Restore is one Room transaction rather than a temp-file swap: same all-or-nothing result without restarting the app. "Export a visible copy to Drive" with drive.file is not built; multi-device sync is R2)
 
 - **F-14.1 Storage location:**
   - The user's own Google Drive, **appDataFolder** (scope `drive.appdata`, classified non-sensitive by Google → basic OAuth verification only, no security assessment).
@@ -813,6 +813,8 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | SMS / call log / notification listener | **Never** |
 | `SYSTEM_ALERT_WINDOW` | **Never** |
 | Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. Brand verification only. |
+| Network endpoints (M7) | `www.googleapis.com` Drive v3 only (`/drive/v3/files`, `/upload/drive/v3/files`), with the user's own token, app folder only. No other user-data endpoint. |
+| New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |
 | Target audience | 18+ (driving); not designed for children |
 | Store listing | No competitor names in title or short description. "No ads. Your data stays with you." |

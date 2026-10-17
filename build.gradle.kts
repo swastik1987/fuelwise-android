@@ -12,4 +12,5 @@ plugins {
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.room) apply false
     alias(libs.plugins.protobuf) apply false
+    alias(libs.plugins.secrets) apply false
 }

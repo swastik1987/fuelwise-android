@@ -24,20 +24,8 @@ data class VehicleDetailRoute(val vehicleId: String)
  */
 const val PENDING_DELETE_VEHICLE_ID = "pendingDeleteVehicleId"
 
-fun NavGraphBuilder.garageScreen(
-    onOpenVehicle: (String) -> Unit,
-    onAddVehicle: () -> Unit,
-    onReminders: () -> Unit,
-    onDocuments: () -> Unit,
-    onFastag: () -> Unit,
-) {
-    composable<GarageRoute> {
-        GarageScreen(
-            onOpenVehicle = onOpenVehicle,
-            onAddVehicle = onAddVehicle,
-            links = GarageLinks(onReminders, onDocuments, onFastag),
-        )
-    }
+fun NavGraphBuilder.garageScreen(onOpenVehicle: (String) -> Unit, onAddVehicle: () -> Unit, links: GarageLinks) {
+    composable<GarageRoute> { GarageScreen(onOpenVehicle = onOpenVehicle, onAddVehicle = onAddVehicle, links = links) }
 }
 
 fun NavGraphBuilder.vehicleEditorScreen(onBack: () -> Unit, onSaved: (vehicleId: String, onboarding: Boolean) -> Unit) {

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">बैकअप और सिंक</string>
+    <string name="backup_back">वापस</string>
+    <string name="backup_status_ok">बैकअप हुआ %1$s</string>
+    <string name="backup_status_never">अभी बैकअप नहीं हुआ</string>
+    <string name="backup_status_error">पिछला बैकअप पूरा नहीं हुआ</string>
+    <string name="backup_not_connected">Google Drive से नहीं जुड़ा</string>
+    <string name="backup_encrypted_tag">एन्क्रिप्टेड</string>
+    <string name="backup_not_configured">इस बिल्ड में Google Drive बैकअप अभी सेट नहीं है। नीचे से बैकअप फ़ाइल फ़ोन में सेव कर सकते हैं।</string>
+    <string name="backup_connect_body">बैकअप आपके अपने Google Drive के एक छिपे फ़ोल्डर में जाते हैं। न Fuelwise अकाउंट, न सर्वर।</string>
+    <string name="backup_connect">Google Drive जोड़ें</string>
+    <string name="backup_frequency">बैकअप</string>
+    <string name="frequency_after_changes">बदलाव के बाद</string>
+    <string name="frequency_daily">रोज़</string>
+    <string name="frequency_weekly">हर हफ़्ते</string>
+    <string name="frequency_manual">खुद से</string>
+    <string name="backup_wifi_only">सिर्फ़ Wi-Fi पर</string>
+    <string name="backup_charging">सिर्फ़ चार्जिंग के दौरान</string>
+    <string name="backup_encrypt">बैकअप एन्क्रिप्ट करें</string>
+    <string name="backup_encrypt_body">ऐसे पासफ़्रेज़ से जो सिर्फ़ आप जानते हैं। कागज़ात और उनकी फ़ोटो के बैकअप के लिए ज़रूरी।</string>
+    <string name="backup_now">अभी बैकअप लें</string>
+    <string name="backup_restore">Drive से वापस लाएँ</string>
+    <string name="backup_file_section">बैकअप फ़ाइल</string>
+    <string name="backup_file_body">एक कॉपी जो आप कहीं भी रख सकते हैं, बिना साइन-इन। कागज़ों की फ़ोटो इसी फ़ोन पर रहती हैं।</string>
+    <string name="backup_save_file">बैकअप फ़ाइल सेव करें</string>
+    <string name="backup_open_file">फ़ाइल से वापस लाएँ</string>
+    <string name="backup_hidden_folder">Drive बैकअप एक छिपे ऐप फ़ोल्डर में रहते हैं: ये Drive में नहीं दिखते और दूसरे ऐप इन्हें नहीं पढ़ सकते।</string>
+    <string name="backup_disconnect">Google Drive हटाएँ</string>
+    <string name="backup_reconnect">फिर से जोड़ें</string>
+    <string name="backup_try_again">फिर कोशिश करें</string>
+    <string name="backup_cancel">रद्द करें</string>
+    <string name="backup_choose">बैकअप चुनें</string>
+    <string name="backup_none_found">इस Google अकाउंट में अभी कोई बैकअप नहीं।</string>
+    <string name="backup_disable_title">एन्क्रिप्शन बंद करें?</string>
+    <string name="backup_disable_body">आगे के बैकअप एन्क्रिप्ट नहीं होंगे, और आपके कागज़ात सिर्फ़ इसी फ़ोन पर रहेंगे। पुराने एन्क्रिप्टेड बैकअप के लिए पासफ़्रेज़ तब भी चाहिए।</string>
+    <string name="backup_disable_confirm">बंद करें</string>
+    <string name="backup_done_toast">बैकअप हो गया</string>
+    <string name="backup_exported_toast">बैकअप फ़ाइल सेव हो गई</string>
+    <plurals name="backup_restored_toast">
+        <item quantity="one">वापस आ गया। %1$d एंट्री लौटी।</item>
+        <item quantity="other">वापस आ गया। %1$d एंट्री लौटीं।</item>
+    </plurals>
+    <string name="passphrase_title">बैकअप पासफ़्रेज़ सेट करें</string>
+    <string name="passphrase_warning">यह पासफ़्रेज़ भूल गए तो एन्क्रिप्टेड बैकअप वापस नहीं आ सकते। इसे कोई रीसेट नहीं कर सकता, हम भी नहीं।</string>
+    <string name="passphrase_first">पासफ़्रेज़</string>
+    <string name="passphrase_second">फिर से लिखें</string>
+    <plurals name="passphrase_too_short">
+        <item quantity="one">कम से कम %1$d अक्षर रखें</item>
+        <item quantity="other">कम से कम %1$d अक्षर रखें</item>
+    </plurals>
+    <string name="passphrase_mismatch">दोनों मेल नहीं खाते</string>
+    <string name="passphrase_save">मेरे बैकअप एन्क्रिप्ट करें</string>
+    <string name="restore_title">यह बैकअप वापस लाएँ?</string>
+    <string name="restore_body">इससे इस फ़ोन की गाड़ियाँ और एंट्री बदल जाएँगी। कुछ गड़बड़ हुई तो कुछ नहीं बदलेगा।</string>
+    <string name="restore_confirm">वापस लाएँ</string>
+    <string name="restore_passphrase_title">बैकअप का पासफ़्रेज़ डालें</string>
+    <string name="restore_wrong_passphrase">इस पासफ़्रेज़ से यह बैकअप नहीं खुलता</string>
+    <string name="busy_connecting">जुड़ रहा है…</string>
+    <string name="busy_backing_up">बैकअप हो रहा है…</string>
+    <string name="busy_listing">बैकअप ढूँढ रहे हैं…</string>
+    <string name="busy_restoring">वापस ला रहे हैं…</string>
+    <string name="busy_encrypting">एन्क्रिप्शन सेट हो रहा है…</string>
+    <string name="busy_exporting">फ़ाइल सेव हो रही है…</string>
+    <string name="error_sign_in">Google Drive तक नहीं पहुँच पाए। बैकअप जारी रखने के लिए फिर से जोड़ें।</string>
+    <string name="error_offline">इंटरनेट नहीं है। ऑनलाइन होते ही बैकअप फिर कोशिश करेगा।</string>
+    <string name="error_storage_full">आपका Google Drive भर गया है। जगह खाली करके फिर बैकअप लें।</string>
+    <string name="error_key_missing">इस फ़ोन पर एन्क्रिप्शन की चाबी नहीं है। अपने पासफ़्रेज़ से एन्क्रिप्शन बंद करके फिर चालू करें।</string>
+    <string name="error_unknown">कुछ गड़बड़ हुई। कुछ नहीं बदला।</string>
+    <string name="ago_now">अभी</string>
+    <plurals name="ago_minutes">
+        <item quantity="one">%1$d मिनट पहले</item>
+        <item quantity="other">%1$d मिनट पहले</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="one">%1$d घंटे पहले</item>
+        <item quantity="other">%1$d घंटे पहले</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
+    </plurals>
+</resources>

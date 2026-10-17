@@ -94,7 +94,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - `core:notifications` channels; `POST_NOTIFICATIONS` asked when the first reminder is created.
 - Documents vault with Tink AEAD + Keystore, photo picker, quick view with DigiLocker/mParivahan note, auto-reminder on expiry.
 
-### M7 — Backup & restore, F-14 (R1 scope) (≈2 weeks) — needs L1
+### M7 — Backup & restore, F-14 (R1 scope) (≈2 weeks) — needs L1 ✅ done (code complete; Drive sign-in needs the L1 web client ID in local.properties to work on a device; drive.file visible export deferred)
 - Credential Manager sign-in + `AuthorizationClient` for `drive.appdata`; snapshot export/import (schema-versioned, gz), content-addressed attachments, retention (10 + monthly), WorkManager schedules + constraints.
 - Encrypted backups (Argon2id + AES-256-GCM), restore to temp DB → validate → swap, status UI with error fixes, local SAF backup file.
 

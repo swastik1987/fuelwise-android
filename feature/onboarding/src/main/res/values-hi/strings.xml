@@ -9,6 +9,7 @@
     <string name="welcome_trust_account">अकाउंट की ज़रूरत नहीं</string>
     <string name="welcome_trust_drive">बैकअप आपकी अपनी Google Drive में</string>
     <string name="welcome_get_started">शुरू करें</string>
+    <string name="welcome_restore">बैकअप से वापस लाएँ</string>
 
     <string name="history_title">पुराना हिसाब लाएँ</string>
     <string name="history_sub">ज़रूरी नहीं। बाद में सेटिंग्स से भी इम्पोर्ट कर सकते हैं।</string>

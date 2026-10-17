@@ -24,6 +24,8 @@ import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
+import app.fuelwise.feature.backup.BackupRoute
+import app.fuelwise.feature.backup.backupScreen
 import app.fuelwise.feature.documents.DocumentEditorRoute
 import app.fuelwise.feature.documents.DocumentViewRoute
 import app.fuelwise.feature.documents.DocumentsRoute
@@ -38,6 +40,7 @@ import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
 import app.fuelwise.feature.garage.VehicleDetailRoute
 import app.fuelwise.feature.garage.VehicleEditorRoute
 import app.fuelwise.feature.garage.garageScreen
+import app.fuelwise.feature.garage.list.GarageLinks
 import app.fuelwise.feature.garage.vehicleDetailScreen
 import app.fuelwise.feature.garage.vehicleEditorScreen
 import app.fuelwise.feature.home.HomeActions
@@ -116,7 +119,10 @@ fun FuelwiseApp(
             startDestination = if (startWithOnboarding) WelcomeRoute else HomeRoute,
             modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
-            welcomeScreen(onGetStarted = { navController.navigate(VehicleEditorRoute(onboarding = true)) })
+            welcomeScreen(
+                onGetStarted = { navController.navigate(VehicleEditorRoute(onboarding = true)) },
+                onRestore = { navController.navigate(BackupRoute) },
+            )
             historyScreen(onBack = navController::popBackStack, onContinue = { navController.navigate(PrivacyRoute) })
             privacyScreen(
                 onBack = navController::popBackStack,
@@ -156,9 +162,12 @@ fun FuelwiseApp(
             garageScreen(
                 onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
                 onAddVehicle = openVehicleEditor,
-                onReminders = { navController.navigate(RemindersRoute) },
-                onDocuments = { navController.navigate(DocumentsRoute) },
-                onFastag = { navController.navigate(FastagRoute) },
+                links = GarageLinks(
+                    onReminders = { navController.navigate(RemindersRoute) },
+                    onDocuments = { navController.navigate(DocumentsRoute) },
+                    onFastag = { navController.navigate(FastagRoute) },
+                    onBackup = { navController.navigate(BackupRoute) },
+                ),
             )
             remindersScreen(
                 onBack = navController::popBackStack,
@@ -175,6 +184,11 @@ fun FuelwiseApp(
             documentViewScreen(
                 onBack = navController::popBackStack,
                 onEdit = { id -> navController.navigate(DocumentEditorRoute(documentId = id)) },
+            )
+            backupScreen(
+                onBack = navController::popBackStack,
+                // Restored data replaces everything, onboarding included: start over on Home.
+                onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             fastagScreen(
                 onBack = navController::popBackStack,

@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import app.fuelwise.core.designsystem.theme.FwTheme
 
@@ -50,6 +51,8 @@ fun FwTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     textStyle: TextStyle = FwTheme.type.body,
     singleLine: Boolean = true,
+    /** E.g. [androidx.compose.ui.text.input.PasswordVisualTransformation] for passphrases. */
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     val colors = FwTheme.colors
     val interaction = remember { MutableInteractionSource() }
@@ -64,6 +67,7 @@ fun FwTextField(
             value = value,
             onValueChange = onValueChange,
             singleLine = singleLine,
+            visualTransformation = visualTransformation,
             textStyle = textStyle.copy(color = colors.ink),
             cursorBrush = SolidColor(colors.ink),
             interactionSource = interaction,

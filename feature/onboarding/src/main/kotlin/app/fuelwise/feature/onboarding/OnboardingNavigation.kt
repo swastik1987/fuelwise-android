@@ -14,8 +14,8 @@ data object HistoryRoute
 @Serializable
 data object PrivacyRoute
 
-fun NavGraphBuilder.welcomeScreen(onGetStarted: () -> Unit) {
-    composable<WelcomeRoute> { WelcomeScreen(onGetStarted = onGetStarted) }
+fun NavGraphBuilder.welcomeScreen(onGetStarted: () -> Unit, onRestore: () -> Unit) {
+    composable<WelcomeRoute> { WelcomeScreen(onGetStarted = onGetStarted, onRestore = onRestore) }
 }
 
 fun NavGraphBuilder.historyScreen(onBack: () -> Unit, onContinue: () -> Unit) {

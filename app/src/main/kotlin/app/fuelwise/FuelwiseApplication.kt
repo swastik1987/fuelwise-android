@@ -4,9 +4,12 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import app.fuelwise.core.notifications.Notifier
+import app.fuelwise.di.ApplicationScope
+import app.fuelwise.sync.drive.BackupScheduler
 import app.fuelwise.work.WorkScheduler
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 
 @HiltAndroidApp
 class FuelwiseApplication :
@@ -18,6 +21,12 @@ class FuelwiseApplication :
 
     @Inject lateinit var workScheduler: WorkScheduler
 
+    @Inject lateinit var backupScheduler: BackupScheduler
+
+    @Inject
+    @ApplicationScope
+    lateinit var appScope: CoroutineScope
+
     // WorkManager starts on demand with Hilt's factory; the default initializer is removed in the manifest.
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
@@ -26,5 +35,6 @@ class FuelwiseApplication :
         super.onCreate()
         notifier.createChannels()
         workScheduler.schedule()
+        backupScheduler.start(appScope)
     }
 }

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.fuelwise.android.compose)
     alias(libs.plugins.fuelwise.hilt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.secrets)
 }
 
 android {
@@ -29,6 +30,16 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+// Keys come from local.properties (git-ignored); local.defaults.properties keeps CI building with empty values.
+secrets {
+    propertiesFileName = "local.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 dependencies {
@@ -37,6 +48,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.data)
     implementation(projects.core.notifications)
+    implementation(projects.sync.drive)
     implementation(projects.feature.home)
     implementation(projects.feature.logbook)
     implementation(projects.feature.insights)
@@ -47,6 +59,7 @@ dependencies {
     implementation(projects.feature.reminders)
     implementation(projects.feature.documents)
     implementation(projects.feature.fastag)
+    implementation(projects.feature.backup)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

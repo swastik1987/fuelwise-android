@@ -5,4 +5,8 @@
     <string name="nav_insights">इनसाइट्स</string>
     <string name="nav_garage">गैराज</string>
     <string name="nav_add_entry">फ़्यूल जोड़ें</string>
+    <string name="nav_quick_add">जोड़ने के और तरीके</string>
+    <string name="quick_fuel">फ़्यूल या चार्जिंग</string>
+    <string name="quick_expense">खर्च</string>
+    <string name="quick_toll">टोल</string>
 </resources>

@@ -95,4 +95,46 @@ object FwIcons {
     @DrawableRes val Lock = R.drawable.fw_ic_lock
 
     @DrawableRes val CheckCircleFilled = R.drawable.fw_ic_check_circle_filled
+
+    @DrawableRes val Schedule = R.drawable.fw_ic_schedule
+
+    @DrawableRes val Camera = R.drawable.fw_ic_photo_camera
+
+    @DrawableRes val Repair = R.drawable.fw_ic_handyman
+
+    @DrawableRes val Tyres = R.drawable.fw_ic_tire_repair
+
+    @DrawableRes val BatteryFull = R.drawable.fw_ic_battery_full
+
+    @DrawableRes val Shield = R.drawable.fw_ic_shield
+
+    @DrawableRes val Eco = R.drawable.fw_ic_eco
+
+    @DrawableRes val Parking = R.drawable.fw_ic_local_parking
+
+    @DrawableRes val Cash = R.drawable.fw_ic_payments
+
+    @DrawableRes val CarWash = R.drawable.fw_ic_local_car_wash
+
+    @DrawableRes val ShoppingBag = R.drawable.fw_ic_shopping_bag
+
+    @DrawableRes val Gavel = R.drawable.fw_ic_gavel
+
+    @DrawableRes val Bank = R.drawable.fw_ic_account_balance
+
+    @DrawableRes val Document = R.drawable.fw_ic_description
+
+    @DrawableRes val CreditCard = R.drawable.fw_ic_credit_card
+
+    @DrawableRes val Sell = R.drawable.fw_ic_sell
+
+    @DrawableRes val Verified = R.drawable.fw_ic_verified_user
+
+    @DrawableRes val MoreHoriz = R.drawable.fw_ic_more_horiz
+
+    @DrawableRes val HomeCharger = R.drawable.fw_ic_home
+
+    @DrawableRes val ManualTrip = R.drawable.fw_ic_add_road
+
+    @DrawableRes val Speed = R.drawable.fw_ic_speed
 }

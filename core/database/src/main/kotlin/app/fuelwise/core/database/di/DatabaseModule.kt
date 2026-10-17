@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.database.dao.CategoryDao
+import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.VehicleDao
+import app.fuelwise.core.database.migration.Migrations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,7 +22,8 @@ object DatabaseModule {
     fun database(@ApplicationContext context: Context): FuelwiseDatabase =
         Room.databaseBuilder(context, FuelwiseDatabase::class.java, FuelwiseDatabase.NAME)
             .addCallback(FuelwiseDatabase.SEED_CALLBACK)
-            // Migrations are added here, one per version step. No destructive fallback, ever.
+            // One explicit migration per version step. No destructive fallback, ever.
+            .apply { Migrations.ALL.forEach { addMigrations(it) } }
             .build()
 
     @Provides
@@ -28,4 +31,7 @@ object DatabaseModule {
 
     @Provides
     fun categoryDao(db: FuelwiseDatabase): CategoryDao = db.categoryDao()
+
+    @Provides
+    fun entryDao(db: FuelwiseDatabase): EntryDao = db.entryDao()
 }

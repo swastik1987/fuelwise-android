@@ -1,6 +1,7 @@
 package app.fuelwise.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,11 +19,11 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -45,6 +46,8 @@ fun FwBottomBar(
     onFabClick: () -> Unit,
     fabContentDescription: String,
     modifier: Modifier = Modifier,
+    onFabLongClick: (() -> Unit)? = null,
+    fabLongClickLabel: String? = null,
 ) {
     require(items.size == NAV_ITEMS) { "Bottom bar expects $NAV_ITEMS tabs around the FAB" }
     val colors = FwTheme.colors
@@ -56,7 +59,7 @@ fun FwBottomBar(
         ) {
             items.take(2).forEachIndexed { i, item -> NavTab(item, i == selectedIndex) { onSelect(i) } }
             Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
-                Fab(onFabClick, fabContentDescription)
+                Fab(onFabClick, onFabLongClick, fabContentDescription, fabLongClickLabel)
             }
             items.drop(2).forEachIndexed { i, item -> NavTab(item, i + 2 == selectedIndex) { onSelect(i + 2) } }
         }
@@ -93,32 +96,37 @@ private fun androidx.compose.foundation.layout.RowScope.NavTab(
     }
 }
 
+/** "+" FAB: tap adds a fill-up; long-press opens the quick menu (docs/design.md §5). */
 @Composable
-private fun Fab(onClick: () -> Unit, contentDescription: String) {
+private fun Fab(onClick: () -> Unit, onLongClick: (() -> Unit)?, contentDescription: String, longClickLabel: String?) {
     val colors = FwTheme.colors
     // A 6 dp `bg` ring around the 64 dp FAB cuts it out of the bar, like a notch.
     val ring = RoundedCornerShape(26.dp)
-    Surface(
-        onClick = onClick,
+    Box(
         modifier = Modifier
             .offset(y = (-26).dp)
             .size(FwTheme.size.fab + 12.dp)
-            .shadow(24.dp, ring, ambientColor = colors.ink, spotColor = colors.ink.copy(alpha = 0.08f)),
-        shape = ring,
-        color = colors.bg,
+            .shadow(24.dp, ring, ambientColor = colors.ink, spotColor = colors.ink.copy(alpha = 0.08f))
+            .background(colors.bg, ring)
+            .clip(ring)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+                onLongClickLabel = longClickLabel,
+                role = Role.Button,
+            ),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Box(
-                Modifier.size(FwTheme.size.fab).background(colors.accent, FwTheme.radius.fab),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painterResource(FwIcons.Add),
-                    contentDescription = contentDescription,
-                    tint = colors.onAccent,
-                    modifier = Modifier.size(32.dp),
-                )
-            }
+        Box(
+            Modifier.size(FwTheme.size.fab).background(colors.accent, FwTheme.radius.fab),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painterResource(FwIcons.Add),
+                contentDescription = contentDescription,
+                tint = colors.onAccent,
+                modifier = Modifier.size(32.dp),
+            )
         }
     }
 }

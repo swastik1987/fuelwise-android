@@ -72,7 +72,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Vehicle create/edit/archive/delete-with-name-confirm + 10 s undo; vehicle switcher.
 - Onboarding: Welcome, Add first vehicle (incl. bi-fuel/EV reveals), Bring history (import rows stubbed until M10), Privacy choices.
 
-### M3 — Logging loop, F-02, F-04, F-10.1–10.3 (≈2.5 weeks)
+### M3 — Logging loop, F-02, F-04, F-10.2 (≈2.5 weeks) ✅ done (recurring expenses, FASTag accounts/recharges/balance (F-10.1, F-10.3) and service line items moved to M6; photos and trip-meter odometer mode deferred)
 - Custom numeric keypad, price triangle, odometer roller input with prediction chip, full-tank toggle.
 - Add fill-up sheet (screen 6) with validation guards (odo order, short-fill, anomaly chip), smart defaults, "More" section; post-save reward (screen 7).
 - Add EV charge (screen 8), Add expense with categories, recurring, line items (screen 10), Add toll / FASTag + recharges + est. balance (screens 11, 26).

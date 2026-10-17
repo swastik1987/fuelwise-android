@@ -10,6 +10,9 @@ object NumberInput {
         return cleaned.toDoubleOrNull()
     }
 
+    /** 42318.0 → "42318", 12.5 → "12.5": seeds an editable field from a stored number without a trailing ".0". */
+    fun plain(value: Double): String = java.math.BigDecimal.valueOf(value).stripTrailingZeros().toPlainString()
+
     /** Keeps only what a decimal field may contain while typing, so stray characters never reach state. */
     fun sanitize(text: String, maxDecimals: Int = 2): String {
         val kept = StringBuilder()

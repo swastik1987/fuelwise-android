@@ -48,13 +48,49 @@ interface VehicleDao {
     suspend fun softDelete(id: String, at: Long, deviceId: String) {
         tombstoneVehicle(id, at, deviceId)
         tombstoneTanks(id, at, deviceId)
+        tombstoneVehicleRefuels(id, at, deviceId)
+        tombstoneVehicleExpenses(id, at, deviceId)
     }
 
     @Transaction
     suspend fun restore(id: String, deletedAt: Long, at: Long, deviceId: String) {
         restoreVehicle(id, deletedAt, at, deviceId)
         restoreTanks(id, deletedAt, at, deviceId)
+        restoreVehicleRefuels(id, deletedAt, at, deviceId)
+        restoreVehicleExpenses(id, deletedAt, at, deviceId)
     }
+
+    @Query(
+        """
+        UPDATE refuel SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE vehicleId = :id AND deletedAt IS NULL
+        """,
+    )
+    suspend fun tombstoneVehicleRefuels(id: String, at: Long, deviceId: String)
+
+    @Query(
+        """
+        UPDATE expense SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE vehicleId = :id AND deletedAt IS NULL
+        """,
+    )
+    suspend fun tombstoneVehicleExpenses(id: String, at: Long, deviceId: String)
+
+    @Query(
+        """
+        UPDATE refuel SET deletedAt = NULL, updatedAt = :at, deviceId = :deviceId
+        WHERE vehicleId = :id AND deletedAt = :deletedAt
+        """,
+    )
+    suspend fun restoreVehicleRefuels(id: String, deletedAt: Long, at: Long, deviceId: String)
+
+    @Query(
+        """
+        UPDATE expense SET deletedAt = NULL, updatedAt = :at, deviceId = :deviceId
+        WHERE vehicleId = :id AND deletedAt = :deletedAt
+        """,
+    )
+    suspend fun restoreVehicleExpenses(id: String, deletedAt: Long, at: Long, deviceId: String)
 
     @Query(
         """

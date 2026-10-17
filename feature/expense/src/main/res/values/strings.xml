@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="expense_title">Add expense</string>
+    <string name="expense_title_edit">Edit expense</string>
+    <string name="expense_title_toll">Add toll</string>
+    <string name="expense_title_edit_toll">Edit toll</string>
+    <string name="expense_close">Close</string>
+    <string name="expense_category">Category</string>
+    <string name="expense_error_category">Pick a category.</string>
+    <string name="expense_amount">Amount ₹</string>
+    <string name="expense_error_amount">Enter the amount.</string>
+    <string name="expense_odometer">Odometer</string>
+    <string name="expense_odometer_optional">Odometer (optional)</string>
+    <string name="expense_payment">Payment</string>
+    <string name="expense_notes">Notes</string>
+    <string name="expense_plaza">Toll plaza</string>
+    <string name="expense_plaza_placeholder">e.g. Attibele</string>
+    <string name="expense_fastag">FASTag</string>
+    <string name="expense_cash">Cash</string>
+    <string name="expense_save">Save</string>
+    <string name="expense_typing">Typing · %1$s</string>
+    <string name="expense_next">Next field</string>
+    <string name="expense_backspace">Delete</string>
+</resources>

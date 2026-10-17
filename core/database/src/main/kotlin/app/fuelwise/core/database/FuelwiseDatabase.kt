@@ -4,8 +4,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.fuelwise.core.database.dao.CategoryDao
+import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.model.CategoryEntity
+import app.fuelwise.core.database.model.ExpenseEntity
+import app.fuelwise.core.database.model.RefuelEntity
 import app.fuelwise.core.database.model.TankEntity
 import app.fuelwise.core.database.model.VehicleEntity
 
@@ -14,14 +17,22 @@ import app.fuelwise.core.database.model.VehicleEntity
  * schema JSON committed under core/database/schemas (CLAUDE.md rule 9). Never use destructive fallback.
  */
 @Database(
-    entities = [VehicleEntity::class, TankEntity::class, CategoryEntity::class],
-    version = 1,
+    entities = [
+        VehicleEntity::class,
+        TankEntity::class,
+        CategoryEntity::class,
+        RefuelEntity::class,
+        ExpenseEntity::class,
+    ],
+    version = 2,
     exportSchema = true,
 )
 abstract class FuelwiseDatabase : RoomDatabase() {
     abstract fun vehicleDao(): VehicleDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun entryDao(): EntryDao
 
     companion object {
         const val NAME = "fuelwise.db"

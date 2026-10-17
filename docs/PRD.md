@@ -163,7 +163,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-02 Refuel and charge log — FREE · R1
 
-**F-02.1 Fill-up entry fields:**
+**F-02.1 Fill-up entry fields:** ✅ built (photos and GPS location not yet)
 - Vehicle, tank (bi-fuel only), date-time (default now)
 - Odometer
 - Quantity, price/unit and total (the **price triangle**)
@@ -171,19 +171,19 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Missed previous fill-up? (hidden under "More")
 - Fuel grade, station name/brand, payment method (UPI/card/cash/FASTag-wallet/fleet card), discount (₹ or %), location (auto, editable), notes, attachments (receipt/meter photos)
 
-**F-02.2 Price triangle.** The user enters any two of {quantity, price/unit, total}; the third is computed live.
+**F-02.2 Price triangle.** ✅ built (discount in ₹; % option not yet) The user enters any two of {quantity, price/unit, total}; the third is computed live.
 - Last-edited two fields are "locked"; the third shows as computed (lighter text, "=" prefix).
 - Rounding: quantity to 2 dp, price to 2 dp, total to 2 dp. Display ₹ with lakh grouping.
 - Discount reduces **amount paid**, not price/unit. Both "pump price" and "paid" are stored.
 
-**F-02.3 Smart defaults.**
+**F-02.3 Smart defaults.** ✅ built (city price waits for F-09; station auto-detect for F-21.1)
 - Price/unit = last price paid for that tank's grade. If a city price is available (F-09) and newer, use it and tag the source.
 - Odometer field pre-filled with the **predicted** odometer (last odo + avg km/day × days since). Shown as a placeholder hint, not a value. The user must confirm or type it.
 - Station = auto-detected from the current location when the sheet opens (F-21.1), if location permission is granted.
 
-**F-02.4 Odometer input modes.** "Odometer" (default) or "Trip meter since last fill" (converted to odometer). Decimal allowed.
+**F-02.4 Odometer input modes.** (not yet: odometer mode only) "Odometer" (default) or "Trip meter since last fill" (converted to odometer). Decimal allowed.
 
-**F-02.5 EV charge session fields:**
+**F-02.5 EV charge session fields:** ✅ built (home tariff setting arrives with Settings, M11; the last tariff per charger type is used meanwhile)
 - Date-time, odometer
 - Energy (kWh billed/metered), cost (₹) or tariff (₹/kWh), price triangle on kWh
 - Start SoC %, end SoC %
@@ -191,12 +191,12 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Duration (optional), location, notes, attachments
 - Home charging tariff stored in settings (₹/kWh) so the cost auto-fills.
 
-**F-02.6 Validation and guards (new, India-relevant):**
+**F-02.6 Validation and guards (new, India-relevant):** ✅ built
 - Odometer must be greater than the previous entry's odometer **by date order**. If not, show an inline error with the conflicting entry. Allow override for back-dated entries; re-sort on save.
 - **Short-fill guard:** if quantity > tank capacity × 1.03, warn "That's more than your tank holds (45 L). Check the pump reading or your tank size."
 - **Anomaly flag:** on a full fill, if the computed consumption deviates more than 25% from the rolling average of the last 5 valid intervals, show a soft info chip ("Unusual — tap to review"). It never blocks saving.
 
-**F-02.7 Post-save reward.** After saving a full fill that closes an interval, show a toast/sheet: "This tank: **16.8 km/L**, ▲ 4% vs your average. ₹5.92/km." Hold for 3 s, swipe to dismiss.
+**F-02.7 Post-save reward.** ✅ built (city-price delta waits for F-09) After saving a full fill that closes an interval, show a toast/sheet: "This tank: **16.8 km/L**, ▲ 4% vs your average. ₹5.92/km." Hold for 3 s, swipe to dismiss.
 
 **AC**
 - From the Home screen, a returning user can save a fill-up with 3 inputs (odometer, total, quantity or price) and 3 taps beyond typing.
@@ -264,15 +264,15 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 ### F-04 Expenses — FREE · R1
 
-**F-04.1 Expense entry fields:** vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
+**F-04.1 Expense entry fields:** ✅ built (attachments and trip link not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
 
-**F-04.2 Categories.** System presets (renameable, hideable, not deletable if used):
+**F-04.2 Categories.** ✅ presets built (custom categories, rename and hide not yet) System presets (renameable, hideable, not deletable if used):
 - Service, Repair, Tyres, Battery, Insurance, PUC, Parking, Toll (FASTag), Toll (cash), Wash/Detailing, Accessories
 - Fine/Challan, Road tax, Registration/RTO, Loan EMI, Purchase, Extended warranty, Other
 
 Users can add custom categories (name, icon, colour).
 
-**F-04.3 Recurring expenses.** Repeats every N days/weeks/months/years (e.g., EMI, parking pass). Auto-creates entries on the due date, marked "auto" until the user confirms (one tap).
+**F-04.3 Recurring expenses.** (moved to M6 with WorkManager) Repeats every N days/weeks/months/years (e.g., EMI, parking pass). Auto-creates entries on the due date, marked "auto" until the user confirms (one tap).
 
 **F-04.4 Service line items.** An optional itemised breakdown for service/repair (part/labour, qty, amount), so "what did the last service include?" is answerable.
 
@@ -406,7 +406,7 @@ Users can add custom categories (name, icon, colour).
 ### F-10 FASTag and tolls — FREE · R1
 
 - **F-10.1 FASTag account per vehicle (optional):** issuer bank and tag ID (last 4 only).
-- **F-10.2 Toll entry:** expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
+- **F-10.2 Toll entry:** ✅ built (trip link not yet) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
 - **F-10.3 Recharges:** logged separately. They are transfers, not vehicle expenses, so they're excluded from cost/km. **Estimated balance** = Σ recharges − Σ FASTag tolls since the user's "balance anchor" (the user enters the current balance once). Labelled "est." with low-balance reminder (threshold user-set, default ₹300).
 - **F-10.4 Share-to-app parser:**
   - The app registers as a share target for `text/plain`.

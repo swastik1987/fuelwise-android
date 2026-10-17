@@ -1,0 +1,57 @@
+package app.fuelwise.core.database.model
+
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+/** PRD §7 `refuel`: fill-ups and EV charge sessions. Money in paise; quantity in the tank's canonical unit. */
+@Entity(tableName = "refuel", indices = [Index("vehicleId", "dateTime"), Index("tankId")])
+data class RefuelEntity(
+    @PrimaryKey val id: String,
+    val vehicleId: String,
+    val tankId: String,
+    val dateTime: Long,
+    val zoneId: String,
+    val odometerKm: Double,
+    val quantity: Double,
+    val unitPricePaise: Long,
+    val totalPaise: Long,
+    val discountPaise: Long,
+    val paidPaise: Long,
+    val isFull: Boolean,
+    val missedPrevious: Boolean,
+    val grade: String?,
+    val stationName: String?,
+    val stationBrand: String?,
+    val lat: Double?,
+    val lng: Double?,
+    val paymentMethod: String?,
+    val priceSource: String,
+    val notes: String?,
+    val socStart: Double?,
+    val socEnd: Double?,
+    val chargerType: String?,
+    val chargeDurationMin: Int?,
+    val operator: String?,
+    @Embedded val sync: SyncMeta,
+)
+
+/** PRD §7 `expense`. Tolls set [tollPlaza]. Recurring expenses (M6) fill [recurrenceId] and [isAutoCreated]. */
+@Entity(tableName = "expense", indices = [Index("vehicleId", "dateTime"), Index("categoryId")])
+data class ExpenseEntity(
+    @PrimaryKey val id: String,
+    val vehicleId: String,
+    val categoryId: String,
+    val dateTime: Long,
+    val zoneId: String,
+    val odometerKm: Double?,
+    val amountPaise: Long,
+    val paymentMethod: String?,
+    val notes: String?,
+    val tripId: String?,
+    val tollPlaza: String?,
+    val recurrenceId: String?,
+    val isAutoCreated: Boolean,
+    @Embedded val sync: SyncMeta,
+)

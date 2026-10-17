@@ -1,0 +1,381 @@
+package app.fuelwise.feature.refuel
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.UserDataRepository
+import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.designsystem.component.KeypadKey
+import app.fuelwise.core.domain.engine.ComputePredictions
+import app.fuelwise.core.domain.entry.CheckFillUp
+import app.fuelwise.core.domain.entry.ComputeFillReward
+import app.fuelwise.core.domain.entry.PriceTriangle
+import app.fuelwise.core.domain.entry.PriceTriangle.Field
+import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.model.ChargerType
+import app.fuelwise.core.model.FuelGrade
+import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.PaymentMethod
+import app.fuelwise.core.model.PriceSource
+import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.ui.format.KeypadInput
+import app.fuelwise.core.ui.format.MoneyInput
+import app.fuelwise.core.ui.format.NumberInput
+import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
+import java.time.ZoneId
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+/**
+ * Add / edit fill-up and EV charge (PRD F-02, design.md screens 6 and 8). Orchestration only: the triangle, checks
+ * and reward come from core:domain.
+ */
+@HiltViewModel
+class RefuelViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val vehicles: VehicleRepository,
+    private val entries: EntryRepository,
+    private val userData: UserDataRepository,
+    private val checkFillUp: CheckFillUp,
+    private val computeReward: ComputeFillReward,
+    private val predictions: ComputePredictions,
+    private val clock: Clock,
+    private val zoneId: ZoneId,
+) : ViewModel() {
+    private val route = savedStateHandle.toRoute<RefuelRoute>()
+    private var editing: Refuel? = null
+    private var tankFills: List<Refuel> = emptyList()
+    private var attemptedSave = false
+
+    private val _state = MutableStateFlow(
+        RefuelFormState(
+            dateTimeUtcMs = clock.millis(),
+            isEdit =
+                route.refuelId != null,
+        ),
+    )
+    val state: StateFlow<RefuelFormState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch { load() }
+    }
+
+    private suspend fun load() {
+        val all = vehicles.observeVehicles().first()
+        val existing = route.refuelId?.let { entries.observeRefuel(it).first() }
+        editing = existing
+        val vehicleId = existing?.vehicleId ?: route.vehicleId ?: userData.userData.first().selectedVehicleId
+        val vehicle = all.firstOrNull { it.id == vehicleId } ?: all.firstOrNull()
+            ?: vehicles.observeVehicle(vehicleId.orEmpty()).first()
+        _state.update { it.copy(vehicles = all, vehicle = vehicle, loading = false) }
+        if (existing != null) {
+            val tankIndex = vehicle?.tanks?.indexOfFirst { it.id == existing.tankId }?.coerceAtLeast(0) ?: 0
+            _state.update { it.copy(tankIndex = tankIndex).withEntry(existing) }
+            refreshTank()
+        } else {
+            refreshTank(applyDefaults = true)
+        }
+    }
+
+    /** Reloads the tank's fills (for checks, prediction and defaults). Defaults apply only to new entries. */
+    private suspend fun refreshTank(applyDefaults: Boolean = false) {
+        val s = _state.value
+        val vehicle = s.vehicle ?: return
+        val tank = s.tank ?: return
+        val refuels = entries.observeRefuels(vehicle.id).first()
+        val expenses = entries.observeExpenses(vehicle.id).first()
+        tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
+        val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses))
+        _state.update { current ->
+            var next = current.copy(predictedOdometer = predicted)
+            if (applyDefaults) {
+                val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
+                next = next.copy(
+                    isFull = last?.isFull ?: true,
+                    grade = last?.grade,
+                    payment = last?.paymentMethod,
+                    charger = if (current.isCharge) last?.chargerType ?: ChargerType.HomeAc else null,
+                    socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
+                    socEnd = last?.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
+                )
+                // Price defaults to the last price paid for this tank (PRD F-02.3) and counts as one locked edit.
+                val lastPrice = if (next.isCharge) {
+                    tankFills.filter { it.chargerType == next.charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+                } else {
+                    last?.unitPrice
+                }
+                if (lastPrice != null && current.unitPrice.isEmpty()) {
+                    next = next.copy(
+                        unitPrice = MoneyInput.plain(lastPrice),
+                        recentEdits = listOf(Field.UnitPrice),
+                        priceSource = PriceSource.LastPaid,
+                    )
+                }
+            }
+            next.revalidated()
+        }
+    }
+
+    fun onKey(key: KeypadKey) {
+        val field = _state.value.focus ?: return
+        _state.update { s ->
+            when (field) {
+                NumericField.Odometer -> s.copy(odometer = KeypadInput.apply(s.odometer, key, maxDecimals = 1))
+
+                NumericField.Quantity -> s.triangleEdit(Field.Quantity, KeypadInput.apply(s.quantity, key, 2))
+
+                NumericField.UnitPrice -> s.triangleEdit(Field.UnitPrice, KeypadInput.apply(s.unitPrice, key, 2))
+
+                NumericField.Total -> s.triangleEdit(Field.Total, KeypadInput.apply(s.total, key, 2))
+
+                NumericField.Discount -> s.copy(discount = KeypadInput.apply(s.discount, key, 2))
+
+                NumericField.Duration -> s.copy(
+                    durationMin = KeypadInput.apply(s.durationMin, key, 0, maxIntegerDigits = 4),
+                )
+            }.revalidated()
+        }
+    }
+
+    fun onFocus(field: NumericField?) = _state.update { it.copy(focus = field) }
+
+    /** "Next field" walks odometer → the two triangle inputs the user hasn't had computed → done. */
+    fun onNextField() = _state.update { s ->
+        val order = listOf(NumericField.Odometer, NumericField.Quantity, NumericField.UnitPrice, NumericField.Total)
+            .filterNot { it.toTriangle() == s.computedField }
+        val i = order.indexOf(s.focus)
+        s.copy(focus = order.getOrNull(i + 1))
+    }
+
+    fun onUsePrediction() = _state.update { s ->
+        s.predictedOdometer?.let {
+            s.copy(odometer = it.toLong().toString(), focus = NumericField.Quantity).revalidated()
+        }
+            ?: s
+    }
+
+    fun onFullChange(full: Boolean) = _state.update { it.copy(isFull = full) }
+
+    fun onToggleMore() = _state.update { it.copy(moreExpanded = !it.moreExpanded, focus = null) }
+
+    fun onGrade(grade: FuelGrade) = _state.update { it.copy(grade = if (it.grade == grade) null else grade) }
+
+    fun onPayment(method: PaymentMethod) = _state.update {
+        it.copy(
+            payment = if (it.payment ==
+                method
+            ) {
+                null
+            } else {
+                method
+            },
+        )
+    }
+
+    fun onStation(text: String) = _state.update { it.copy(station = text.take(MAX_TEXT)) }
+
+    fun onNotes(text: String) = _state.update { it.copy(notes = text.take(MAX_NOTES)) }
+
+    fun onOperator(text: String) = _state.update { it.copy(operator = text.take(MAX_TEXT)) }
+
+    fun onMissedPrevious(missed: Boolean) = _state.update { it.copy(missedPrevious = missed) }
+
+    fun onSoc(start: Float, end: Float) = _state.update { it.copy(socStart = start, socEnd = end) }
+
+    fun onCharger(type: ChargerType) {
+        _state.update { it.copy(charger = type) }
+        // Tariff follows the charger type: home tariff for Home AC, the last public price otherwise.
+        val lastPrice = tankFills.filter { it.chargerType == type }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+        if (lastPrice != null && !_state.value.isEdit) {
+            _state.update { s ->
+                s.copy(unitPrice = MoneyInput.plain(lastPrice), priceSource = PriceSource.LastPaid)
+                    .let {
+                        if (Field.UnitPrice in
+                            it.recentEdits
+                        ) {
+                            it.recomputed()
+                        } else {
+                            it.triangleEdit(Field.UnitPrice, it.unitPrice)
+                        }
+                    }
+            }
+        }
+    }
+
+    fun onDateTime(utcMs: Long) {
+        _state.update { it.copy(dateTimeUtcMs = utcMs).revalidated() }
+    }
+
+    fun onTank(index: Int) {
+        if (index == _state.value.tankIndex || _state.value.isEdit) return
+        _state.update {
+            it.copy(tankIndex = index, unitPrice = "", quantity = "", total = "", recentEdits = emptyList())
+        }
+        viewModelScope.launch { refreshTank(applyDefaults = true) }
+    }
+
+    fun onVehicle(id: String?) {
+        if (_state.value.isEdit) return
+        val vehicle = _state.value.vehicles.firstOrNull { it.id == id } ?: return
+        _state.update {
+            RefuelFormState(
+                loading = false,
+                vehicles = it.vehicles,
+                vehicle = vehicle,
+                dateTimeUtcMs = it.dateTimeUtcMs,
+            )
+        }
+        viewModelScope.launch {
+            userData.setSelectedVehicle(vehicle.id)
+            refreshTank(applyDefaults = true)
+        }
+    }
+
+    fun save() {
+        val s = _state.value
+        if (s.saving || s.reward != null) return
+        attemptedSave = true
+        val checked = s.revalidated()
+        _state.value = checked
+        if (checked.missing.isNotEmpty() || checked.problems.isNotEmpty()) return
+        val refuel = checked.toRefuel() ?: return
+        _state.update { it.copy(saving = true, focus = null) }
+        viewModelScope.launch {
+            val id = entries.saveRefuel(refuel)
+            val fills = entries.observeRefuels(refuel.vehicleId).first().filter { it.tankId == refuel.tankId }
+            _state.update { it.copy(saving = false, reward = computeReward(fills, id)) }
+        }
+    }
+
+    // --- state helpers ---
+
+    private fun RefuelFormState.triangleEdit(field: Field, text: String): RefuelFormState {
+        val edited = when (field) {
+            Field.Quantity -> copy(quantity = text)
+            Field.UnitPrice -> copy(unitPrice = text, priceSource = PriceSource.Typed)
+            Field.Total -> copy(total = text)
+        }
+        return edited.copy(recentEdits = PriceTriangle.recordEdit(recentEdits, field)).recomputed()
+    }
+
+    /** Re-derives the computed field from the two locked ones. */
+    private fun RefuelFormState.recomputed(): RefuelFormState {
+        val values = PriceTriangle.Values(
+            quantity = NumberInput.parseDecimal(quantity),
+            unitPrice = MoneyInput.parse(unitPrice),
+            total = MoneyInput.parse(total),
+        )
+        val solved = PriceTriangle.solve(values, computedField)
+        return when (computedField) {
+            Field.Quantity -> copy(
+                quantity = solved.quantity?.let {
+                    "%.2f".format(java.util.Locale.ROOT, it)
+                }.orEmpty(),
+            )
+
+            Field.UnitPrice -> copy(unitPrice = solved.unitPrice?.let(MoneyInput::plain).orEmpty())
+
+            Field.Total -> copy(total = solved.total?.let(MoneyInput::plain).orEmpty())
+        }
+    }
+
+    private fun RefuelFormState.revalidated(): RefuelFormState {
+        val odo = NumberInput.parseDecimal(odometer)
+        val qty = NumberInput.parseDecimal(quantity)
+        val result = checkFillUp(dateTimeUtcMs, odo, qty, tank?.capacity, tankFills)
+        val missing = if (!attemptedSave) {
+            emptySet()
+        } else {
+            buildSet {
+                if (odo == null) add(RequiredField.Odometer)
+                if (qty == null || qty <= 0.0) add(RequiredField.Quantity)
+                if (MoneyInput.parse(total) == null) add(RequiredField.Total)
+            }
+        }
+        return copy(problems = result.problems, warnings = result.warnings, missing = missing)
+    }
+
+    private fun RefuelFormState.withEntry(r: Refuel) = copy(
+        dateTimeUtcMs = r.dateTimeUtcMs,
+        odometer = NumberInput.plain(r.odometerKm),
+        quantity = "%.2f".format(java.util.Locale.ROOT, r.quantity),
+        unitPrice = MoneyInput.plain(r.unitPrice),
+        total = MoneyInput.plain(r.total),
+        recentEdits = listOf(Field.Total, Field.Quantity),
+        priceSource = r.priceSource,
+        isFull = r.isFull,
+        grade = r.grade,
+        payment = r.paymentMethod,
+        discount = if (r.discount == Money.ZERO) "" else MoneyInput.plain(r.discount),
+        station = r.stationName.orEmpty(),
+        notes = r.notes.orEmpty(),
+        missedPrevious = r.missedPrevious,
+        socStart = r.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
+        socEnd = r.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
+        charger = r.chargerType,
+        operator = r.operator.orEmpty(),
+        durationMin = r.chargeDurationMin?.toString().orEmpty(),
+        moreExpanded = r.missedPrevious || r.notes != null,
+        focus = null,
+    )
+
+    private fun RefuelFormState.toRefuel(): Refuel? {
+        val vehicle = vehicle ?: return null
+        val tank = tank ?: return null
+        val qty = NumberInput.parseDecimal(quantity) ?: return null
+        val totalMoney = MoneyInput.parse(total) ?: return null
+        val price = MoneyInput.parse(unitPrice) ?: PriceTriangle.unitPriceOf(qty, totalMoney) ?: return null
+        val discountMoney = MoneyInput.parse(discount)?.takeIf { it <= totalMoney } ?: Money.ZERO
+        return Refuel(
+            id = editing?.id.orEmpty(),
+            vehicleId = vehicle.id,
+            tankId = tank.id,
+            dateTimeUtcMs = dateTimeUtcMs,
+            zoneId = editing?.zoneId ?: zoneId.id,
+            odometerKm = NumberInput.parseDecimal(odometer) ?: return null,
+            quantity = qty,
+            unitPrice = price,
+            total = totalMoney,
+            discount = discountMoney,
+            isFull = isFull,
+            missedPrevious = missedPrevious,
+            grade = grade,
+            stationName = station.ifBlank { null },
+            paymentMethod = payment,
+            notes = notes.ifBlank { null },
+            priceSource = priceSource,
+        ).let { if (isCharge) it.withChargeFields(this) else it }
+    }
+
+    /** EV sessions carry SoC, charger and operator; a charge to 99% or more counts as full (PRD F-03.4). */
+    private fun Refuel.withChargeFields(s: RefuelFormState) = copy(
+        isFull = s.socEnd >= FULL_SOC,
+        grade = null,
+        socStartPct = s.socStart.toDouble(),
+        socEndPct = s.socEnd.toDouble(),
+        chargerType = s.charger,
+        chargeDurationMin = s.durationMin.toIntOrNull(),
+        operator = s.operator.ifBlank { null },
+    )
+
+    private fun NumericField.toTriangle(): Field? = when (this) {
+        NumericField.Quantity -> Field.Quantity
+        NumericField.UnitPrice -> Field.UnitPrice
+        NumericField.Total -> Field.Total
+        else -> null
+    }
+
+    private companion object {
+        const val MAX_TEXT = 60
+        const val MAX_NOTES = 500
+        const val FULL_SOC = 99f
+    }
+}

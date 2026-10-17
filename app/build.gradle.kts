@@ -41,6 +41,8 @@ dependencies {
     implementation(projects.feature.insights)
     implementation(projects.feature.garage)
     implementation(projects.feature.onboarding)
+    implementation(projects.feature.refuel)
+    implementation(projects.feature.expense)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

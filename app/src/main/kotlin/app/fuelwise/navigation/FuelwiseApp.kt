@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -18,6 +21,8 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.feature.expense.ExpenseRoute
+import app.fuelwise.feature.expense.expenseSheet
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
 import app.fuelwise.feature.garage.VehicleDetailRoute
 import app.fuelwise.feature.garage.VehicleEditorRoute
@@ -34,6 +39,8 @@ import app.fuelwise.feature.onboarding.WelcomeRoute
 import app.fuelwise.feature.onboarding.historyScreen
 import app.fuelwise.feature.onboarding.privacyScreen
 import app.fuelwise.feature.onboarding.welcomeScreen
+import app.fuelwise.feature.refuel.RefuelRoute
+import app.fuelwise.feature.refuel.refuelSheet
 
 /** App shell: bottom nav + FAB around a single NavHost. Feature modules only see callbacks, never each other. */
 @Composable
@@ -47,8 +54,8 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
     // The bar belongs to the four tabs; onboarding, detail and editor screens get the full height.
     val showBottomBar = selectedIndex >= 0
 
-    // The add-entry sheet (F-02) arrives in M3; until then "+" and "Log fuel" have nothing to open.
-    val openAddEntry: () -> Unit = {}
+    val openAddEntry: () -> Unit = { navController.navigate(RefuelRoute()) }
+    var quickAddOpen by rememberSaveable { mutableStateOf(false) }
     val openVehicleEditor: () -> Unit = { navController.navigate(VehicleEditorRoute()) }
 
     Scaffold(
@@ -60,6 +67,8 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                     selectedIndex = selectedIndex.coerceAtLeast(0),
                     onSelect = { index -> navController.navigateToTopLevel(destinations[index]) },
                     onFabClick = openAddEntry,
+                    onFabLongClick = { quickAddOpen = true },
+                    fabLongClickLabel = stringResource(R.string.nav_quick_add),
                     fabContentDescription = stringResource(R.string.nav_add_entry),
                 )
             }
@@ -80,6 +89,8 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                 },
             )
             homeScreen(onLogFuel = openAddEntry, onAddVehicle = openVehicleEditor)
+            refuelSheet(onClose = navController::popBackStack)
+            expenseSheet(onClose = navController::popBackStack)
             logbookScreen(onPrimaryAction = openAddEntry)
             insightsScreen(onPrimaryAction = openAddEntry)
             garageScreen(
@@ -102,6 +113,19 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                 },
             )
         }
+    }
+    if (quickAddOpen) {
+        QuickAddSheet(
+            onPick = { pick ->
+                quickAddOpen = false
+                when (pick) {
+                    QuickAdd.Fuel -> navController.navigate(RefuelRoute())
+                    QuickAdd.Expense -> navController.navigate(ExpenseRoute())
+                    QuickAdd.Toll -> navController.navigate(ExpenseRoute(toll = true))
+                }
+            },
+            onDismiss = { quickAddOpen = false },
+        )
     }
 }
 

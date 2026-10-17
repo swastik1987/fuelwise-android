@@ -6,13 +6,23 @@ complexity:
   LongParameterList:
     ignoreAnnotated: ['Composable']
     ignoreDefaultParameters: true
+    # Hilt constructors list a screen's collaborators; grouping them into holder objects only hides the graph.
+    constructorThreshold: 10
   LongMethod:
+    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    # Enum-to-resource mappings are one branch per value; screen composables branch on state by design.
+    ignoreSimpleWhenEntries: true
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
     ignoreAnnotatedFunctions: ['Preview']
     # A Room DAO is a list of queries, and a ViewModel has one function per user action; splitting either by count
     # would only scatter one screen's logic.
     ignoreAnnotated: ['Dao', 'HiltViewModel']
+    # Repository interfaces expose observe/save/delete per entity; screen files hold one screen's composables.
+    thresholdInInterfaces: 16
+    thresholdInClasses: 16
+    thresholdInFiles: 18
 
 naming:
   # Compose files pair a small type (route, UI model) with the composables that use it.

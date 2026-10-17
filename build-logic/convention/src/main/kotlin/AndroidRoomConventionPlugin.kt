@@ -2,6 +2,7 @@ import androidx.room.gradle.RoomExtension
 import app.fuelwise.buildlogic.lib
 import app.fuelwise.buildlogic.libs
 import app.fuelwise.buildlogic.pluginId
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -17,6 +18,10 @@ class AndroidRoomConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.pluginId("room"))
         extensions.configure<RoomExtension> {
             schemaDirectory("$projectDir/schemas")
+        }
+        // Migration tests also run as Robolectric unit tests (so CI covers them); they read the schemas as assets.
+        extensions.configure<LibraryExtension> {
+            sourceSets.getByName("test").assets.directories.add("$projectDir/schemas")
         }
         dependencies {
             add("implementation", libs.lib("androidx-room-runtime"))

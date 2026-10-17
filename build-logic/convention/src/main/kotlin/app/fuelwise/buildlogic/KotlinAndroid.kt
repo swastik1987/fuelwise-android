@@ -30,6 +30,8 @@ internal fun Project.configureKotlinAndroid(android: CommonExtension) {
         checkDependencies = true
         // Version-freshness checks depend on the network and the day they run; they are not code problems.
         disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable", "OldTargetApi")
+        // Stock Material Symbols drawables have long paths by design; they render once into a cached bitmap.
+        disable += "VectorPath"
     }
     configureKotlinCompile()
     addUnitTestDependencies()

@@ -5,6 +5,7 @@ build:
 complexity:
   LongParameterList:
     ignoreAnnotated: ['Composable']
+    ignoreDefaultParameters: true
   LongMethod:
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
@@ -20,6 +21,10 @@ naming:
     constantPattern: '[A-Z][A-Za-z0-9_]*'
 
 style:
+  # Early-return guards ("?: return null") are the house style for missing inputs in the engine.
+  ReturnCount:
+    max: 3
+    excludeGuardClauses: true
   MagicNumber:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true

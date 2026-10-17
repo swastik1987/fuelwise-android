@@ -28,6 +28,7 @@ protobuf = "4.36.2"
 protobufPlugin = "0.10.0"
 androidxTestCore = "1.7.0"
 paging = "3.5.3"
+vico = "3.3.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -62,6 +63,7 @@ androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "ro
 androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 androidx-paging-testing = { module = "androidx.paging:paging-testing", version.ref = "paging" }
+vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }

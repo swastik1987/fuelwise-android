@@ -30,6 +30,13 @@ class FakeUserDataRepository(initial: UserData = DEFAULT) : UserDataRepository {
 
     override suspend fun setHideAmounts(hide: Boolean) = state.update { it.copy(hideAmounts = hide) }
 
+    override suspend fun markMilestoneShown(key: String) = state.update {
+        it.copy(
+            shownMilestones =
+                it.shownMilestones + key,
+        )
+    }
+
     companion object {
         val DEFAULT = UserData(
             onboardingCompleted = false,

@@ -19,6 +19,8 @@ message UserPreferences {
   ThemeMode theme_mode = 8;
   bool hide_amounts = 9;
   FeatureFlags feature_flags = 10;
+  // Milestone keys already celebrated (PRD F-17: shown once).
+  repeated string shown_milestones = 11;
 }
 
 enum ThemeMode {

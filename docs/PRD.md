@@ -292,7 +292,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-06 Stats, charts and insights — FREE core · PRO advanced · R1
+### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards locked; custom date range and the city-price overlay are still open, the overlay waits for the price feed in M9)
 
 **F-06.1 Period selector:** this month, last month, 3M, 6M, YTD, 12M, all time, custom.
 
@@ -567,7 +567,7 @@ Built with Jetpack Glance.
 
 ---
 
-### F-17 Recap, Wrapped and milestones — FREE · R1 (Wrapped in R2, timed for December)
+### F-17 Recap, Wrapped and milestones — FREE · R1 (Wrapped in R2, timed for December) ✅ built (M5: recap card with share and save, milestones; the 1st-of-month recap notification arrives with notifications in M6)
 
 - **Monthly Recap** (1st of month notification, opt-in): spend, km, ₹/km, best tank, change vs last month. Rendered as a shareable 9:16 image card. No personal data on the card by default; the vehicle name is optional.
 - **Drive Wrapped** (yearly, December): 5–6 story cards with km driven, ₹ spent, best efficiency month, most visited station, longest trip, CO₂ estimate.

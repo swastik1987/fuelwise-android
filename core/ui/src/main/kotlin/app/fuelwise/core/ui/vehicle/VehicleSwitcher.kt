@@ -168,3 +168,18 @@ fun VehicleAvatar(vehicle: Vehicle, size: Int, modifier: Modifier = Modifier) {
 }
 
 private const val AVATAR_ICON_RATIO = 0.62f
+
+/** Switcher pill while the "All vehicles" aggregate is selected (Logbook, Insights). */
+@Composable
+fun AllVehiclesPill(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(onClick = onClick, modifier = modifier, shape = FwTheme.radius.pill, color = FwTheme.colors.surface) {
+        Row(Modifier.height(40.dp).padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.vehicle_switcher_all),
+                style = FwTheme.type.label.copy(fontWeight = FontWeight.SemiBold),
+                color = FwTheme.colors.ink,
+            )
+            Icon(painterResource(FwIcons.ExpandMore), null, tint = FwTheme.colors.ink2)
+        }
+    }
+}

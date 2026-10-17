@@ -8,6 +8,9 @@ import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.insights.ComputeMilestones
+import app.fuelwise.core.domain.insights.Milestone
+import app.fuelwise.core.domain.insights.VehicleHistory
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.model.Category
@@ -44,6 +47,8 @@ sealed interface HomeUiState {
         val hideAmounts: Boolean,
         /** Short name of last month, for "▼ 6% vs Sep". */
         val previousMonthLabel: String,
+        /** A milestone earned and not yet celebrated (PRD F-17). */
+        val milestone: Milestone? = null,
     ) : HomeUiState
 }
 
@@ -57,13 +62,14 @@ class HomeViewModel @Inject constructor(
     categories: CategoryRepository,
     summarize: ComputeVehicleSummary,
     lookupIntervals: LookupIntervals,
+    milestones: ComputeMilestones,
     zoneId: ZoneId,
     clock: Clock,
 ) : ViewModel() {
     val uiState: StateFlow<HomeUiState> = combine(vehicles.observeVehicles(), userData.userData) { list, data ->
         // A deleted or archived selection falls back to the first vehicle.
-        Triple(list, list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull(), data.hideAmounts)
-    }.flatMapLatest { (list, selected, hideAmounts) ->
+        Triple(list, list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull(), data)
+    }.flatMapLatest { (list, selected, data) ->
         if (selected == null) {
             flowOf(HomeUiState.NoVehicles)
         } else {
@@ -80,9 +86,13 @@ class HomeViewModel @Inject constructor(
                     recent = recent,
                     categories = cats.associateBy { it.id },
                     kmPerUnit = lookupIntervals.kmPerUnit(refuels),
-                    hideAmounts = hideAmounts,
+                    hideAmounts = data.hideAmounts,
                     previousMonthLabel = YearMonth.now(clock.withZone(zoneId)).minusMonths(1).month
                         .getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+                    milestone = milestones(VehicleHistory(selected, refuels, expenses)).firstOrNull {
+                        it.key !in
+                            data.shownMilestones
+                    },
                 )
             }
         }
@@ -94,6 +104,10 @@ class HomeViewModel @Inject constructor(
 
     fun setHideAmounts(hide: Boolean) {
         viewModelScope.launch { userData.setHideAmounts(hide) }
+    }
+
+    fun dismissMilestone(key: String) {
+        viewModelScope.launch { userData.markMilestoneShown(key) }
     }
 
     private companion object {

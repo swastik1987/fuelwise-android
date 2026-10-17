@@ -5,6 +5,8 @@ import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.insights.ComputeMilestones
+import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.testing.FakeCategoryRepository
@@ -46,6 +48,7 @@ class HomeViewModelTest {
             categories = FakeCategoryRepository(),
             summarize = ComputeVehicleSummary(consumption, ComputeCostMetrics(), ComputePredictions(clock), clock),
             lookupIntervals = LookupIntervals(consumption),
+            milestones = ComputeMilestones(consumption, clock),
             zoneId = zone,
             clock = clock,
         )
@@ -78,6 +81,17 @@ class HomeViewModelTest {
         assertThat(state.recent.map { it.id }).containsExactly("r4", "e1", "r3").inOrder()
         assertThat(state.kmPerUnit.keys).containsExactly("r2", "r3", "r4")
         assertThat(state.previousMonthLabel).isEqualTo("Sep")
+    }
+
+    @Test
+    fun milestoneShownOnce() = runTest {
+        val entries = FakeEntryRepository(SampleEntries.safariRefuels, listOf(SampleEntries.safariService))
+        val vm = viewModel(listOf(SampleVehicles.safari), entries)
+        val first = vm.uiState.first { it is HomeUiState.Ready } as HomeUiState.Ready
+        assertThat(first.milestone?.kind).isEqualTo(Milestone.Kind.FirstThousandKm)
+        vm.dismissMilestone(first.milestone!!.key)
+        val next = vm.uiState.first { it is HomeUiState.Ready && it.milestone?.kind != Milestone.Kind.FirstThousandKm }
+        assertThat((next as HomeUiState.Ready).milestone?.kind).isNotEqualTo(Milestone.Kind.FirstThousandKm)
     }
 
     @Test

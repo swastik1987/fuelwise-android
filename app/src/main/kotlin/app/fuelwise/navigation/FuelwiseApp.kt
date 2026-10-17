@@ -32,7 +32,10 @@ import app.fuelwise.feature.garage.vehicleDetailScreen
 import app.fuelwise.feature.garage.vehicleEditorScreen
 import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
+import app.fuelwise.feature.insights.RecapRoute
+import app.fuelwise.feature.insights.chartDetailScreen
 import app.fuelwise.feature.insights.insightsScreen
+import app.fuelwise.feature.insights.recapScreen
 import app.fuelwise.feature.logbook.EntryDetailRoute
 import app.fuelwise.feature.logbook.entryDetailScreen
 import app.fuelwise.feature.logbook.logbookScreen
@@ -108,7 +111,13 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                 onBack = navController::popBackStack,
                 onEdit = { source, id -> navController.navigate(source.editRoute(id)) },
             )
-            insightsScreen(onPrimaryAction = openAddEntry)
+            insightsScreen(
+                onAddEntry = openAddEntry,
+                onOpenChart = { navController.navigate(it) },
+                onOpenRecap = { navController.navigate(RecapRoute()) },
+            )
+            chartDetailScreen(onBack = navController::popBackStack)
+            recapScreen(onBack = navController::popBackStack)
             garageScreen(
                 onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
                 onAddVehicle = openVehicleEditor,

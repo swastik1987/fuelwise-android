@@ -4,7 +4,6 @@
     <string name="logbook_empty_body">फ़्यूल, चार्जिंग और बाकी खर्च यहाँ दिखेंगे।</string>
     <string name="logbook_empty_action">पहली बार फ़्यूल दर्ज करें</string>
     <string name="logbook_no_matches">इन फ़िल्टर से कुछ नहीं मिला।</string>
-    <string name="logbook_all_vehicles">सभी गाड़ियाँ</string>
     <string name="logbook_search">खोजें</string>
     <string name="logbook_search_close">खोज बंद करें</string>
     <string name="logbook_search_label">नोट, पंप और टोल प्लाज़ा खोजें</string>

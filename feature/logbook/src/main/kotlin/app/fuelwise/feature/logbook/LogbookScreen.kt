@@ -61,6 +61,7 @@ import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.ui.entry.LogbookEntryRow
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.vehicle.AllVehiclesPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.format.TextStyle
@@ -318,20 +319,6 @@ private fun MonthHeader(header: LogbookItem.Header, total: app.fuelwise.core.mod
             modifier = Modifier.weight(1f).semantics { heading() },
         )
         total?.let { Text(IndianNumberFormat.rupeesWhole(it), style = FwTheme.type.label, color = FwTheme.colors.ink2) }
-    }
-}
-
-@Composable
-private fun AllVehiclesPill(onClick: () -> Unit) {
-    androidx.compose.material3.Surface(onClick = onClick, shape = FwTheme.radius.pill, color = FwTheme.colors.surface) {
-        Row(Modifier.height(40.dp).padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(R.string.logbook_all_vehicles),
-                style = FwTheme.type.label.copy(fontWeight = FontWeight.SemiBold),
-                color = FwTheme.colors.ink,
-            )
-            Icon(painterResource(FwIcons.ExpandMore), null, tint = FwTheme.colors.ink2)
-        }
     }
 }
 

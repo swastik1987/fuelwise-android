@@ -44,6 +44,7 @@ import app.fuelwise.core.designsystem.component.FwSectionHeader
 import app.fuelwise.core.designsystem.component.FwSparkline
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
@@ -69,7 +70,7 @@ internal data class HomeActions(
 @Composable
 internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(state, actions, viewModel::selectVehicle, viewModel::setHideAmounts)
+    HomeContent(state, actions, viewModel::selectVehicle, viewModel::setHideAmounts, viewModel::dismissMilestone)
 }
 
 /** Home (design.md screen 5): ₹/km hero, mileage and spend tiles, last fill-up, range, insight, recent entries. */
@@ -79,6 +80,7 @@ internal fun HomeContent(
     actions: HomeActions,
     onSelectVehicle: (String?) -> Unit,
     onHideAmounts: (Boolean) -> Unit,
+    onDismissMilestone: (String) -> Unit = {},
 ) {
     var switcherOpen by rememberSaveable { mutableStateOf(false) }
     var heroInfo by rememberSaveable { mutableStateOf(false) }
@@ -139,6 +141,13 @@ internal fun HomeContent(
                             actions.onAddVehicle()
                         },
                         onDismiss = { switcherOpen = false },
+                    )
+                }
+                state.milestone?.let { milestone ->
+                    FwInfoSheet(
+                        title = stringResource(milestone.title),
+                        paragraphs = listOf(milestoneBody(milestone, state)),
+                        onDismiss = { onDismissMilestone(milestone.key) },
                     )
                 }
                 if (heroInfo) {
@@ -314,3 +323,27 @@ private fun shortDate(utcMs: Long, zoneId: String): String {
 
 private const val PERCENT = 100
 private const val HIDDEN_AMOUNT = "₹ •••"
+
+private val Milestone.title: Int
+    get() = when (kind) {
+        Milestone.Kind.FirstThousandKm -> R.string.milestone_1000_title
+        Milestone.Kind.TenThousandKm -> R.string.milestone_10000_title
+        Milestone.Kind.OneYear -> R.string.milestone_year_title
+        Milestone.Kind.BestEverTank -> R.string.milestone_best_title
+    }
+
+@Composable
+private fun milestoneBody(milestone: Milestone, state: HomeUiState.Ready): String = when (milestone.kind) {
+    Milestone.Kind.FirstThousandKm -> stringResource(R.string.milestone_1000_body, state.vehicle.name)
+
+    Milestone.Kind.TenThousandKm -> stringResource(R.string.milestone_10000_body, state.vehicle.name)
+
+    Milestone.Kind.OneYear -> stringResource(R.string.milestone_year_body)
+
+    Milestone.Kind.BestEverTank -> {
+        val unit = state.vehicle.primaryTank?.let {
+            stringResource(VehicleLabels.unit(it.energyType.canonicalUnit))
+        }.orEmpty()
+        stringResource(R.string.milestone_best_body, IndianNumberFormat.decimal(milestone.kmPerUnit ?: 0.0, 1), unit)
+    }
+}

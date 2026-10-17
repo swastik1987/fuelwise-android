@@ -84,7 +84,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Logbook with Paging 3, month headers + totals, filters/search, swipe edit/delete + undo; entry detail. Map mode deferred to M8.
 - Perf: 5,000-entry scroll benchmark.
 
-### M5 — Insights, F-06 + F-17 (≈2 weeks)
+### M5 — Insights, F-06 + F-17 (≈2 weeks) ✅ done (custom period and city-price overlay deferred; recap notification moves to M6; the 3-year perf check covers computation, chart drawing is not benchmarked)
 - Period selector, overview tiles, Vico charts (efficiency, monthly spend, price paid, cost/km, odometer, category bars), chart detail with data table + formula sheets.
 - Free insight cards (mileage drop, real vs claimed); Pro cards rendered locked.
 - Monthly recap card (9:16 share image) + milestones.

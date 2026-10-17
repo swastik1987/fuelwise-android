@@ -99,7 +99,7 @@ class ComputeVehicleSummary @Inject constructor(
                 (lastReport.resultFor(it.id) as? IntervalResult.Measured)?.interval
             },
             rangeLeftKm = rangeLeft(vehicle, tankFills, report, predictions.predictedOdometer(readings)),
-            mileageDrop = mileageDrop(report),
+            mileageDrop = report.mileageDrop(),
             isEstimate = vehicle.isBiFuel,
         )
     }
@@ -119,16 +119,6 @@ class ComputeVehicleSummary @Inject constructor(
         return predictions.rangeLeftKm(vehicle.primaryTank?.capacity, kmPerUnit, last.toEngine(), odometer)
     }
 
-    /** The last two intervals together below the up-to-five before them by more than 10% (PRD F-06.4). */
-    private fun mileageDrop(report: ConsumptionReport): MileageDrop? {
-        val intervals = report.measuredIntervals
-        if (intervals.size < MIN_INTERVALS_FOR_DROP) return null
-        val recent = intervals.takeLast(RECENT_FOR_DROP).reduce(Interval::plus)
-        val baseline = intervals.dropLast(RECENT_FOR_DROP).takeLast(BASELINE_FOR_DROP).reduce(Interval::plus)
-        val change = recent.kmPerUnit / baseline.kmPerUnit - 1.0
-        return if (change < -DROP_THRESHOLD) MileageDrop(-change) else null
-    }
-
     private fun ratio(current: Long?, previous: Long?): Double? =
         if (current == null || previous == null || previous == 0L) null else current.toDouble() / previous - 1.0
 
@@ -136,9 +126,20 @@ class ComputeVehicleSummary @Inject constructor(
 
     private companion object {
         const val SPARKLINE_POINTS = 8
-        const val RECENT_FOR_DROP = 2
-        const val BASELINE_FOR_DROP = 5
-        const val MIN_INTERVALS_FOR_DROP = 3
-        const val DROP_THRESHOLD = 0.10
     }
 }
+
+/** The last two intervals together below the up-to-five before them by more than 10% (PRD F-06.4). */
+fun ConsumptionReport.mileageDrop(): MileageDrop? {
+    val intervals = measuredIntervals
+    if (intervals.size < MIN_INTERVALS_FOR_DROP) return null
+    val recent = intervals.takeLast(RECENT_FOR_DROP).reduce(Interval::plus)
+    val baseline = intervals.dropLast(RECENT_FOR_DROP).takeLast(BASELINE_FOR_DROP).reduce(Interval::plus)
+    val change = recent.kmPerUnit / baseline.kmPerUnit - 1.0
+    return if (change < -DROP_THRESHOLD) MileageDrop(-change) else null
+}
+
+private const val RECENT_FOR_DROP = 2
+private const val BASELINE_FOR_DROP = 5
+private const val MIN_INTERVALS_FOR_DROP = 3
+private const val DROP_THRESHOLD = 0.10

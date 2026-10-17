@@ -28,4 +28,12 @@
     <string name="home_insight_mileage_drop">Your mileage dropped %1$d%% over the last 2 tanks. Check tyre pressure: it is the most common cause.</string>
     <string name="home_recent">Recent</string>
     <string name="home_see_all">See all</string>
+    <string name="milestone_1000_title">1,000 km logged</string>
+    <string name="milestone_1000_body">You have tracked 1,000 km on %1$s. Your averages are getting reliable.</string>
+    <string name="milestone_10000_title">10,000 km logged</string>
+    <string name="milestone_10000_body">10,000 km of %1$s, every fill-up accounted for.</string>
+    <string name="milestone_year_title">One year of logging</string>
+    <string name="milestone_year_body">A full year of fill-ups and costs. Your monthly and seasonal trends now mean something.</string>
+    <string name="milestone_best_title">Best tank ever</string>
+    <string name="milestone_best_body">%1$s km/%2$s: your best full-to-full tank so far.</string>
 </resources>

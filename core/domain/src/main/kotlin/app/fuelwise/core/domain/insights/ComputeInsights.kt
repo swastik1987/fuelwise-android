@@ -1,0 +1,265 @@
+package app.fuelwise.core.domain.insights
+
+import app.fuelwise.core.domain.engine.ComputeConsumption
+import app.fuelwise.core.domain.engine.ComputeCostMetrics
+import app.fuelwise.core.domain.engine.ConsumptionReport
+import app.fuelwise.core.domain.engine.CostMetrics
+import app.fuelwise.core.domain.engine.FillUp
+import app.fuelwise.core.domain.engine.Interval
+import app.fuelwise.core.domain.engine.IntervalResult
+import app.fuelwise.core.domain.engine.OdometerReading
+import app.fuelwise.core.domain.engine.Period
+import app.fuelwise.core.domain.engine.PeriodDistance
+import app.fuelwise.core.domain.engine.Spend
+import app.fuelwise.core.domain.engine.divideBy
+import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.domain.summary.mileageDrop
+import app.fuelwise.core.model.Category
+import app.fuelwise.core.model.EnergyType
+import app.fuelwise.core.model.Expense
+import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.model.sum
+import java.time.Clock
+import java.time.YearMonth
+import java.time.ZoneId
+import javax.inject.Inject
+
+/** One vehicle's entries, as the Insights screen loads them. */
+data class VehicleHistory(val vehicle: Vehicle, val refuels: List<Refuel>, val expenses: List<Expense>)
+
+/** A measured interval, dated by the full fill that closed it. */
+data class MileagePoint(val atUtcMs: Long, val interval: Interval, val rollingKmPerUnit: Double)
+
+data class PricePoint(val atUtcMs: Long, val unitPrice: Money)
+
+data class MonthSpend(val month: YearMonth, val energy: Money, val expenses: Money) {
+    val total: Money get() = energy + expenses
+}
+
+data class MonthCostPerKm(val month: YearMonth, val costPerKm: Money?)
+
+/** [categoryId] null is fuel / charging. */
+data class CategorySpend(val categoryId: String?, val amount: Money)
+
+/** PRD F-06.4 cards. Pro ones are shown locked until entitlements arrive (M11). */
+sealed interface InsightCard {
+    data class MileageDrop(val fraction: Double) : InsightCard
+
+    /** [ratio] = your km/L ÷ claimed (0.84 = 84% of claimed). */
+    data class RealVsClaimed(val ratio: Double, val claimedKmPerUnit: Double, val actualKmPerUnit: Double) : InsightCard
+
+    data class Locked(val kind: ProInsight) : InsightCard
+}
+
+enum class ProInsight { FuelGrade, CngSaving, EvVsPetrol, HomeVsPublic, Forecast, CompareVehicles }
+
+/** Everything the Insights overview and chart details show for one period (PRD F-06.2, F-06.3). */
+data class InsightsReport(
+    val period: Period,
+    val metrics: CostMetrics,
+    /** Period ₹/km vs the previous period, as a ratio change. Null for "All" or without both. */
+    val costPerKmChange: Double?,
+    /** Set when exactly one vehicle is shown: its primary tank's energy, for units and colours. */
+    val energyType: EnergyType?,
+    val claimedKmPerUnit: Double?,
+    val average: Interval?,
+    val best: Interval?,
+    val worst: Interval?,
+    val fillCount: Int,
+    val averageFillQuantity: Double?,
+    val averageUnitPrice: Money?,
+    val mileage: List<MileagePoint>,
+    val monthlySpend: List<MonthSpend>,
+    val prices: List<PricePoint>,
+    val costPerKmByMonth: List<MonthCostPerKm>,
+    val odometer: List<OdometerReading>,
+    val spendByCategory: List<CategorySpend>,
+    val cards: List<InsightCard>,
+) {
+    val isEmpty: Boolean get() = metrics.totalSpend == Money.ZERO && fillCount == 0
+}
+
+class ComputeInsights @Inject constructor(
+    private val consumption: ComputeConsumption,
+    private val costMetrics: ComputeCostMetrics,
+    private val clock: Clock,
+) {
+    /**
+     * [histories] holds one vehicle for a vehicle view and every active vehicle for "All vehicles"; mileage, prices
+     * and the odometer only make sense for one vehicle and stay empty otherwise.
+     */
+    operator fun invoke(
+        histories: List<VehicleHistory>,
+        categories: List<Category>,
+        selection: InsightPeriod,
+        zone: ZoneId,
+        vehicleCount: Int = histories.size,
+    ): InsightsReport {
+        val earliest = histories.flatMap { h ->
+            h.refuels.map { it.dateTimeUtcMs } + h.expenses.map { it.dateTimeUtcMs }
+        }.minOrNull()
+        val (period, previous) = selection.resolve(clock.millis(), zone, earliest)
+        val included = categories.associate { it.id to it.includeInCostPerKm }
+        val prepared = histories.map { Prepared(it, included) }
+
+        val metrics = combinedMetrics(prepared, period)
+        val previousMetrics = previous?.let { combinedMetrics(prepared, it) }
+        val single = prepared.singleOrNull()
+        val vehicle = single?.history?.vehicle
+        val primary = vehicle?.primaryTank
+        val tankFills = single?.history?.refuels?.filter { it.tankId == primary?.id }.orEmpty()
+        val report = consumption(tankFills.map { it.toEngine() })
+        val mileage = mileagePoints(report, tankFills, period)
+        val periodIntervals = mileage.map { it.interval }
+        val average = periodIntervals.reduceOrNull(Interval::plus)
+        val periodFills = tankFills.filter { it.dateTimeUtcMs in period }
+        val allExpenses = histories.flatMap { it.expenses }.filter { it.dateTimeUtcMs in period }
+        val allRefuels = histories.flatMap { it.refuels }.filter { it.dateTimeUtcMs in period }
+
+        return InsightsReport(
+            period = period,
+            metrics = metrics,
+            costPerKmChange = ratio(metrics.costPerKm, previousMetrics?.costPerKm),
+            energyType = primary?.energyType,
+            claimedKmPerUnit = vehicle?.claimedKmPerUnit,
+            average = average,
+            best = periodIntervals.maxByOrNull { it.kmPerUnit },
+            worst = periodIntervals.minByOrNull { it.kmPerUnit },
+            fillCount = allRefuels.size,
+            averageFillQuantity = periodFills.takeIf { it.isNotEmpty() }?.map { it.quantity }?.average(),
+            averageUnitPrice = periodFills.takeIf { it.isNotEmpty() }?.let { fills ->
+                fills.map { it.paid }.sum().divideBy(fills.sumOf { it.quantity })
+            },
+            mileage = mileage,
+            monthlySpend = period.months(zone).map { month ->
+                val inMonth = { at: Long -> at in period.clip(month, zone) }
+                MonthSpend(
+                    month,
+                    allRefuels.filter { inMonth(it.dateTimeUtcMs) }.map { it.paid }.sum(),
+                    allExpenses.filter { inMonth(it.dateTimeUtcMs) }.map { it.amount }.sum(),
+                )
+            },
+            prices = if (single ==
+                null
+            ) {
+                emptyList()
+            } else {
+                periodFills.map { PricePoint(it.dateTimeUtcMs, it.unitPrice) }
+            },
+            costPerKmByMonth = period.months(zone).map { month ->
+                MonthCostPerKm(month, combinedMetrics(prepared, period.clip(month, zone)).costPerKm)
+            },
+            odometer = single?.readings?.filter { it.atUtcMs in period }?.sortedBy { it.atUtcMs }.orEmpty(),
+            spendByCategory = spendByCategory(allRefuels, allExpenses),
+            cards = cards(vehicle, report, average, vehicleCount),
+        )
+    }
+
+    private inner class Prepared(val history: VehicleHistory, included: Map<String, Boolean>) {
+        val spends = history.refuels.map { Spend(it.paid, it.dateTimeUtcMs, Spend.Kind.Energy) } +
+            history.expenses.map {
+                Spend(
+                    it.amount,
+                    it.dateTimeUtcMs,
+                    Spend.Kind.Expense,
+                    included[it.categoryId] ?: true,
+                )
+            }
+        val readings = odometerReadings(history.vehicle, history.refuels, history.expenses)
+    }
+
+    /** Per-vehicle metrics summed, so odometers of different vehicles never mix. */
+    private fun combinedMetrics(prepared: List<Prepared>, period: Period): CostMetrics {
+        val parts = prepared.map { costMetrics(it.spends, it.readings, period) }
+        parts.singleOrNull()?.let { return it }
+        val energy = parts.map { it.energySpend }.sum()
+        val included = parts.map { it.includedExpenses }.sum()
+        val excluded = parts.map { it.excludedExpenses }.sum()
+        val distances = parts.mapNotNull { it.distance }
+        val distance = distances.takeIf { it.isNotEmpty() }
+            ?.let { d -> PeriodDistance(d.sumOf { it.km }, d.any { it.isEstimated }) }
+        val km = distance?.km?.takeIf { it > 0.0 }
+        val basis = energy + included
+        return CostMetrics(
+            energySpend = energy,
+            includedExpenses = included,
+            excludedExpenses = excluded,
+            distance = distance,
+            costPerKm = km?.let { basis.divideBy(it) },
+            energyCostPerKm = km?.let { energy.divideBy(it) },
+            costPerDay = basis.divideBy(period.days),
+            monthlyBurn = basis.divideBy(period.days / DAYS_PER_MONTH),
+        )
+    }
+
+    private fun mileagePoints(report: ConsumptionReport, fills: List<Refuel>, period: Period): List<MileagePoint> {
+        val byId = fills.associateBy { it.id }
+        val measured = report.entries.mapNotNull { entry ->
+            val interval = (entry.result as? IntervalResult.Measured)?.interval ?: return@mapNotNull null
+            byId[entry.id]?.let { it.dateTimeUtcMs to interval }
+        }
+        // The rolling line uses earlier intervals too, so the first points in a short period aren't jumpy.
+        return measured.mapIndexedNotNull { index, (at, interval) ->
+            if (at !in period) return@mapIndexedNotNull null
+            val window = measured.subList(maxOf(0, index - ROLLING_WINDOW + 1), index + 1).map { it.second }
+            MileagePoint(at, interval, window.reduce(Interval::plus).kmPerUnit)
+        }
+    }
+
+    private fun spendByCategory(refuels: List<Refuel>, expenses: List<Expense>): List<CategorySpend> {
+        val energy = refuels.map { it.paid }.sum()
+        val byCategory = expenses.groupBy {
+            it.categoryId
+        }.map { (id, list) -> CategorySpend(id, list.map { it.amount }.sum()) }
+        return (listOf(CategorySpend(null, energy)) + byCategory).filter {
+            it.amount.paise > 0
+        }.sortedByDescending { it.amount.paise }
+    }
+
+    private fun cards(
+        vehicle: Vehicle?,
+        report: ConsumptionReport,
+        average: Interval?,
+        vehicleCount: Int,
+    ): List<InsightCard> = buildList {
+        report.mileageDrop()?.let { add(InsightCard.MileageDrop(it.fraction)) }
+        val claimed = vehicle?.claimedKmPerUnit
+        val actual = average ?: report.average
+        // Bi-fuel mileage is an estimate, so it is not held against the claimed figure.
+        val comparable = vehicle?.isBiFuel == false && actual != null
+        if (comparable && claimed != null && claimed > 0) {
+            add(InsightCard.RealVsClaimed(actual.kmPerUnit / claimed, claimed, actual.kmPerUnit))
+        }
+        if (vehicle != null) {
+            when {
+                vehicle.isElectric -> {
+                    add(InsightCard.Locked(ProInsight.EvVsPetrol))
+                    add(InsightCard.Locked(ProInsight.HomeVsPublic))
+                }
+
+                vehicle.isBiFuel -> add(InsightCard.Locked(ProInsight.CngSaving))
+
+                else -> add(InsightCard.Locked(ProInsight.FuelGrade))
+            }
+        }
+        add(InsightCard.Locked(ProInsight.Forecast))
+        if (vehicleCount > 1) add(InsightCard.Locked(ProInsight.CompareVehicles))
+    }
+
+    private fun ratio(current: Money?, previous: Money?): Double? = if (current == null || previous == null ||
+        previous.paise == 0L
+    ) {
+        null
+    } else {
+        current.paise.toDouble() / previous.paise - 1.0
+    }
+
+    private fun Refuel.toEngine() = FillUp(id, odometerKm, dateTimeUtcMs, quantity, isFull, missedPrevious)
+
+    private companion object {
+        const val ROLLING_WINDOW = 3
+        const val DAYS_PER_MONTH = 30.4375
+    }
+}

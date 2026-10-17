@@ -4,7 +4,6 @@
     <string name="logbook_empty_body">Fill-ups, charges and costs will show up here.</string>
     <string name="logbook_empty_action">Log your first fill-up</string>
     <string name="logbook_no_matches">Nothing matches these filters.</string>
-    <string name="logbook_all_vehicles">All vehicles</string>
     <string name="logbook_search">Search</string>
     <string name="logbook_search_close">Close search</string>
     <string name="logbook_search_label">Search notes, stations and toll plazas</string>

@@ -1,6 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="insights_empty_title">अभी कोई इनसाइट नहीं</string>
-    <string name="insights_empty_body">दो बार टंकी फ़ुल कराकर दर्ज करें, फिर आपका माइलेज, ₹/km और ट्रेंड यहाँ दिखेंगे।</string>
+    <string name="insights_empty_title">अभी कोई जानकारी नहीं</string>
+    <string name="insights_empty_body">दो बार फ़ुल टंकी दर्ज करें, फिर माइलेज, ₹/km और ट्रेंड यहाँ दिखेंगे।</string>
     <string name="insights_empty_action">फ़्यूल दर्ज करें</string>
+    <string name="insights_back">वापस</string>
+
+    <string name="period_month">महीना</string>
+    <string name="period_3m">3 महीने</string>
+    <string name="period_6m">6 महीने</string>
+    <string name="period_ytd">इस साल</string>
+    <string name="period_12m">12 महीने</string>
+    <string name="period_all">सब</string>
+
+    <string name="insights_hero_overline">प्रति km खर्च · %1$s</string>
+    <string name="insights_per_km">/km</string>
+    <string name="insights_delta_previous">पिछली अवधि से %1$d%%</string>
+    <string name="insights_total_spent">कुल खर्च</string>
+    <string name="insights_excluded">%1$s ₹/km में नहीं</string>
+    <string name="insights_distance">दूरी</string>
+    <string name="insights_estimated">अनुमान</string>
+    <string name="insights_avg_mileage">औसत माइलेज</string>
+    <string name="insights_best">सबसे अच्छा %1$s</string>
+    <string name="insights_fill_ups">फ़्यूल एंट्री</string>
+    <string name="insights_cost_per_day">रोज़ का खर्च</string>
+    <string name="insights_cards">सुझाव</string>
+    <string name="insights_charts">चार्ट</string>
+    <string name="insights_how_calculated">यह कैसे निकलता है</string>
+    <string name="insights_info_cpk_title">इस अवधि में प्रति km खर्च</string>
+    <string name="insights_info_cpk_body">अवधि में फ़्यूल या चार्जिंग और गाड़ी चलाने के खर्च (सर्विस, टोल, पार्किंग वगैरह), उस अवधि में चली दूरी से भाग। लोन EMI और गाड़ी की कीमत नहीं जुड़ती। बदलाव ठीक पहले की उतनी ही लंबी अवधि से तुलना है।</string>
+    <string name="insights_info_tiles_title">ये आँकड़े कैसे निकलते हैं</string>
+    <string name="insights_info_tiles_body">कुल खर्च में अवधि की हर फ़्यूल एंट्री और खर्च जुड़ता है। दूरी ओडोमीटर का अंतर है; दो से कम रीडिंग हों तो आसपास की रीडिंग से अनुमान लगाया जाता है। औसत माइलेज अवधि में पूरी हुई फ़ुल टंकियों की कुल दूरी को कुल फ़्यूल से भाग है। रोज़ का खर्च ₹/km वाले खर्च को अवधि के दिनों से भाग है।</string>
+
+    <string name="card_mileage_drop_title">माइलेज घटा</string>
+    <string name="card_mileage_drop_body">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। पहले टायर प्रेशर जाँचें, फिर एयर फ़िल्टर, और देखें कि सर्विस तो नहीं बाकी।</string>
+    <string name="card_real_vs_claimed_title">असली बनाम दावा</string>
+    <string name="card_real_vs_claimed_body">आपको दावे का %1$d%% माइलेज मिलता है: %2$s km/%3$s, दावा %4$s।</string>
+    <string name="card_unlock">Pro से देखें</string>
+    <string name="card_pro_fuel_grade">फ़्यूल ग्रेड तुलना</string>
+    <string name="card_pro_cng">CNG से बचत</string>
+    <string name="card_pro_ev_vs_petrol">EV बनाम पेट्रोल</string>
+    <string name="card_pro_home_public">घर बनाम बाहर चार्जिंग</string>
+    <string name="card_pro_forecast">खर्च का अनुमान</string>
+    <string name="card_pro_compare">गाड़ियों की तुलना</string>
+
+    <string name="chart_mileage">माइलेज समय के साथ</string>
+    <string name="chart_monthly_spend">महीने का खर्च</string>
+    <string name="chart_price_paid">चुकाया गया दाम</string>
+    <string name="chart_cost_per_km">प्रति km खर्च का ट्रेंड</string>
+    <string name="chart_by_category">श्रेणी के हिसाब से खर्च</string>
+    <string name="chart_odometer">ओडोमीटर</string>
+    <string name="chart_fuel">फ़्यूल और चार्जिंग</string>
+    <string name="chart_claimed">दावा %1$s</string>
+    <string name="chart_no_data">इस अवधि में इस चार्ट के लिए काफ़ी एंट्री नहीं हैं।</string>
+    <string name="chart_show_table">डेटा टेबल दिखाएँ</string>
+    <string name="chart_hide_table">डेटा टेबल छिपाएँ</string>
+    <string name="chart_data_table">डेटा</string>
+    <string name="chart_mileage_formula">हर बार एक फ़ुल से फ़ुल टंकी है: दो फ़ुल टंकियों के बीच की दूरी को बीच में भरवाए सारे फ़्यूल से भाग, थोड़ा भरवाया फ़्यूल भी। लाइन पिछली 3 टंकियों का माइलेज है (कुल दूरी ÷ कुल फ़्यूल)। डैश वाली लाइन गाड़ी की सेटिंग में लिखा दावा है।</string>
+    <string name="chart_monthly_spend_formula">हर बार एक महीना है: गहरे हिस्से में फ़्यूल या चार्जिंग (छूट के बाद), हल्के हिस्से में बाकी सारे खर्च, EMI भी।</string>
+    <string name="chart_price_paid_formula">हर फ़्यूल एंट्री पर चुकाया गया प्रति यूनिट दाम, जैसा भरा गया या मात्रा और कुल रकम से निकला।</string>
+    <string name="chart_cost_per_km_formula">हर बिंदु एक महीना है: फ़्यूल और गाड़ी चलाने के खर्च को उस महीने चली दूरी से भाग। जिन महीनों में ओडोमीटर रीडिंग काफ़ी नहीं, वे छोड़े गए हैं।</string>
+    <string name="chart_by_category_formula">अवधि का सारा खर्च, श्रेणी के हिसाब से, सबसे बड़ा पहले।</string>
+    <string name="chart_odometer_formula">अवधि में फ़्यूल और खर्च के साथ दर्ज हर ओडोमीटर रीडिंग।</string>
+
+    <string name="summary_average">औसत</string>
+    <string name="summary_best">सबसे अच्छा</string>
+    <string name="summary_total">कुल</string>
+    <string name="summary_per_month">प्रति महीना</string>
+    <string name="summary_avg_fill">औसत मात्रा</string>
+    <string name="summary_period">इस अवधि में</string>
+    <string name="summary_energy_only">सिर्फ़ फ़्यूल</string>
+    <string name="summary_distance">दूरी</string>
+
+    <string name="recap_title">महीने का सार</string>
+    <string name="recap_entry">पिछला महीना एक कार्ड में देखें और शेयर करें।</string>
+    <string name="recap_driven">चलाई</string>
+    <string name="recap_spent">खर्च</string>
+    <string name="recap_cost_per_km">प्रति km खर्च</string>
+    <string name="recap_best_tank">सबसे अच्छी टंकी</string>
+    <string name="recap_cheaper">पिछले महीने से प्रति km %1$d%% सस्ता</string>
+    <string name="recap_dearer">पिछले महीने से प्रति km %1$d%% महँगा</string>
+    <string name="recap_show_vehicle">कार्ड पर गाड़ी का नाम दिखाएँ</string>
+    <string name="recap_share">शेयर करें</string>
+    <string name="recap_save">इमेज सेव करें</string>
+    <string name="recap_saved">इमेज सेव हो गई</string>
+    <string name="recap_failed">इमेज नहीं बन पाई</string>
 </resources>

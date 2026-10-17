@@ -3,4 +3,85 @@
     <string name="insights_empty_title">No insights yet</string>
     <string name="insights_empty_body">Log two full-tank fill-ups and your mileage, ₹/km and trends appear here.</string>
     <string name="insights_empty_action">Log fuel</string>
+    <string name="insights_back">Back</string>
+
+    <string name="period_month">Month</string>
+    <string name="period_3m">3M</string>
+    <string name="period_6m">6M</string>
+    <string name="period_ytd">YTD</string>
+    <string name="period_12m">12M</string>
+    <string name="period_all">All</string>
+
+    <string name="insights_hero_overline">Cost per km · %1$s</string>
+    <string name="insights_per_km">/km</string>
+    <string name="insights_delta_previous">%1$d%% vs previous</string>
+    <string name="insights_total_spent">Total spent</string>
+    <string name="insights_excluded">incl. %1$s not in ₹/km</string>
+    <string name="insights_distance">Distance</string>
+    <string name="insights_estimated">estimated</string>
+    <string name="insights_avg_mileage">Avg mileage</string>
+    <string name="insights_best">best %1$s</string>
+    <string name="insights_fill_ups">Fill-ups</string>
+    <string name="insights_cost_per_day">Cost per day</string>
+    <string name="insights_cards">Insights</string>
+    <string name="insights_charts">Charts</string>
+    <string name="insights_how_calculated">How this is calculated</string>
+    <string name="insights_info_cpk_title">Cost per km for this period</string>
+    <string name="insights_info_cpk_body">Fuel or charging plus running costs (service, tolls, parking and similar) in the period, divided by the kilometres driven in it. Loan EMIs and the purchase price are left out. The change compares with the period of the same length just before.</string>
+    <string name="insights_info_tiles_title">How these numbers are calculated</string>
+    <string name="insights_info_tiles_body">Total spent adds every fill-up and expense in the period. Distance is the odometer change; when there are fewer than two readings it is estimated from the readings around the period. Average mileage is all distance divided by all fuel across full-to-full tanks closed in the period. Cost per day is the ₹/km spend divided by the days in the period.</string>
+
+    <string name="card_mileage_drop_title">Mileage drop</string>
+    <string name="card_mileage_drop_body">Your mileage dropped %1$d%% over the last 2 tanks. Check tyre pressure first, then the air filter, and whether a service is due.</string>
+    <string name="card_real_vs_claimed_title">Real vs claimed</string>
+    <string name="card_real_vs_claimed_body">You get %1$d%% of the claimed mileage: %2$s km/%3$s against %4$s claimed.</string>
+    <string name="card_unlock">Unlock with Pro</string>
+    <string name="card_pro_fuel_grade">Fuel grade compare</string>
+    <string name="card_pro_cng">CNG saving</string>
+    <string name="card_pro_ev_vs_petrol">EV vs petrol</string>
+    <string name="card_pro_home_public">Home vs public charging</string>
+    <string name="card_pro_forecast">Spend forecast</string>
+    <string name="card_pro_compare">Compare vehicles</string>
+
+    <string name="chart_mileage">Mileage over time</string>
+    <string name="chart_monthly_spend">Monthly spend</string>
+    <string name="chart_price_paid">Price paid</string>
+    <string name="chart_cost_per_km">Cost per km trend</string>
+    <string name="chart_by_category">Spend by category</string>
+    <string name="chart_odometer">Odometer</string>
+    <string name="chart_fuel">Fuel and charging</string>
+    <string name="chart_claimed">Claimed %1$s</string>
+    <string name="chart_no_data">Not enough entries in this period for this chart.</string>
+    <string name="chart_show_table">Show data table</string>
+    <string name="chart_hide_table">Hide data table</string>
+    <string name="chart_data_table">Data</string>
+    <string name="chart_mileage_formula">Each bar is one full-to-full tank: the distance between two full fills divided by everything filled in between, partial fills included. The line is the rolling mileage of the last 3 tanks (total distance ÷ total fuel). The dashed line is the claimed figure from the vehicle settings.</string>
+    <string name="chart_monthly_spend_formula">Each bar is one month: fuel or charging paid (after discounts) in the dark part, every other expense in the light part, including EMIs.</string>
+    <string name="chart_price_paid_formula">The price per unit you paid at each fill-up, as entered or calculated from quantity and total.</string>
+    <string name="chart_cost_per_km_formula">Each point is one month: fuel and running costs divided by the kilometres driven that month. Months without enough odometer readings are left out.</string>
+    <string name="chart_by_category_formula">Everything spent in the period, grouped by category, largest first.</string>
+    <string name="chart_odometer_formula">Every odometer reading you logged in the period, from fill-ups and expenses.</string>
+
+    <string name="summary_average">Average</string>
+    <string name="summary_best">Best</string>
+    <string name="summary_total">Total</string>
+    <string name="summary_per_month">Per month</string>
+    <string name="summary_avg_fill">Avg fill</string>
+    <string name="summary_period">This period</string>
+    <string name="summary_energy_only">Fuel only</string>
+    <string name="summary_distance">Distance</string>
+
+    <string name="recap_title">Monthly recap</string>
+    <string name="recap_entry">See last month as a card you can share.</string>
+    <string name="recap_driven">driven</string>
+    <string name="recap_spent">spent</string>
+    <string name="recap_cost_per_km">cost per km</string>
+    <string name="recap_best_tank">best tank</string>
+    <string name="recap_cheaper">%1$d%% cheaper per km than the month before</string>
+    <string name="recap_dearer">%1$d%% dearer per km than the month before</string>
+    <string name="recap_show_vehicle">Show vehicle name on the card</string>
+    <string name="recap_share">Share</string>
+    <string name="recap_save">Save image</string>
+    <string name="recap_saved">Image saved</string>
+    <string name="recap_failed">Could not create the image</string>
 </resources>

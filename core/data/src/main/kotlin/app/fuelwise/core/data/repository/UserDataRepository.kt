@@ -16,6 +16,8 @@ data class UserData(
     val themeMode: ThemeMode,
     val hideAmounts: Boolean,
     val flags: FeatureFlags,
+    /** Milestone keys already shown (PRD F-17). */
+    val shownMilestones: Set<String> = emptySet(),
 )
 
 enum class ThemeMode { System, Light, Dark }
@@ -37,6 +39,8 @@ interface UserDataRepository {
     suspend fun setThemeMode(mode: ThemeMode)
 
     suspend fun setHideAmounts(hide: Boolean)
+
+    suspend fun markMilestoneShown(key: String)
 }
 
 internal class DataStoreUserDataRepository @Inject constructor(private val source: PreferencesDataSource) :
@@ -59,6 +63,7 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
                 multiDeviceSync = p.featureFlags.multiDeviceSync,
                 tripPlanner = p.featureFlags.tripPlanner,
             ),
+            shownMilestones = p.shownMilestonesList.toSet(),
         )
     }
 
@@ -85,4 +90,8 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
     }
 
     override suspend fun setHideAmounts(hide: Boolean) = source.update { hideAmounts = hide }
+
+    override suspend fun markMilestoneShown(key: String) = source.update {
+        if (key !in shownMilestones) shownMilestones.add(key)
+    }
 }

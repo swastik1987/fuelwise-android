@@ -28,4 +28,12 @@
     <string name="home_insight_mileage_drop">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। टायर का प्रेशर जाँचें: यही सबसे आम वजह होती है।</string>
     <string name="home_recent">हाल की एंट्री</string>
     <string name="home_see_all">सब देखें</string>
+    <string name="milestone_1000_title">1,000 km दर्ज</string>
+    <string name="milestone_1000_body">%1$s पर आपने 1,000 km का हिसाब रखा है। अब आपके औसत भरोसेमंद हो रहे हैं।</string>
+    <string name="milestone_10000_title">10,000 km दर्ज</string>
+    <string name="milestone_10000_body">%1$s के 10,000 km, हर फ़्यूल एंट्री का हिसाब।</string>
+    <string name="milestone_year_title">एक साल का हिसाब</string>
+    <string name="milestone_year_body">पूरे एक साल की फ़्यूल एंट्री और खर्च। अब महीने और मौसम के ट्रेंड मायने रखते हैं।</string>
+    <string name="milestone_best_title">अब तक की सबसे अच्छी टंकी</string>
+    <string name="milestone_best_body">%1$s km/%2$s: अब तक की सबसे अच्छी फ़ुल से फ़ुल टंकी।</string>
 </resources>

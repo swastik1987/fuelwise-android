@@ -7,7 +7,7 @@ complexity:
     ignoreAnnotated: ['Composable']
     ignoreDefaultParameters: true
     # Hilt constructors list a screen's collaborators; grouping them into holder objects only hides the graph.
-    constructorThreshold: 10
+    constructorThreshold: 12
   LongMethod:
     ignoreAnnotated: ['Composable']
   CyclomaticComplexMethod:

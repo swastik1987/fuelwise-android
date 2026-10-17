@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0&display=block">
+<style>
+body{margin:0;font-family:Geist,"Noto Sans Devanagari",system-ui,sans-serif;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;background:var(--cvbg);--fw:412px;--fh:915px;--cvbg:#E4E2DC;--cv:#3A3A37;--cvb:#121212;--bg:#F5F4F0;--surface:#FFFFFF;--surface2:#EEEDE8;--ink:#121212;--ink2:#5C5C58;--ink3:#8E8E88;--line:#E4E2DC;--cb:#E4E2DC;--accent:#FF5B1F;--onaccent:#FFFFFF;--accentsoft:#FFE7DC;--pos:#1F9D55;--warn:#E8A317;--neg:#D93025;--dim:#8C8B87}
+body[data-size="360"]{--fw:360px;--fh:800px}
+body[data-theme="dark"]{--cvbg:#1B1B1D;--cv:#C9C8C3;--cvb:#F2F1ED;--bg:#0D0D0E;--surface:#161618;--surface2:#1F1F22;--ink:#F2F1ED;--ink2:#A6A5A0;--ink3:#6E6D69;--line:#2A2A2E;--cb:transparent;--accent:#FF6A33;--accentsoft:#3A1E14;--pos:#3CCB7F;--warn:#F2B84B;--neg:#FF6B5E;--dim:#050506}
+a{color:var(--ink);text-decoration:none}a:hover{color:var(--accent)}
+</style>
+</helmet>
+<div style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:40px;color:var(--cv)">
+<div style="display:flex;flex-direction:column;gap:8px;max-width:720px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Fuelwise · Screens 30–31</div>
+<div style="font:600 30px/36px Geist;letter-spacing:-.01em">Widgets &amp; notifications</div>
+<div style="font:400 15px/22px Geist;opacity:.75;text-wrap:pretty">Home-screen widgets at real cell sizes on neutral Material You surfaces (light and dark shown together), and expanded notification templates.</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<!-- 30 Widgets light -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">30</span>Widgets · light</div>
+<div data-screen-label="30 Widgets light" style="width:412px;height:915px;background:repeating-linear-gradient(135deg,#D9D6CE 0 12px,#D2CFC6 12px 24px);color:#121212;border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="position:absolute;right:20px;top:52px;font:400 10px/1 'Geist Mono';color:#5C5C58">wallpaper</div>
+<div style="padding:40px 24px 0;display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:176px 176px;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:80px;border-radius:24px;background:#F3F1EC;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;justify-items:center;padding:0 8px">
+<div style="width:36px;height:36px;border-radius:12px;background:#FF5B1F;color:#fff;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">local_gas_station</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#E4E2DC;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">ev_station</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#E4E2DC;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">receipt_long</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#E4E2DC;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">route</span></div>
+</div><span style="font:500 11px/1 Geist;color:#3A3A37;text-align:center">Quick add · 2×1</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:80px;border-radius:24px;background:#F3F1EC;display:flex;align-items:center;gap:12px;padding:0 12px 0 16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px;font:500 11px/14px Geist;color:#5C5C58"><span style="width:7px;height:7px;border-radius:50%;background:#D93025"></span>Recording</div><div style="font:500 22px/26px 'Geist Mono';letter-spacing:-.02em">23.4 km</div></div>
+<div style="width:48px;height:48px;border-radius:16px;background:#121212;color:#F5F4F0;display:flex;align-items:center;justify-content:center"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1">stop</span></div>
+</div><span style="font:500 11px/1 Geist;color:#3A3A37;text-align:center">Trip controls · 2×1</span></div>
+</div>
+<div style="display:grid;grid-template-columns:176px 176px;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:176px;border-radius:24px;background:#F3F1EC;padding:16px;box-sizing:border-box;display:flex;flex-direction:column">
+<div style="font:600 10px/12px Geist;letter-spacing:.06em;text-transform:uppercase;color:#5C5C58">Safari · Oct</div>
+<div style="display:flex;align-items:baseline;gap:2px;margin-top:6px"><span style="font:600 34px/38px Geist;letter-spacing:-.03em">₹4.82</span><span style="font:500 13px/1 Geist;color:#5C5C58">/km</span></div>
+<div style="font:500 14px/18px Geist;margin-top:2px">16.8 km/L <span style="color:#5C5C58;font-weight:400">last tank</span></div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:99px;background:#E4E2DC;font:500 12px/1 Geist;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#E8A317"></span>PUC · 12 days</div>
+</div><span style="font:500 11px/1 Geist;color:#3A3A37;text-align:center">Status · 2×2</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:176px;border-radius:24px;background:#F3F1EC;padding:16px 18px;box-sizing:border-box;display:grid;grid-template-columns:1.2fr 1fr;gap:12px">
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:6px;font:600 10px/12px Geist;letter-spacing:.06em;text-transform:uppercase;color:#5C5C58">October spend<span style="height:15px;padding:0 5px;border-radius:99px;border:1px solid #121212;display:flex;align-items:center;font:600 8px/1 Geist;color:#121212">PRO</span></div>
+<div style="font:600 30px/36px Geist;letter-spacing:-.02em;margin-top:4px">₹6,240</div>
+<div style="flex:1"></div>
+<svg viewBox="0 0 120 34" preserveAspectRatio="none" style="width:100%;height:34px"><polyline points="0,24 15,20 30,22 45,15 60,17 75,11 90,14 105,8 120,9" style="fill:none;stroke:#121212;stroke-width:1.5;vector-effect:non-scaling-stroke"></polyline></svg>
+<div style="font:400 11px/14px Geist;color:#5C5C58">Mileage · 30 days</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-left:1px solid #E4E2DC;padding-left:12px">
+<div><div style="font:400 11px/14px Geist;color:#5C5C58">Range left</div><div style="font:600 18px/24px Geist">~310 km</div><div style="height:4px;border-radius:2px;background:#E4E2DC;margin-top:4px"><div style="width:58%;height:100%;border-radius:2px;background:#121212"></div></div></div>
+<div><div style="font:400 11px/14px Geist;color:#5C5C58">Next due</div><div style="display:flex;align-items:center;gap:5px;font:600 14px/18px Geist"><span style="width:7px;height:7px;border-radius:50%;background:#E8A317"></span>PUC · 12 days</div></div>
+</div>
+</div><span style="font:500 11px/1 Geist;color:#3A3A37;text-align:center">Dashboard · 4×2 (PRO)</span></div>
+</div>
+</div>
+</div>
+
+<!-- 30b Widgets dark -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">30b</span>Widgets · dark</div>
+<div data-screen-label="30b Widgets dark" style="width:412px;height:915px;background:repeating-linear-gradient(135deg,#1A1A1C 0 12px,#151517 12px 24px);color:#F2F1ED;border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="position:absolute;right:20px;top:52px;font:400 10px/1 'Geist Mono';color:#6E6D69">wallpaper</div>
+<div style="padding:40px 24px 0;display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:176px 176px;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:80px;border-radius:24px;background:#232326;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;justify-items:center;padding:0 8px">
+<div style="width:36px;height:36px;border-radius:12px;background:#FF6A33;color:#fff;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">local_gas_station</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#2E2E32;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">ev_station</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#2E2E32;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">receipt_long</span></div>
+<div style="width:36px;height:36px;border-radius:12px;background:#2E2E32;display:flex;align-items:center;justify-content:center"><span style="font:300 20px/1 'Material Symbols Rounded'">route</span></div>
+</div><span style="font:500 11px/1 Geist;color:#A6A5A0;text-align:center">Quick add · 2×1</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:80px;border-radius:24px;background:#232326;display:flex;align-items:center;gap:12px;padding:0 12px 0 16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font:500 11px/14px Geist;color:#A6A5A0">Ready</div><div style="font:500 22px/26px 'Geist Mono';letter-spacing:-.02em">0.0 km</div></div>
+<div style="width:48px;height:48px;border-radius:16px;background:#F2F1ED;color:#0D0D0E;display:flex;align-items:center;justify-content:center"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1">play_arrow</span></div>
+</div><span style="font:500 11px/1 Geist;color:#A6A5A0;text-align:center">Trip controls · idle</span></div>
+</div>
+<div style="display:grid;grid-template-columns:176px 176px;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:176px;border-radius:24px;background:#232326;padding:16px;box-sizing:border-box;display:flex;flex-direction:column">
+<div style="font:600 10px/12px Geist;letter-spacing:.06em;text-transform:uppercase;color:#A6A5A0">Safari · Oct</div>
+<div style="display:flex;align-items:baseline;gap:2px;margin-top:6px"><span style="font:600 34px/38px Geist;letter-spacing:-.03em">₹4.82</span><span style="font:500 13px/1 Geist;color:#A6A5A0">/km</span></div>
+<div style="font:500 14px/18px Geist;margin-top:2px">16.8 km/L <span style="color:#A6A5A0;font-weight:400">last tank</span></div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:99px;background:#2E2E32;font:500 12px/1 Geist;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#F2B84B"></span>PUC · 12 days</div>
+</div><span style="font:500 11px/1 Geist;color:#A6A5A0;text-align:center">Status · 2×2</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:176px;border-radius:24px;background:#232326;padding:16px 18px;box-sizing:border-box;display:grid;grid-template-columns:1.2fr 1fr;gap:12px">
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:6px;font:600 10px/12px Geist;letter-spacing:.06em;text-transform:uppercase;color:#A6A5A0">October spend<span style="height:15px;padding:0 5px;border-radius:99px;border:1px solid #F2F1ED;display:flex;align-items:center;font:600 8px/1 Geist;color:#F2F1ED">PRO</span></div>
+<div style="font:600 30px/36px Geist;letter-spacing:-.02em;margin-top:4px">₹6,240</div>
+<div style="flex:1"></div>
+<svg viewBox="0 0 120 34" preserveAspectRatio="none" style="width:100%;height:34px"><polyline points="0,24 15,20 30,22 45,15 60,17 75,11 90,14 105,8 120,9" style="fill:none;stroke:#F2F1ED;stroke-width:1.5;vector-effect:non-scaling-stroke"></polyline></svg>
+<div style="font:400 11px/14px Geist;color:#A6A5A0">Mileage · 30 days</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border-left:1px solid #2E2E32;padding-left:12px">
+<div><div style="font:400 11px/14px Geist;color:#A6A5A0">Range left</div><div style="font:600 18px/24px Geist">~310 km</div><div style="height:4px;border-radius:2px;background:#2E2E32;margin-top:4px"><div style="width:58%;height:100%;border-radius:2px;background:#F2F1ED"></div></div></div>
+<div><div style="font:400 11px/14px Geist;color:#A6A5A0">Next due</div><div style="display:flex;align-items:center;gap:5px;font:600 14px/18px Geist"><span style="width:7px;height:7px;border-radius:50%;background:#F2B84B"></span>PUC · 12 days</div></div>
+</div>
+</div><span style="font:500 11px/1 Geist;color:#A6A5A0;text-align:center">Dashboard · 4×2 (PRO)</span></div>
+</div>
+</div>
+</div>
+
+<!-- 31 Notifications -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">31</span>Notifications · expanded templates</div>
+<div data-screen-label="31 Notifications" style="width:var(--fw);min-height:var(--fh);background:var(--dim);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<div style="color:var(--bg)"><dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import></div>
+<div style="padding:8px 12px 24px;display:flex;flex-direction:column;gap:8px">
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Reminders · now</div>
+<div style="font:600 15px/20px Geist">PUC for Safari expires in 7 days</div>
+<div style="font:400 14px/20px Geist;color:var(--ink2)">Valid till 28 Oct 2026. Most PUC centres take 10 minutes.</div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Done</span><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Snooze 3 days</span></div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Trip recording · ongoing</div>
+<div style="display:flex;align-items:center;gap:8px;font:600 15px/20px Geist"><span style="width:8px;height:8px;border-radius:50%;background:var(--neg)"></span>Recording trip · 23.4 km · 38 min</div>
+<div style="height:4px;border-radius:2px;background:var(--surface2);overflow:hidden"><div style="width:100%;height:100%;background:repeating-linear-gradient(90deg,var(--ink3) 0 8px,transparent 8px 14px)"></div></div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Pause</span><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Stop</span></div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Trips · 2 min ago</div>
+<div style="font:600 15px/20px Geist">Trip saved · 42 km. Update odometer?</div>
+<div style="font:400 14px/20px Geist;color:var(--ink2)">Bengaluru → Hosur. Predicted reading 42,360 km.</div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Update</span></div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Monthly recap · 1 Nov</div>
+<div style="display:flex;gap:12px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><div style="font:600 15px/20px Geist">Your October recap</div><div style="font:400 14px/20px Geist;color:var(--ink2)">October: ₹4.82/km, 6% cheaper than September.</div></div><div style="width:40px;height:64px;flex:none;border-radius:8px;background:#121212;position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#F2B705"></div><div style="position:absolute;left:8px;top:8px;font:700 9px/1 Geist;color:#F2F1ED">Oct</div></div></div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">See recap</span></div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Price alerts · 06:34</div>
+<div style="font:600 15px/20px Geist">Petrol in Bengaluru up ₹1.20/L today.</div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:14px 16px 6px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Fill-up prompts · 1 min ago</div>
+<div style="font:600 15px/20px Geist">Filled up at HP, Indiranagar? Tap to log.</div>
+<div style="font:400 14px/20px Geist;color:var(--ink2)">You stopped there for 6 min with Safari.</div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Log it</span><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Not a fill-up</span></div>
+</div>
+
+<div style="background:var(--surface);border-radius:24px;padding:12px 16px 4px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:8px;font:400 12px/16px Geist;color:var(--ink2)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 36 36"><path d="M7 27 A13 13 0 1 1 29 27" style="fill:none;stroke:var(--bg);stroke-width:4;stroke-linecap:round"></path><line x1="18" y1="20" x2="25" y2="11" style="stroke:var(--bg);stroke-width:4;stroke-linecap:round"></line></svg></span>Fuelwise · Automatic trips · ongoing</div>
+<div style="font:500 14px/20px Geist">Recording drive · Safari · 12.4 km</div>
+<div style="display:flex;gap:4px;margin-left:-10px"><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Pause</span><span style="height:40px;padding:0 10px;display:flex;align-items:center;font:600 14px/18px Geist">Not my drive</span></div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;'Light'|'Dark'&quot;},&quot;frame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;412 × 915&quot;,&quot;360 × 800&quot;],&quot;default&quot;:&quot;412 × 915&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() { this.sync(); }
+  componentDidUpdate() { this.sync(); }
+  sync() {
+    const b = document.body;
+    b.dataset.theme = (this.props.theme ?? 'Light') === 'Dark' ? 'dark' : 'light';
+    b.dataset.size = String(this.props.frame ?? '412').startsWith('360') ? '360' : '412';
+  }
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

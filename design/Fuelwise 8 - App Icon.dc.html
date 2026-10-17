@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=block">
+<style>body{margin:0;background:#E4E2DC;font-family:Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#3A3A37}a{color:#121212;text-decoration:none}a:hover{color:#FF5B1F}</style>
+</helmet>
+<div style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:8px;max-width:760px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Fuelwise · App icon</div>
+<div style="font:600 30px/36px Geist;letter-spacing:-.01em">Gauge mark, adaptive icon &amp; themed variant</div>
+<div style="font:400 15px/22px Geist;opacity:.75;text-wrap:pretty">An open gauge arc with a single needle tick. The arc is ink, the needle is Ignition orange. It is monochrome-first, so it still reads when the launcher tints it. The mark sits inside the 66 dp safe zone of the 108 dp adaptive canvas.</div>
+</div>
+
+<!-- Master -->
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:#121212;color:#E4E2DC">A</span>Primary · paper</div>
+<div data-screen-label="Icon A paper" style="width:240px;height:240px;border-radius:50%;background:#F5F4F0;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.1);overflow:hidden">
+<svg viewBox="0 0 108 108" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:#121212;color:#E4E2DC">B</span>Primary · ink</div>
+<div data-screen-label="Icon B ink" style="width:240px;height:240px;border-radius:50%;background:#121212;box-shadow:0 20px 50px rgba(0,0,0,.14);overflow:hidden">
+<svg viewBox="0 0 108 108" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:7;stroke-linecap:round"></line></svg>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:#121212;color:#E4E2DC">C</span>Accent variant</div>
+<div data-screen-label="Icon C accent" style="width:240px;height:240px;border-radius:50%;background:#FF5B1F;box-shadow:0 20px 50px rgba(0,0,0,.12);overflow:hidden">
+<svg viewBox="0 0 108 108" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#FFFFFF;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#121212;stroke-width:7;stroke-linecap:round"></line></svg>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:#121212;color:#E4E2DC">D</span>Themed · monochrome</div>
+<div style="display:flex;gap:16px">
+<div data-screen-label="Icon D themed light" style="width:240px;height:240px;border-radius:50%;background:#E3E1D9;box-shadow:0 20px 50px rgba(0,0,0,.08);overflow:hidden">
+<svg viewBox="0 0 108 108" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#3D3B33;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#3D3B33;stroke-width:7;stroke-linecap:round"></line></svg>
+</div>
+<div data-screen-label="Icon D themed dark" style="width:240px;height:240px;border-radius:50%;background:#2E2D29;box-shadow:0 20px 50px rgba(0,0,0,.14);overflow:hidden">
+<svg viewBox="0 0 108 108" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#E3E1D9;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#E3E1D9;stroke-width:7;stroke-linecap:round"></line></svg>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Adaptive layers -->
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Adaptive icon · 108 dp layers</div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:10px"><div style="width:324px;height:324px;background:#F5F4F0;box-shadow:0 0 0 1px rgba(0,0,0,.08)"></div><div style="font:500 13px/18px Geist">Background layer</div><div style="font:400 12px/16px 'Geist Mono';opacity:.7">solid #F5F4F0 (bg) · or #121212 (ink)</div></div>
+<div style="display:flex;flex-direction:column;gap:10px"><div style="width:324px;height:324px;background:repeating-conic-gradient(#EDEBE5 0 25%,#F7F6F2 0 50%) 0 0/24px 24px;box-shadow:0 0 0 1px rgba(0,0,0,.08);position:relative">
+<svg viewBox="0 0 108 108" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="54" cy="54" r="36" style="fill:none;stroke:#8E8E88;stroke-width:.4;stroke-dasharray:1.5 1.5"></circle><circle cx="54" cy="54" r="33" style="fill:none;stroke:#FF5B1F;stroke-width:.4;stroke-dasharray:1.5 1.5"></circle><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg>
+</div><div style="font:500 13px/18px Geist">Foreground layer · transparent</div><div style="font:400 12px/16px 'Geist Mono';opacity:.7"><span style="color:#FF5B1F">- -</span> 66 dp safe zone · <span>- -</span> 72 dp visible</div></div>
+<div style="display:flex;flex-direction:column;gap:10px"><div style="width:324px;height:324px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;justify-items:center">
+<div style="width:132px;height:132px;border-radius:50%;background:#F5F4F0;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="width:132px;height:132px;border-radius:32%;background:#F5F4F0;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="width:132px;height:132px;border-radius:18%;background:#F5F4F0;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="width:132px;height:132px;border-radius:50% 50% 50% 14%;background:#F5F4F0;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg></div>
+</div><div style="font:500 13px/18px Geist">Launcher masks</div><div style="font:400 12px/16px 'Geist Mono';opacity:.7">circle · squircle · rounded square · teardrop</div></div>
+</div>
+</div>
+
+<!-- Sizes + context -->
+<div style="display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Legibility · 96 / 48 / 32 / 24 px</div>
+<div style="display:flex;gap:24px;align-items:flex-end;padding:28px;border-radius:24px;background:#F5F4F0">
+<div style="width:96px;height:96px;border-radius:50%;background:#121212;overflow:hidden"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="width:48px;height:48px;border-radius:50%;background:#121212;overflow:hidden"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="width:32px;height:32px;border-radius:50%;background:#121212;overflow:hidden"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:7.5;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:7.5;stroke-linecap:round"></line></svg></div>
+<div style="width:24px;height:24px;border-radius:50%;background:#121212;overflow:hidden"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:8;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:8;stroke-linecap:round"></line></svg></div>
+<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center"><svg viewBox="30 30 48 48" style="width:24px;height:24px;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:6;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#121212;stroke-width:6;stroke-linecap:round"></line></svg></div>
+</div>
+<div style="font:400 12px/16px Geist;opacity:.7;max-width:420px;text-wrap:pretty">Stroke thickens slightly below 32 px. The last glyph is the status-bar / notification small icon: a single-colour mark with no background.</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">On the home screen</div>
+<div style="display:flex;gap:24px">
+<div data-screen-label="Icon in launcher" style="width:340px;padding:28px 20px;border-radius:28px;background:repeating-linear-gradient(135deg,#D9D6CE 0 12px,#D2CFC6 12px 24px);display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px;justify-items:center">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Maps</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#F5F4F0;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.1)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#121212;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF5B1F;stroke-width:7;stroke-linecap:round"></line></svg></div><span style="font:600 11px/14px Geist;color:#121212">Fuelwise</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">UPI</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Camera</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Photos</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Messages</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Clock</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#C3BFB5"></div><span style="font:500 11px/14px Geist;color:#121212">Files</span></div>
+</div>
+<div data-screen-label="Icon themed launcher" style="width:340px;padding:28px 20px;border-radius:28px;background:repeating-linear-gradient(135deg,#1A1A1C 0 12px,#151517 12px 24px);display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px;justify-items:center">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Maps</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29;overflow:hidden"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#E3E1D9;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#E3E1D9;stroke-width:7;stroke-linecap:round"></line></svg></div><span style="font:600 11px/14px Geist;color:#F2F1ED">Fuelwise</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">UPI</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Camera</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Photos</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Messages</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Clock</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:56px;height:56px;border-radius:50%;background:#2E2D29"></div><span style="font:500 11px/14px Geist;color:#F2F1ED">Files</span></div>
+</div>
+</div>
+<div style="font:400 12px/16px Geist;opacity:.7">Left: default (paper). Right: Android themed icons on, dark wallpaper.</div>
+</div>
+</div>
+
+<!-- Play Store -->
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Play Store hi-res icon · 512 × 512</div>
+<div style="display:flex;gap:32px;align-items:flex-end">
+<div data-screen-label="Play icon 512" style="width:512px;height:512px;background:#121212;border-radius:20%;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.14)"><svg viewBox="18 18 72 72" style="width:100%;height:100%;display:block"><path d="M39.86 72.14 A20 20 0 1 1 68.14 72.14" style="fill:none;stroke:#F2F1ED;stroke-width:7;stroke-linecap:round"></path><line x1="54" y1="58" x2="64.6" y2="47.4" style="stroke:#FF6A33;stroke-width:7;stroke-linecap:round"></line></svg></div>
+<div style="display:flex;flex-direction:column;gap:10px;max-width:280px;padding-bottom:8px">
+<div style="font:500 14px/20px Geist;color:#121212">Ink background for the store</div>
+<div style="font:400 13px/20px Geist;text-wrap:pretty">On the white Play Store page, the dark tile stands out more than paper. The store adds its own 20% corner radius, so the export is a full-bleed square.</div>
+<div style="font:400 12px/18px 'Geist Mono';opacity:.75">Arc #F2F1ED · Needle #FF6A33 · BG #121212</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+</body>
+</html>

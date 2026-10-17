@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0&display=block">
+<style>
+body{margin:0;font-family:Geist,"Noto Sans Devanagari",system-ui,sans-serif;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;background:var(--cvbg);--fw:412px;--fh:915px;--cvbg:#E4E2DC;--cv:#3A3A37;--cvb:#121212;--bg:#F5F4F0;--surface:#FFFFFF;--surface2:#EEEDE8;--ink:#121212;--ink2:#5C5C58;--ink3:#8E8E88;--line:#E4E2DC;--cb:#E4E2DC;--accent:#FF5B1F;--onaccent:#FFFFFF;--accentsoft:#FFE7DC;--pos:#1F9D55;--warn:#E8A317;--neg:#D93025;--dim:#8C8B87}
+body[data-size="360"]{--fw:360px;--fh:800px}
+body[data-theme="dark"]{--cvbg:#1B1B1D;--cv:#C9C8C3;--cvb:#F2F1ED;--bg:#0D0D0E;--surface:#161618;--surface2:#1F1F22;--ink:#F2F1ED;--ink2:#A6A5A0;--ink3:#6E6D69;--line:#2A2A2E;--cb:transparent;--accent:#FF6A33;--accentsoft:#3A1E14;--pos:#3CCB7F;--warn:#F2B84B;--neg:#FF6B5E;--dim:#050506}
+a{color:var(--ink);text-decoration:none}a:hover{color:var(--accent)}
+</style>
+</helmet>
+<div style="padding:56px 64px 80px;display:flex;flex-direction:column;gap:40px;color:var(--cv)">
+<div style="display:flex;flex-direction:column;gap:8px;max-width:720px">
+<div style="font:600 11px/14px 'Geist Mono';letter-spacing:.08em;text-transform:uppercase;opacity:.7">Fuelwise · Screens 21–24</div>
+<div style="font:600 30px/36px Geist;letter-spacing:-.01em">Garage, reminders &amp; documents</div>
+<div style="font:400 15px/22px Geist;opacity:.75;text-wrap:pretty">Vehicles and everything that keeps them legal: renewals by date or km, and a private document vault.</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<!-- 21 Garage -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">21</span>Garage ★</div>
+<div data-screen-label="21 Garage" style="width:var(--fw);min-height:var(--fh);background:var(--bg);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:64px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 20px"><div style="font:600 30px/36px Geist;letter-spacing:-.01em">Garage</div><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">settings</span></div></div>
+<div style="display:flex;gap:12px;padding:12px 20px 0;overflow:hidden">
+<div style="flex:none;width:236px;background:var(--surface);border:1px solid var(--cb);border-radius:24px;overflow:hidden">
+<div style="height:112px;background:repeating-linear-gradient(135deg,var(--surface2) 0 8px,var(--surface) 8px 16px);position:relative"><span style="position:absolute;left:12px;bottom:10px;font:400 10px/1 'Geist Mono';color:var(--ink2)">vehicle photo</span></div>
+<div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 18px/24px Geist">Safari</span><span style="font:400 13px/18px Geist;color:var(--ink2)">42,318 km</span></div>
+<div style="font:500 13px/18px 'Geist Mono';letter-spacing:.04em;color:var(--ink2)">KA 01 AB 1234</div>
+<div style="display:flex;gap:6px;margin-top:4px"><span style="height:22px;padding:0 8px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;gap:5px;font:500 11px/14px Geist"><span style="width:6px;height:6px;border-radius:50%;background:#3A6FF7"></span>Diesel · 50 L</span></div>
+</div>
+</div>
+<div style="flex:none;width:236px;background:var(--surface);border:1px solid var(--cb);border-radius:24px;overflow:hidden">
+<div style="height:112px;background:repeating-linear-gradient(135deg,var(--surface2) 0 8px,var(--surface) 8px 16px);position:relative"><span style="position:absolute;left:12px;bottom:10px;font:400 10px/1 'Geist Mono';color:var(--ink2)">vehicle photo</span></div>
+<div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 18px/24px Geist">Ertiga</span><span style="font:400 13px/18px Geist;color:var(--ink2)">31,045 km</span></div>
+<div style="font:500 13px/18px 'Geist Mono';letter-spacing:.04em;color:var(--ink2)">MH 02 CD 5678</div>
+<div style="display:flex;gap:6px;margin-top:4px"><span style="height:22px;padding:0 8px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;gap:5px;font:500 11px/14px Geist"><span style="width:6px;height:6px;border-radius:50%;background:#18A866"></span>CNG</span><span style="height:22px;padding:0 8px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;gap:5px;font:500 11px/14px Geist"><span style="width:6px;height:6px;border-radius:50%;background:#F2B705"></span>Petrol</span></div>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:6px;justify-content:center;padding-top:12px"><span style="width:16px;height:4px;border-radius:2px;background:var(--ink)"></span><span style="width:4px;height:4px;border-radius:2px;background:var(--ink3)"></span><span style="width:4px;height:4px;border-radius:2px;background:var(--ink3)"></span><span style="width:4px;height:4px;border-radius:2px;background:var(--ink3)"></span><span style="width:4px;height:4px;border-radius:2px;background:var(--ink3)"></span></div>
+<div style="margin:20px 20px 0;background:var(--surface);border:1px solid var(--cb);border-radius:24px;padding:0 16px">
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">notifications</span><span style="flex:1;font:400 16px/22px Geist">Reminders</span><span style="display:flex;align-items:center;gap:6px;font:400 14px/20px Geist;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--neg)"></span>1 overdue · 3 due</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">folder_shared</span><span style="flex:1;font:400 16px/22px Geist">Documents</span><span style="display:flex;align-items:center;gap:6px;font:400 14px/20px Geist;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span>1 expiring</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">toll</span><span style="flex:1;font:400 16px/22px Geist">FASTag</span><span style="font:400 14px/20px Geist;color:var(--ink2)">₹1,235 est.</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">local_gas_station</span><span style="flex:1;font:400 16px/22px Geist">Fuel prices</span><span style="font:400 14px/20px Geist;color:var(--ink2)">Bengaluru</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">route</span><span style="flex:1;font:400 16px/22px Geist">Trips</span><span style="font:400 14px/20px Geist;color:var(--ink2)">142 km this week</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px;border-bottom:1px solid var(--line)"><span style="font:300 24px/1 'Material Symbols Rounded'">cloud_done</span><span style="flex:1;font:400 16px/22px Geist">Backup &amp; sync</span><span style="display:flex;align-items:center;gap:6px;font:400 14px/20px Geist;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span>2 h ago</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+<div style="display:flex;align-items:center;gap:14px;height:60px"><span style="font:300 24px/1 'Material Symbols Rounded'">tune</span><span style="flex:1;font:400 16px/22px Geist">Settings</span><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+</div>
+<div style="margin:12px 20px 24px;height:56px;border-radius:16px;border:1.5px dashed var(--ink3);display:flex;align-items:center;justify-content:center;gap:8px;font:500 15px/20px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">add</span>Add vehicle</div>
+<div style="flex:1"></div>
+<dc-import name="FwTabBar" active="garage" hint-size="100%,92px"></dc-import>
+</div>
+</div>
+
+<!-- 22 Vehicle detail -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">22</span>Vehicle detail / edit · full scroll</div>
+<div data-screen-label="22 Vehicle detail" style="width:var(--fw);min-height:var(--fh);background:var(--bg);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<div style="height:280px;flex:none;position:relative;background:repeating-linear-gradient(135deg,#2A2A2E 0 10px,#222225 10px 20px);color:#F2F1ED;display:flex;flex-direction:column">
+<div style="position:absolute;left:20px;top:120px;font:400 10px/1 'Geist Mono';color:#8E8E88">header photo · Safari</div>
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="display:flex;justify-content:space-between;padding:4px 8px"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">arrow_back</span></div><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">photo_camera</span></div></div>
+<div style="flex:1"></div>
+<div style="padding:0 20px 22px;background:linear-gradient(transparent,rgba(0,0,0,.55));padding-top:40px"><div style="font:600 30px/36px Geist;letter-spacing:-.01em">Safari</div><div style="font:500 14px/20px 'Geist Mono';letter-spacing:.04em;color:#C9C8C3;margin-top:2px">KA 01 AB 1234 · 42,318 km</div></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Energy setup</div>
+<div style="background:var(--surface);border:1px solid var(--cb);border-radius:24px;padding:0 16px">
+<div style="display:flex;align-items:center;gap:12px;height:60px;border-bottom:1px solid var(--line)"><span style="width:8px;height:8px;border-radius:50%;background:#3A6FF7"></span><span style="flex:1;font:400 16px/22px Geist">Diesel tank</span><span style="font:500 15px/20px Geist">50 L</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px"><span style="font:400 16px/22px Geist">Add second tank</span><span style="font:300 22px/1 'Material Symbols Rounded';color:var(--ink2)">add</span></div>
+</div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Efficiency &amp; estimates</div>
+<div style="background:var(--surface);border:1px solid var(--cb);border-radius:24px;padding:0 16px">
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:1px solid var(--line)"><span style="font:400 16px/22px Geist">Claimed mileage</span><span style="font:500 15px/20px Geist">19.1 km/L</span></div>
+<div style="display:flex;align-items:center;gap:8px;height:56px;border-bottom:1px solid var(--line)"><span style="flex:1;font:400 16px/22px Geist">Consumption for estimates</span><span style="font:500 10px/14px Geist;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:6px;border:1px solid var(--ink2);color:var(--ink2)">manual</span><span style="font:500 15px/20px Geist">13.0 km/L</span></div>
+<div style="display:flex;align-items:center;gap:8px;height:56px;border-bottom:1px solid var(--line)"><span style="flex:1;font:400 16px/22px Geist">Fuel price</span><span style="font:400 13px/18px Geist;color:var(--ink2)">auto · city</span><span style="font:500 15px/20px Geist">₹88.95</span></div>
+<div style="display:flex;align-items:center;gap:8px;height:56px"><span style="flex:1;font:400 16px/22px Geist">Range on full tank</span><span style="font:400 13px/18px Geist;color:var(--ink2)">auto</span><span style="font:500 15px/20px Geist">670 km</span></div>
+</div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:10px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Registration &amp; purchase</div>
+<div style="background:var(--surface);border:1px solid var(--cb);border-radius:24px;padding:0 16px">
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:1px solid var(--line)"><span style="font:400 16px/22px Geist">Emission norm</span><span style="font:500 15px/20px Geist">BS-VI</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px;border-bottom:1px solid var(--line)"><span style="font:400 16px/22px Geist">Purchased</span><span style="font:500 15px/20px Geist">12 Mar 2023 · 1,240 km</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px"><span style="font:400 16px/22px Geist">Price paid</span><span style="font:500 15px/20px Geist">₹18,45,000</span></div>
+</div>
+</div>
+<div style="padding:24px 20px 0">
+<div style="background:var(--surface);border:1px solid var(--cb);border-radius:24px;padding:16px;display:flex;align-items:center;gap:14px"><span style="font:300 24px/1 'Material Symbols Rounded'">bluetooth</span><div style="flex:1"><div style="font:400 16px/22px Geist">Car Bluetooth for automatic trips</div><div style="font:400 13px/18px Geist;color:var(--ink2)">Safari Audio · paired. Trips that start on it go to Safari.</div></div><span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink3)">chevron_right</span></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:14px;height:56px"><span style="font:300 24px/1 'Material Symbols Rounded'">archive</span><div style="flex:1"><div style="font:400 16px/22px Geist">Archive vehicle</div><div style="font:400 13px/18px Geist;color:var(--ink2)">Hides it; history stays in stats and exports</div></div></div>
+<div style="display:flex;align-items:center;gap:14px;height:56px;color:var(--neg)"><span style="font:300 24px/1 'Material Symbols Rounded'">delete</span><span style="font:500 16px/22px Geist">Delete vehicle</span></div>
+</div>
+<div style="flex:1;min-height:16px"></div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+
+<!-- 23 Reminders -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">23</span>Reminders</div>
+<div data-screen-label="23 Reminders" style="width:var(--fw);min-height:var(--fh);background:var(--bg);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:56px;flex:none;display:flex;align-items:center;padding:0 4px"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">arrow_back</span></div><div style="flex:1;font:600 18px/24px Geist">Reminders</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;margin:0 20px;border-bottom:1px solid var(--line)"><div style="height:44px;display:flex;align-items:center;justify-content:center;font:600 14px/18px Geist;box-shadow:inset 0 -2px 0 var(--ink)">Upcoming</div><div style="height:44px;display:flex;align-items:center;justify-content:center;font:500 14px/18px Geist;color:var(--ink2)">Done</div></div>
+<div style="margin:16px 20px 0;padding:12px 14px;border-radius:16px;background:var(--surface2);display:flex;align-items:center;gap:10px"><span style="font:300 20px/1 'Material Symbols Rounded'">notifications_off</span><span style="flex:1;font:400 13px/18px Geist">Notifications are off. Reminders show here only.</span><span style="font:600 13px/18px Geist">Turn on</span></div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:8px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px">Ertiga</div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:color-mix(in srgb,var(--neg) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--neg) 30%,transparent)"><span style="width:8px;height:8px;border-radius:50%;background:var(--neg)"></span><span style="flex:1;font:500 15px/20px Geist">Insurance renewal</span><span style="font:500 13px/18px Geist;color:var(--neg)">overdue 3 days</span></div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span><span style="flex:1;font:500 15px/20px Geist">Tyre rotation</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in ~1,200 km</span></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:8px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px">Safari</div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span><span style="flex:1;font:500 15px/20px Geist">PUC renewal</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in 12 days</span></div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span><span style="flex:1;font:500 15px/20px Geist">Service</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in ~420 km</span></div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span><span style="flex:1;font:500 15px/20px Geist">Insurance</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in 41 days</span></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:8px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px">Activa</div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span><span style="flex:1;font:500 15px/20px Geist">General service</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in ~150 km</span></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:8px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px">Nexon EV</div>
+<div style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:99px;background:var(--surface);border:1px solid var(--cb)"><span style="width:8px;height:8px;border-radius:50%;background:var(--pos)"></span><span style="flex:1;font:500 15px/20px Geist">Battery health check</span><span style="font:400 13px/18px Geist;color:var(--ink2)">in 64 days</span></div>
+</div>
+<div style="flex:1;min-height:24px"></div>
+<div style="padding:16px 20px 8px"><div style="height:56px;border-radius:16px;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center;gap:8px;font:600 15px/18px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">add</span>Add reminder</div></div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+
+<!-- 23b Add reminder -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">23b</span>Add reminder sheet · PUC preset</div>
+<div data-screen-label="23b Add reminder" style="width:var(--fw);height:var(--fh);background:var(--dim);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:30px;flex:none"></div>
+<div style="flex:1;min-height:0;background:var(--surface);border-radius:32px 32px 0 0;display:flex;flex-direction:column">
+<div style="height:20px;flex:none;display:flex;justify-content:center;align-items:center"><div style="width:36px;height:4px;border-radius:2px;background:var(--ink3)"></div></div>
+<div style="height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px 0 20px"><div style="font:600 18px/24px Geist;flex:1">Add reminder</div><div style="height:32px;padding:0 10px 0 6px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;gap:6px;font:500 13px/1 Geist"><span style="width:20px;height:20px;border-radius:50%;background:repeating-linear-gradient(135deg,var(--ink3) 0 2px,var(--surface) 2px 5px)"></span>Safari</div><div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><span style="font:300 22px/1 'Material Symbols Rounded'">close</span></div></div>
+<div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:18px;padding:8px 20px 0">
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">shield</span>Insurance</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">eco</span>PUC</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">build</span>Service</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">oil_barrel</span>Oil</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">tire_repair</span>Tyres</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">battery_full</span>Battery</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">description</span>RC</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">id_card</span>Licence</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">verified_user</span>Warranty</div>
+<div style="height:68px;border-radius:14px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 11px/14px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">edit</span>Custom</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Remind by</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:3px;border-radius:14px;background:var(--surface2);height:44px;box-sizing:border-box;font:500 14px/18px Geist"><div style="border-radius:11px;background:var(--surface);display:flex;align-items:center;justify-content:center">Date</div><div style="display:flex;align-items:center;justify-content:center;color:var(--ink2)">km</div><div style="display:flex;align-items:center;justify-content:center;color:var(--ink2)">Both</div></div></div>
+<div style="height:56px;border-radius:16px;background:var(--surface2);display:flex;flex-direction:column;justify-content:center;padding:0 16px"><span style="font:400 12px/16px Geist;color:var(--ink2)">Expires on</span><span style="font:500 16px/22px Geist">28 Oct 2026</span></div>
+<div style="display:flex;gap:8px;align-items:flex-start;font:400 13px/18px Geist;color:var(--ink2);text-wrap:pretty"><span style="font:300 18px/1 'Material Symbols Rounded'">info</span>Validity depends on your emission norm and vehicle age. Rules may change — check your certificate.</div>
+<div style="display:flex;align-items:center;justify-content:space-between;height:52px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><span style="font:400 16px/22px Geist">Repeat</span><span style="display:flex;align-items:center;gap:4px;font:500 15px/20px Geist">Every 12 months<span style="font:300 20px/1 'Material Symbols Rounded';color:var(--ink2)">chevron_right</span></span></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Notify me</div><div style="display:flex;flex-wrap:wrap;gap:8px">
+<div style="height:36px;padding:0 14px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;font:500 14px/18px Geist">30 days</div>
+<div style="height:36px;padding:0 14px;border-radius:99px;background:var(--accentsoft);color:var(--accent);display:flex;align-items:center;font:500 14px/18px Geist">15 days</div>
+<div style="height:36px;padding:0 14px;border-radius:99px;background:var(--accentsoft);color:var(--accent);display:flex;align-items:center;font:500 14px/18px Geist">7 days</div>
+<div style="height:36px;padding:0 14px;border-radius:99px;background:var(--accentsoft);color:var(--accent);display:flex;align-items:center;font:500 14px/18px Geist">1 day</div>
+</div><div style="font:400 12px/16px Geist;color:var(--ink2)">Delivered around 09:30</div></div>
+</div>
+<div style="flex:none;padding:12px 20px 8px"><div style="height:56px;border-radius:16px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 15px/18px Geist">Save reminder</div></div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<!-- 24 Documents -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">24</span>Documents vault ★</div>
+<div data-screen-label="24 Documents" style="width:var(--fw);height:var(--fh);background:var(--bg);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:56px;flex:none;display:flex;align-items:center;padding:0 4px"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">arrow_back</span></div><div style="flex:1;font:600 18px/24px Geist">Documents</div><div style="height:32px;padding:0 10px;margin-right:4px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;gap:4px;font:500 12px/1 Geist"><span style="font:300 16px/1 'Material Symbols Rounded'">lock</span>App lock on</div><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">add</span></div></div>
+<div style="display:flex;gap:8px;padding:8px 20px 16px"><div style="height:36px;padding:0 14px;border-radius:99px;background:var(--accentsoft);color:var(--accent);display:flex;align-items:center;font:500 14px/18px Geist">All</div><div style="height:36px;padding:0 14px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;font:500 14px/18px Geist">Safari</div><div style="height:36px;padding:0 14px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;font:500 14px/18px Geist">Ertiga</div><div style="height:36px;padding:0 14px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;font:500 14px/18px Geist">Me</div></div>
+<div style="position:relative;margin:0 20px;height:440px">
+<div style="position:absolute;left:0;right:0;top:0;aspect-ratio:1.586;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 -1px 0 var(--line);padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Registration (RC)</span><span style="font:400 12px/16px Geist;color:var(--ink2)">Safari</span></div></div>
+<div style="position:absolute;left:0;right:0;top:64px;aspect-ratio:1.586;border-radius:20px;background:var(--surface);border:1px solid var(--line);padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Insurance · Comprehensive</span><span style="display:flex;align-items:center;gap:6px;font:500 12px/16px Geist;color:var(--neg)"><span style="width:6px;height:6px;border-radius:50%;background:var(--neg)"></span>Expired 3 days ago</span></div></div>
+<div style="position:absolute;left:0;right:0;top:128px;aspect-ratio:1.586;border-radius:20px;background:var(--surface);border:1px solid var(--line);padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">Driving licence</span><span style="font:400 12px/16px Geist;color:var(--ink2)">Valid to 2039</span></div></div>
+<div style="position:absolute;left:0;right:0;top:192px;aspect-ratio:1.586;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.06);padding:18px 20px;box-sizing:border-box;display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">PUC certificate</span><span style="height:22px;padding:0 8px;border-radius:99px;background:var(--surface2);display:flex;align-items:center;font:500 11px/14px Geist">Safari</span></div>
+<div style="flex:1"></div>
+<div style="font:500 18px/24px 'Geist Mono';letter-spacing:.02em">KA01/PUC/2025/04482</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px"><div><div style="font:400 11px/14px Geist;color:var(--ink2)">Expires</div><div style="display:flex;align-items:center;gap:6px;font:600 15px/20px Geist"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span>28 Oct 2026 · 12 days</div></div><span style="font:300 22px/1 'Material Symbols Rounded';color:var(--ink2)">open_in_full</span></div>
+</div>
+</div>
+<div style="padding:0 24px;display:flex;gap:8px;align-items:flex-start;font:400 12px/16px Geist;color:var(--ink2);text-wrap:pretty"><span style="font:300 16px/1 'Material Symbols Rounded'">encrypted</span>Encrypted on this phone. Backed up only when Encrypt backups is on.</div>
+<div style="flex:1"></div>
+<div style="padding:16px 20px 8px"><div style="height:56px;border-radius:16px;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center;gap:8px;font:600 15px/18px Geist"><span style="font:300 22px/1 'Material Symbols Rounded'">add</span>Add document</div></div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+
+<!-- 24b Quick view -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">24b</span>Document quick view</div>
+<div data-screen-label="24b Document quick view" style="width:var(--fw);height:var(--fh);background:var(--bg);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 4px"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">close</span></div><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><span style="font:300 24px/1 'Material Symbols Rounded'">flip</span></div></div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 20px;gap:28px">
+<div style="aspect-ratio:1.586;border-radius:20px;background:repeating-linear-gradient(135deg,var(--surface2) 0 8px,var(--surface) 8px 16px);border:1px solid var(--line);position:relative"><span style="position:absolute;left:14px;bottom:12px;font:400 10px/1 'Geist Mono';color:var(--ink2)">PUC certificate · front photo</span></div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font:600 11px/14px Geist;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)">PUC certificate · KA 01 AB 1234</div>
+<div style="font:500 26px/32px 'Geist Mono';letter-spacing:.01em">KA01/PUC/2025/04482</div>
+<div style="display:flex;align-items:center;gap:8px;font:600 18px/24px Geist;margin-top:4px"><span style="width:10px;height:10px;border-radius:50%;background:var(--warn)"></span>Valid till 28 Oct 2026</div>
+</div>
+</div>
+<div style="margin:0 20px 8px;padding:16px;border-radius:24px;background:var(--surface);border:1px solid var(--cb);display:flex;flex-direction:column;gap:12px">
+<div style="font:400 14px/20px Geist;text-wrap:pretty">For legal checks, show DigiLocker or mParivahan. This is your personal copy.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="height:48px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;gap:6px;font:600 14px/18px Geist">DigiLocker<span style="font:300 18px/1 'Material Symbols Rounded'">open_in_new</span></div><div style="height:48px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;gap:6px;font:600 14px/18px Geist">mParivahan<span style="font:300 18px/1 'Material Symbols Rounded'">open_in_new</span></div></div>
+</div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+
+<!-- 24c Add document -->
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:8px;align-items:center;font:500 13px/1 Geist"><span style="font:600 11px/1 'Geist Mono';padding:4px 7px;border-radius:5px;background:var(--cvb);color:var(--cvbg)">24c</span>Add document · details step</div>
+<div data-screen-label="24c Add document" style="width:var(--fw);height:var(--fh);background:var(--dim);color:var(--ink);border-radius:32px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.08)">
+<dc-import name="FwStatusBar" hint-size="100%,40px"></dc-import>
+<div style="height:30px;flex:none"></div>
+<div style="flex:1;min-height:0;background:var(--surface);border-radius:32px 32px 0 0;display:flex;flex-direction:column">
+<div style="height:20px;flex:none;display:flex;justify-content:center;align-items:center"><div style="width:36px;height:4px;border-radius:2px;background:var(--ink3)"></div></div>
+<div style="height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px 0 20px"><div style="font:600 18px/24px Geist;flex:1">Add PUC certificate</div><div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center"><span style="font:300 22px/1 'Material Symbols Rounded'">close</span></div></div>
+<div style="display:flex;gap:6px;padding:4px 20px 0;font:500 12px/16px Geist;color:var(--ink2)"><span style="display:flex;align-items:center;gap:4px"><span style="font:400 16px/1 'Material Symbols Rounded'">check</span>Type</span><span>·</span><span style="display:flex;align-items:center;gap:4px"><span style="font:400 16px/1 'Material Symbols Rounded'">check</span>Photo</span><span>·</span><span style="color:var(--ink)">Details</span></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:16px 20px 0">
+<div style="display:flex;gap:8px"><div style="width:104px;height:66px;border-radius:12px;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--surface) 6px 12px);border:1px solid var(--line);display:flex;align-items:flex-end;padding:6px;box-sizing:border-box;font:400 9px/1 'Geist Mono';color:var(--ink2)">front</div><div style="width:104px;height:66px;border-radius:12px;border:1.5px dashed var(--ink3);display:flex;align-items:center;justify-content:center;gap:4px;font:500 12px/16px Geist;color:var(--ink2);box-sizing:border-box"><span style="font:300 18px/1 'Material Symbols Rounded'">add</span>Back</div></div>
+<div style="height:60px;border-radius:16px;background:var(--surface2);display:flex;flex-direction:column;justify-content:center;padding:0 16px"><span style="font:400 12px/16px Geist;color:var(--ink2)">Certificate number</span><span style="font:500 16px/22px 'Geist Mono'">KA01/PUC/2025/04482</span></div>
+<div style="height:60px;border-radius:16px;background:var(--surface2);display:flex;flex-direction:column;justify-content:center;padding:0 16px"><span style="font:400 12px/16px Geist;color:var(--ink2)">Issued by</span><span style="font:500 16px/22px Geist">Authorised PUC centre, HSR Layout</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div style="height:60px;border-radius:16px;background:var(--surface2);display:flex;flex-direction:column;justify-content:center;padding:0 16px"><span style="font:400 12px/16px Geist;color:var(--ink2)">Issued</span><span style="font:500 16px/22px Geist">29 Oct 2025</span></div>
+<div style="height:60px;border-radius:16px;background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--ink);display:flex;flex-direction:column;justify-content:center;padding:0 16px"><span style="font:400 12px/16px Geist;color:var(--ink2)">Expires</span><span style="font:500 16px/22px Geist">28 Oct 2026</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--line);margin-top:4px"><div style="flex:1"><div style="font:500 16px/22px Geist">Remind me before it expires</div><div style="font:400 13px/18px Geist;color:var(--ink2)">Adds "PUC renewal" to Reminders · 15, 7 and 1 day before</div></div><div style="width:52px;height:32px;flex:none;border-radius:16px;background:var(--ink);position:relative"><div style="position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;background:var(--bg)"></div></div></div>
+</div>
+<div style="flex:none;padding:12px 20px 8px"><div style="height:56px;border-radius:16px;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center;font:600 15px/18px Geist">Save document</div></div>
+<div style="height:24px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:108px;height:4px;border-radius:2px;background:var(--ink);opacity:.35"></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;'Light'|'Dark'&quot;},&quot;frame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;412 × 915&quot;,&quot;360 × 800&quot;],&quot;default&quot;:&quot;412 × 915&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() { this.sync(); }
+  componentDidUpdate() { this.sync(); }
+  sync() {
+    const b = document.body;
+    b.dataset.theme = (this.props.theme ?? 'Light') === 'Dark' ? 'dark' : 'light';
+    b.dataset.size = String(this.props.frame ?? '412').startsWith('360') ? '360' : '412';
+  }
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

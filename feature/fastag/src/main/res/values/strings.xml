@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fastag_title">FASTag</string>
+    <string name="fastag_back">Back</string>
+    <string name="fastag_no_vehicles">No vehicles yet</string>
+    <string name="fastag_no_vehicles_body">Add a vehicle in Garage to track its FASTag.</string>
+    <string name="fastag_setup">Set up FASTag</string>
+    <string name="fastag_setup_body">Enter today\'s balance once; tolls and recharges keep an estimate running from there.</string>
+    <string name="fastag_edit">Edit FASTag</string>
+    <string name="fastag_est">est.</string>
+    <string name="fastag_threshold">Low-balance alert below %1$s</string>
+    <string name="fastag_low">Below your %1$s alert. Time to recharge.</string>
+    <string name="fastag_add_toll">Add toll</string>
+    <string name="fastag_add_recharge">Add recharge</string>
+    <string name="fastag_recent">Recent</string>
+    <string name="fastag_toll">Toll</string>
+    <string name="fastag_recharge">Recharge</string>
+    <string name="fastag_info_title">How the balance is estimated</string>
+    <string name="fastag_info_body">The balance you entered, plus recharges you logged since, minus FASTag tolls since. Tolls you didn\'t log aren\'t counted, so check your issuer app now and then and correct the balance here.</string>
+    <string name="fastag_account_title">FASTag account</string>
+    <string name="fastag_issuer">Issuer bank</string>
+    <string name="fastag_last4">Tag ID, last 4 digits</string>
+    <string name="fastag_last4_note">Only the last 4 digits are kept.</string>
+    <string name="fastag_balance_now">Balance today</string>
+    <string name="fastag_balance_correct">Correct the balance (optional)</string>
+    <string name="fastag_threshold_label">Alert when below</string>
+    <string name="fastag_amount">Amount</string>
+    <string name="fastag_note">Note</string>
+    <string name="fastag_recharge_note">Recharges are transfers, so they don\'t count in your cost per km.</string>
+    <string name="fastag_save">Save</string>
+</resources>

@@ -58,4 +58,16 @@
     <string name="detail_delete_field">गाड़ी का नाम</string>
     <string name="detail_delete_confirm">हटाएँ</string>
     <string name="detail_cancel">रद्द करें</string>
+    <string name="garage_reminders">रिमाइंडर</string>
+    <string name="garage_documents">कागज़ात</string>
+    <string name="garage_fastag">FASTag</string>
+    <string name="garage_fastag_est">%1$s अनुमान</string>
+    <plurals name="garage_reminders_due">
+        <item quantity="one">%1$d बाकी</item>
+        <item quantity="other">%1$d बाकी</item>
+    </plurals>
+    <plurals name="garage_documents_expiring">
+        <item quantity="one">%1$d एक्सपायर होने वाला</item>
+        <item quantity="other">%1$d एक्सपायर होने वाले</item>
+    </plurals>
 </resources>

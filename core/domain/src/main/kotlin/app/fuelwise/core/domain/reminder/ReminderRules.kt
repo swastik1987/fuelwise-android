@@ -35,7 +35,11 @@ fun ReminderRules.defaultsFor(kind: ReminderKind, vehicle: Vehicle): PresetRule 
     }
     val rule = presets[kind] ?: return PresetRule(notifyDaysBefore = DEFAULT_NOTIFY)
     val chosen = if (vehicle.type.isTwoWheeler) rule.twoWheeler ?: rule else rule
-    return chosen.copy(notifyDaysBefore = chosen.notifyDaysBefore.ifEmpty { rule.notifyDaysBefore.ifEmpty { DEFAULT_NOTIFY } })
+    return chosen.copy(
+        notifyDaysBefore = chosen.notifyDaysBefore.ifEmpty {
+            rule.notifyDaysBefore.ifEmpty { DEFAULT_NOTIFY }
+        },
+    )
 }
 
 fun ReminderRules.odometerWindowKm(vehicle: Vehicle): Double =

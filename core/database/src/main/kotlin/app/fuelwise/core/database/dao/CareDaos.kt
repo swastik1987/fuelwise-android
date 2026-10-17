@@ -34,7 +34,12 @@ interface ReminderDao {
     @Upsert
     suspend fun upsertReminder(reminder: ReminderEntity)
 
-    @Query("UPDATE reminder SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId WHERE id = :id AND deletedAt IS NULL")
+    @Query(
+        """
+        UPDATE reminder SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
     suspend fun tombstoneReminder(id: String, at: Long, deviceId: String)
 
     @Query("SELECT * FROM reminder_completion WHERE deletedAt IS NULL ORDER BY completedAt DESC")
@@ -45,7 +50,13 @@ interface ReminderDao {
 
     /** Logs the completion and moves (or retires) the reminder in one transaction. */
     @Transaction
-    suspend fun complete(completion: ReminderCompletionEntity, next: ReminderEntity?, retireId: String?, at: Long, deviceId: String) {
+    suspend fun complete(
+        completion: ReminderCompletionEntity,
+        next: ReminderEntity?,
+        retireId: String?,
+        at: Long,
+        deviceId: String,
+    ) {
         insertCompletion(completion)
         if (next != null) upsertReminder(next)
         if (retireId != null) tombstoneReminder(retireId, at, deviceId)
@@ -64,7 +75,12 @@ interface DocumentDao {
     @Upsert
     suspend fun upsertDocument(document: DocumentEntity)
 
-    @Query("UPDATE document SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId WHERE id = :id AND deletedAt IS NULL")
+    @Query(
+        """
+        UPDATE document SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
     suspend fun tombstoneDocument(id: String, at: Long, deviceId: String)
 
     @Query("SELECT * FROM attachment WHERE ownerId = :ownerId AND deletedAt IS NULL ORDER BY createdAt")
@@ -76,7 +92,12 @@ interface DocumentDao {
     @Upsert
     suspend fun upsertAttachment(attachment: AttachmentEntity)
 
-    @Query("UPDATE attachment SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId WHERE id = :id AND deletedAt IS NULL")
+    @Query(
+        """
+        UPDATE attachment SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
     suspend fun tombstoneAttachment(id: String, at: Long, deviceId: String)
 }
 
@@ -92,7 +113,12 @@ interface RecurrenceDao {
     @Upsert
     suspend fun upsertRecurrence(recurrence: RecurrenceEntity)
 
-    @Query("UPDATE recurrence SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId WHERE id = :id AND deletedAt IS NULL")
+    @Query(
+        """
+        UPDATE recurrence SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
     suspend fun tombstoneRecurrence(id: String, at: Long, deviceId: String)
 
     /** Due dates already created for [recurrenceId], tombstoned ones included so a deleted entry stays deleted. */
@@ -125,6 +151,11 @@ interface FastagDao {
     @Upsert
     suspend fun upsertRecharge(recharge: FastagRechargeEntity)
 
-    @Query("UPDATE fastag_recharge SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId WHERE id = :id AND deletedAt IS NULL")
+    @Query(
+        """
+        UPDATE fastag_recharge SET deletedAt = :at, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
     suspend fun tombstoneRecharge(id: String, at: Long, deviceId: String)
 }

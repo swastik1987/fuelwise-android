@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reminders_title">रिमाइंडर</string>
+    <string name="reminders_back">वापस</string>
+    <string name="reminders_add">रिमाइंडर जोड़ें</string>
+    <string name="reminders_upcoming">आने वाले</string>
+    <string name="reminders_done">हो चुके</string>
+    <string name="reminders_empty_title">अभी कोई रिमाइंडर नहीं</string>
+    <string name="reminders_empty_body">बीमा, PUC, सर्विस और बहुत कुछ, तारीख से, किलोमीटर से या दोनों से।</string>
+    <string name="reminders_done_empty">पूरे हुए रिमाइंडर यहाँ दिखेंगे।</string>
+    <string name="reminders_completed">पूरा हुआ रिमाइंडर</string>
+    <string name="reminders_notifications_off">नोटिफ़िकेशन बंद हैं, इसलिए रिमाइंडर सिर्फ़ ऐप में दिखेंगे।</string>
+    <string name="reminders_notifications_turn_on">नोटिफ़िकेशन चालू करें</string>
+    <string name="urgency_overdue">देर हो गई</string>
+    <string name="urgency_due">अब</string>
+    <string name="urgency_soon">जल्द</string>
+    <string name="urgency_later">बाद में</string>
+    <string name="due_today">आज</string>
+    <plurals name="due_in_days">
+        <item quantity="one">%1$d दिन में</item>
+        <item quantity="other">%1$d दिन में</item>
+    </plurals>
+    <plurals name="due_days_overdue">
+        <item quantity="one">%1$d दिन देर</item>
+        <item quantity="other">%1$d दिन देर</item>
+    </plurals>
+    <string name="due_in_km">लगभग %1$s km में</string>
+    <string name="due_km_overdue">लगभग %1$s km देर</string>
+    <string name="due_at_km">%1$s km पर</string>
+
+    <string name="editor_add_title">रिमाइंडर जोड़ें</string>
+    <string name="editor_edit_title">रिमाइंडर बदलें</string>
+    <string name="editor_presets">किस बारे में याद दिलाएँ</string>
+    <string name="editor_puc_helper">वैधता आपके एमिशन नॉर्म और गाड़ी की उम्र पर निर्भर है। नियम बदल सकते हैं, इसलिए अपना सर्टिफ़िकेट देखें।</string>
+    <string name="editor_title_optional">नाम (ज़रूरी नहीं)</string>
+    <string name="editor_title_required">नाम</string>
+    <string name="editor_title_missing">इस रिमाइंडर को नाम दें</string>
+    <string name="editor_due">कब</string>
+    <string name="editor_no_date">कोई तारीख नहीं</string>
+    <string name="editor_pick_date">तारीख चुनें</string>
+    <string name="editor_clear">हटाएँ</string>
+    <string name="editor_due_km">ओडोमीटर पर</string>
+    <string name="editor_now_at">अभी लगभग %1$s</string>
+    <string name="editor_due_missing">तारीख, ओडोमीटर रीडिंग या दोनों डालें। जो पहले आए, उस पर याद दिलाएँगे।</string>
+    <string name="editor_repeat">पूरा होने के बाद दोहराएँ</string>
+    <string name="editor_every_months">हर (महीने)</string>
+    <string name="editor_every_km">हर (km)</string>
+    <string name="editor_notify">इतने दिन पहले बताएँ</string>
+    <plurals name="editor_days_before">
+        <item quantity="one">%1$d दिन</item>
+        <item quantity="other">%1$d दिन</item>
+    </plurals>
+    <string name="editor_notes">नोट</string>
+    <string name="editor_save">सेव करें</string>
+    <string name="editor_mark_done">हो गया</string>
+    <string name="editor_delete">हटाएँ</string>
+</resources>

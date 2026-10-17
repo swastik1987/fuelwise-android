@@ -49,6 +49,7 @@ sealed interface HomeUiState {
         val previousMonthLabel: String,
         /** A milestone earned and not yet celebrated (PRD F-17). */
         val milestone: Milestone? = null,
+        val care: HomeCare = HomeCare(),
     ) : HomeUiState
 }
 
@@ -63,6 +64,7 @@ class HomeViewModel @Inject constructor(
     summarize: ComputeVehicleSummary,
     lookupIntervals: LookupIntervals,
     milestones: ComputeMilestones,
+    private val care: HomeCareSource,
     zoneId: ZoneId,
     clock: Clock,
 ) : ViewModel() {
@@ -78,7 +80,8 @@ class HomeViewModel @Inject constructor(
                 entries.observeExpenses(selected.id),
                 categories.observeCategories(),
                 logbook.recentEntries(selected.id, RECENT_COUNT),
-            ) { refuels, expenses, cats, recent ->
+                care.observe(selected.id),
+            ) { refuels, expenses, cats, recent, homeCare ->
                 HomeUiState.Ready(
                     vehicle = selected,
                     vehicles = list,
@@ -93,6 +96,7 @@ class HomeViewModel @Inject constructor(
                         it.key !in
                             data.shownMilestones
                     },
+                    care = homeCare,
                 )
             }
         }
@@ -104,6 +108,11 @@ class HomeViewModel @Inject constructor(
 
     fun setHideAmounts(hide: Boolean) {
         viewModelScope.launch { userData.setHideAmounts(hide) }
+    }
+
+    fun confirmAutoEntries() {
+        val ready = uiState.value as? HomeUiState.Ready ?: return
+        viewModelScope.launch { care.confirm(ready.care.unconfirmed) }
     }
 
     fun dismissMilestone(key: String) {

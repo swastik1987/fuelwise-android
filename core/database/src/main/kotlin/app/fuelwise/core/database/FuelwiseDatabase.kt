@@ -5,22 +5,22 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.DocumentDao
+import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
 import app.fuelwise.core.database.dao.ReminderDao
-import app.fuelwise.core.database.dao.EntryDao
-import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.model.AttachmentEntity
 import app.fuelwise.core.database.model.CategoryEntity
 import app.fuelwise.core.database.model.DocumentEntity
+import app.fuelwise.core.database.model.ExpenseEntity
 import app.fuelwise.core.database.model.FastagAccountEntity
 import app.fuelwise.core.database.model.FastagRechargeEntity
 import app.fuelwise.core.database.model.RecurrenceEntity
+import app.fuelwise.core.database.model.RefuelEntity
 import app.fuelwise.core.database.model.ReminderCompletionEntity
 import app.fuelwise.core.database.model.ReminderEntity
-import app.fuelwise.core.database.model.ExpenseEntity
-import app.fuelwise.core.database.model.RefuelEntity
 import app.fuelwise.core.database.model.TankEntity
 import app.fuelwise.core.database.model.VehicleEntity
 

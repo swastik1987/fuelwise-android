@@ -32,7 +32,11 @@ data class OdometerOutlook(val predictedKm: Double?, val kmPerDay: Double?, val 
  * enters the due-soon window; anything overdue once a week until done or snoozed.
  */
 class EvaluateReminders @Inject constructor(private val clock: Clock) {
-    operator fun invoke(reminders: List<Reminder>, outlook: Map<String, OdometerOutlook>, zone: ZoneId): List<ReminderStatus> {
+    operator fun invoke(
+        reminders: List<Reminder>,
+        outlook: Map<String, OdometerOutlook>,
+        zone: ZoneId,
+    ): List<ReminderStatus> {
         val today = LocalDate.now(clock.withZone(zone))
         return reminders.map { r -> status(r, outlook[r.vehicleId], today, zone) }
             .sortedWith(compareBy({ it.urgency.ordinal }, { it.sortDays(today) }))
@@ -40,36 +44,44 @@ class EvaluateReminders @Inject constructor(private val clock: Clock) {
 
     private fun status(r: Reminder, outlook: OdometerOutlook?, today: LocalDate, zone: ZoneId): ReminderStatus {
         val daysLeft = r.dueDateUtcMs?.let { ChronoUnit.DAYS.between(today, it.localDate(zone)) }
-        val predicted = outlook?.predictedKm
-        val kmLeft = r.dueOdometerKm?.let { due -> predicted?.let { due - it } }
+        val kmLeft = r.dueOdometerKm?.let { due -> outlook?.predictedKm?.let { due - it } }
         val perDay = outlook?.kmPerDay?.takeIf { it > 0.0 }
         val odoDays = kmLeft?.let { left -> perDay?.let { ceil(left / it).toLong() } }
-        val window = outlook?.windowKm ?: 0.0
+        val odo = OdoView(kmLeft, perDay, odoDays, outlook?.windowKm ?: 0.0)
+        val urgency = urgency(daysLeft, odo)
         val snoozed = r.snoozedUntilUtcMs?.let { it > clock.millis() } == true
-
-        val overdue = (daysLeft != null && daysLeft < 0) || (kmLeft != null && kmLeft < 0)
-        val due = (daysLeft != null && daysLeft <= DUE_DAYS) || (kmLeft != null && kmLeft <= window)
-        val soon = (daysLeft != null && daysLeft <= SOON_DAYS) || (odoDays != null && odoDays <= SOON_DAYS)
-        val urgency = when {
-            overdue -> Urgency.Overdue
-            due -> Urgency.Due
-            soon -> Urgency.Soon
-            else -> Urgency.Later
-        }
-
-        val dateHit = daysLeft != null && (daysLeft.toInt() in r.notifyDaysBefore || daysLeft == 0L)
-        // Entered the window today: inside now, outside yesterday at the recent pace.
-        val odoHit = kmLeft != null && kmLeft in 0.0..window && kmLeft + (perDay ?: 0.0) > window
-        val weeklyNag = overdue && weeklyNagDay(r, daysLeft, today)
+        val notify = dateHit(r, daysLeft) || odo.enteredWindowToday ||
+            (urgency == Urgency.Overdue && weeklyNagDay(r, daysLeft, today))
         return ReminderStatus(
             reminder = r,
             daysLeft = daysLeft,
             kmLeft = kmLeft,
-            predictedOdometerDate = odoDays?.let { today.plusDays(it) },
+            predictedOdometerDate = odo.daysLeft?.let { today.plusDays(it) },
             urgency = urgency,
-            notifyToday = !snoozed && (dateHit || odoHit || weeklyNag),
+            notifyToday = !snoozed && notify,
         )
     }
+
+    /** The odometer side of a reminder: km left, the recent pace and the due-soon window. */
+    private data class OdoView(val kmLeft: Double?, val perDay: Double?, val daysLeft: Long?, val window: Double) {
+        // Entered the window today: inside now, outside yesterday at the recent pace.
+        val enteredWindowToday: Boolean
+            get() = kmLeft != null && kmLeft in 0.0..window && kmLeft + (perDay ?: 0.0) > window
+    }
+
+    private fun urgency(daysLeft: Long?, odo: OdoView): Urgency {
+        val km = odo.kmLeft
+        val odoDays = odo.daysLeft
+        return when {
+            (daysLeft != null && daysLeft < 0) || (km != null && km < 0) -> Urgency.Overdue
+            (daysLeft != null && daysLeft <= DUE_DAYS) || (km != null && km <= odo.window) -> Urgency.Due
+            (daysLeft != null && daysLeft <= SOON_DAYS) || (odoDays != null && odoDays <= SOON_DAYS) -> Urgency.Soon
+            else -> Urgency.Later
+        }
+    }
+
+    private fun dateHit(r: Reminder, daysLeft: Long?): Boolean =
+        daysLeft != null && (daysLeft.toInt() in r.notifyDaysBefore || daysLeft == 0L)
 
     /** Every 7th day past a date; for odometer-only reminders a stable weekday per reminder. */
     private fun weeklyNagDay(r: Reminder, daysLeft: Long?, today: LocalDate): Boolean =
@@ -80,7 +92,8 @@ class EvaluateReminders @Inject constructor(private val clock: Clock) {
         }
 
     private fun ReminderStatus.sortDays(today: LocalDate): Long =
-        listOfNotNull(daysLeft, predictedOdometerDate?.let { ChronoUnit.DAYS.between(today, it) }).minOrNull() ?: Long.MAX_VALUE
+        listOfNotNull(daysLeft, predictedOdometerDate?.let { ChronoUnit.DAYS.between(today, it) }).minOrNull()
+            ?: Long.MAX_VALUE
 
     private companion object {
         const val DUE_DAYS = 7L

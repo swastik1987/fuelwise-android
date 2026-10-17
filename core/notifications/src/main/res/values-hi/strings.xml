@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_reminders">रिमाइंडर</string>
+    <string name="channel_reminders_description">रिन्यूअल, सर्विस और FASTag बैलेंस।</string>
+    <string name="channel_insights">महीने का सार</string>
+    <string name="channel_insights_description">हर महीने की 1 तारीख को आपका महीना आँकड़ों में।</string>
+    <string name="notif_due_today">%1$s · आज</string>
+    <plurals name="notif_due_in_days">
+        <item quantity="one">%1$s · %2$d दिन में</item>
+        <item quantity="other">%1$s · %2$d दिन में</item>
+    </plurals>
+    <plurals name="notif_overdue_days">
+        <item quantity="one">%1$s · %2$d दिन देर</item>
+        <item quantity="other">%1$s · %2$d दिन देर</item>
+    </plurals>
+    <string name="notif_due_in_km">%1$s · लगभग %2$s km में</string>
+    <string name="notif_overdue_km">%1$s · लगभग %2$s km देर</string>
+    <string name="notif_action_done">हो गया</string>
+    <string name="notif_action_snooze">3 दिन बाद</string>
+    <string name="notif_recap_title">%1$s का सार तैयार है</string>
+    <string name="notif_recap_body">किलोमीटर, खर्च और सबसे अच्छी टंकी, शेयर करने लायक कार्ड में।</string>
+    <string name="notif_fastag_title">FASTag बैलेंस कम है</string>
+    <string name="notif_fastag_body">%1$s · लगभग %2$s बाकी (अनुमान)</string>
+</resources>

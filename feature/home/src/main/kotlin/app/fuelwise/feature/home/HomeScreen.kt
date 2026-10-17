@@ -1,6 +1,8 @@
 package app.fuelwise.feature.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,7 +31,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -42,13 +47,17 @@ import app.fuelwise.core.designsystem.component.FwMetricTile
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwSectionHeader
 import app.fuelwise.core.designsystem.component.FwSparkline
+import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.insights.Milestone
+import app.fuelwise.core.domain.reminder.ReminderStatus
+import app.fuelwise.core.domain.reminder.Urgency
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.entry.LogbookEntryRow
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.vehicle.VehicleLabels
@@ -60,17 +69,26 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** Navigation out of Home; kept in one place so the screen signature stays short. */
-internal data class HomeActions(
+data class HomeActions(
     val onLogFuel: () -> Unit,
     val onAddVehicle: () -> Unit,
     val onOpenEntry: (EntrySource, String) -> Unit,
     val onOpenLogbook: () -> Unit,
+    val onOpenReminders: () -> Unit = {},
+    val onOpenReminder: (String) -> Unit = {},
 )
 
 @Composable
 internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(state, actions, viewModel::selectVehicle, viewModel::setHideAmounts, viewModel::dismissMilestone)
+    HomeContent(
+        state,
+        actions,
+        viewModel::selectVehicle,
+        viewModel::setHideAmounts,
+        viewModel::dismissMilestone,
+        viewModel::confirmAutoEntries,
+    )
 }
 
 /** Home (design.md screen 5): ₹/km hero, mileage and spend tiles, last fill-up, range, insight, recent entries. */
@@ -81,6 +99,7 @@ internal fun HomeContent(
     onSelectVehicle: (String?) -> Unit,
     onHideAmounts: (Boolean) -> Unit,
     onDismissMilestone: (String) -> Unit = {},
+    onConfirmAuto: () -> Unit = {},
 ) {
     var switcherOpen by rememberSaveable { mutableStateOf(false) }
     var heroInfo by rememberSaveable { mutableStateOf(false) }
@@ -126,6 +145,7 @@ internal fun HomeContent(
                     } else {
                         BrandNewVehicle(state.summary.fullFillCount, actions.onLogFuel)
                     }
+                    CareCards(state, actions, onConfirmAuto)
                     if (state.recent.isNotEmpty()) Recent(state, actions)
                 }
                 if (switcherOpen) {
@@ -347,3 +367,95 @@ private fun milestoneBody(milestone: Milestone, state: HomeUiState.Ready): Strin
         stringResource(R.string.milestone_best_body, IndianNumberFormat.decimal(milestone.kmPerUnit ?: 0.0, 1), unit)
     }
 }
+
+/** Up to three reminder pills and the recurring-entries confirm card (design.md screen 5; PRD F-04.3, F-11). */
+@Composable
+private fun CareCards(state: HomeUiState.Ready, actions: HomeActions, onConfirmAuto: () -> Unit) {
+    val care = state.care
+    if (care.unconfirmed.isNotEmpty()) {
+        FwCard(contentPadding = PaddingValues(16.dp)) {
+            Text(
+                pluralStringResource(R.plurals.home_auto_entries, care.unconfirmed.size, care.unconfirmed.size),
+                style = FwTheme.type.body,
+                color = FwTheme.colors.ink,
+            )
+            Text(
+                money(
+                    care.unconfirmed.map {
+                        it.amount
+                    }.fold(Money.ZERO) { a, b -> a + b },
+                    state.hideAmounts,
+                    whole = true,
+                ),
+                style = FwTheme.type.label,
+                color = FwTheme.colors.ink2,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                FwTextButton(stringResource(R.string.home_auto_confirm), onConfirmAuto)
+                FwTextButton(stringResource(R.string.home_auto_review), actions.onOpenLogbook)
+            }
+        }
+    }
+    if (care.upcoming.isEmpty()) return
+    Column {
+        FwSectionHeader(
+            title = stringResource(R.string.home_upcoming),
+            actionLabel = stringResource(R.string.home_see_all),
+            onAction = actions.onOpenReminders,
+        )
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            care.upcoming.forEach { status ->
+                val r = status.reminder
+                val tone = when (status.urgency) {
+                    Urgency.Overdue -> FwTheme.colors.negative
+                    Urgency.Due -> FwTheme.colors.warning
+                    else -> FwTheme.colors.ink2
+                }
+                Row(
+                    Modifier.clip(FwTheme.radius.pill).background(FwTheme.colors.surface).clickable {
+                        actions.onOpenReminder(r.id)
+                    }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(Modifier.size(8.dp).background(tone, CircleShape))
+                    Text(
+                        listOf(
+                            r.title ?: stringResource(CareLabels.reminder(r.kind)),
+                            pillDue(status),
+                        ).joinToString(" · "),
+                        style = FwTheme.type.caption,
+                        color = FwTheme.colors.ink,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun pillDue(status: ReminderStatus): String {
+    val days = status.daysLeft
+    val km = status.kmLeft
+    return when {
+        days != null && (km == null || days <= KM_DAYS_TIE) -> when {
+            days < 0 -> stringResource(R.string.home_pill_overdue)
+            days == 0L -> stringResource(R.string.home_pill_today)
+            else -> pluralStringResource(R.plurals.home_pill_days, days.toInt(), days.toInt())
+        }
+
+        km != null ->
+            if (km <
+                0
+            ) {
+                stringResource(R.string.home_pill_overdue)
+            } else {
+                stringResource(R.string.home_pill_km, IndianNumberFormat.decimal(km, 0))
+            }
+
+        else -> ""
+    }
+}
+
+private const val KM_DAYS_TIE = 30L

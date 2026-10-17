@@ -42,7 +42,7 @@ style:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
     ignoreAnnotated: ['Preview']
-    excludes: ['**/test/**', '**/androidTest/**', '**/designsystem/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/designsystem/**', '**/core/testing/**']
   UnusedPrivateMember:
     ignoreAnnotated: ['Preview']
   WildcardImport:

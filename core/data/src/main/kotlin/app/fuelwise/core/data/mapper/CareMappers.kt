@@ -72,7 +72,15 @@ internal fun DocumentEntity.toModel() = Document(
     insurance = if (listOf(insurer, policyType, idvPaise, ncbPercent, addOns).all { it == null }) {
         null
     } else {
-        InsuranceDetails(insurer, policyType?.let { enumValueOrNull<PolicyType>(it) }, idvPaise?.let(::Money), ncbPercent, addOns)
+        InsuranceDetails(
+            insurer,
+            policyType?.let {
+                enumValueOrNull<PolicyType>(it)
+            },
+            idvPaise?.let(::Money),
+            ncbPercent,
+            addOns,
+        )
     },
     remindOnExpiry = remindOnExpiry,
 )
@@ -155,7 +163,17 @@ internal fun FastagAccount.toEntity(sync: SyncMeta) = FastagAccountEntity(
 internal fun FastagRechargeEntity.toModel() =
     FastagRecharge(id, accountId, vehicleId, dateTime, zoneId, Money(amountPaise), notes)
 
-internal fun FastagRecharge.toEntity(sync: SyncMeta) =
-    FastagRechargeEntity(id, accountId, vehicleId, dateTimeUtcMs, zoneId, amount.paise, notes?.trim()?.ifEmpty { null }, sync)
+internal fun FastagRecharge.toEntity(sync: SyncMeta) = FastagRechargeEntity(
+    id,
+    accountId,
+    vehicleId,
+    dateTimeUtcMs,
+    zoneId,
+    amount.paise,
+    notes?.trim()?.ifEmpty {
+        null
+    },
+    sync,
+)
 
 private const val TAG_DIGITS = 4

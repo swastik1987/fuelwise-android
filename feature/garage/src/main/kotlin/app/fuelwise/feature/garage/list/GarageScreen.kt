@@ -2,6 +2,7 @@ package app.fuelwise.feature.garage.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 internal fun GarageScreen(
     onOpenVehicle: (String) -> Unit,
     onAddVehicle: () -> Unit,
+    links: GarageLinks,
     viewModel: GarageViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -81,13 +84,18 @@ internal fun GarageScreen(
         }
     }
     Box(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
-        GarageContent(state, onOpenVehicle, onAddVehicle)
+        GarageContent(state, onOpenVehicle, onAddVehicle, links)
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
 }
 
 @Composable
-internal fun GarageContent(state: GarageUiState, onOpenVehicle: (String) -> Unit, onAddVehicle: () -> Unit) {
+internal fun GarageContent(
+    state: GarageUiState,
+    onOpenVehicle: (String) -> Unit,
+    onAddVehicle: () -> Unit,
+    links: GarageLinks = GarageLinks(),
+) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         FwLargeTitle(stringResource(R.string.garage_title))
         when (state) {
@@ -104,14 +112,19 @@ internal fun GarageContent(state: GarageUiState, onOpenVehicle: (String) -> Unit
                     )
                 }
             } else {
-                GarageList(state, onOpenVehicle, onAddVehicle)
+                GarageList(state, onOpenVehicle, onAddVehicle, links)
             }
         }
     }
 }
 
 @Composable
-private fun GarageList(state: GarageUiState.Ready, onOpenVehicle: (String) -> Unit, onAddVehicle: () -> Unit) {
+private fun GarageList(
+    state: GarageUiState.Ready,
+    onOpenVehicle: (String) -> Unit,
+    onAddVehicle: () -> Unit,
+    links: GarageLinks,
+) {
     LazyColumn(contentPadding = PaddingValues(bottom = FwTheme.spacing.xxl)) {
         item {
             LazyRow(
@@ -129,6 +142,7 @@ private fun GarageList(state: GarageUiState.Ready, onOpenVehicle: (String) -> Un
                 Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.s),
             )
         }
+        item { UtilityRows(state, links) }
         if (state.archived.isNotEmpty()) {
             item {
                 FwSectionHeader(
@@ -240,3 +254,67 @@ private fun ArchivedRow(vehicle: Vehicle, onClick: () -> Unit) {
 }
 
 private const val UNDO_WINDOW_MS = 10_000L
+
+/** Where the Garage utility rows lead; the app shell wires them to their feature screens. */
+internal data class GarageLinks(
+    val onReminders: () -> Unit = {},
+    val onDocuments: () -> Unit = {},
+    val onFastag: () -> Unit = {},
+)
+
+/** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) (design.md screen 21). */
+@Composable
+private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
+    Column(Modifier.padding(top = FwTheme.spacing.l)) {
+        UtilityRow(
+            FwIcons.Schedule,
+            stringResource(R.string.garage_reminders),
+            if (state.remindersDue >
+                0
+            ) {
+                pluralStringResource(R.plurals.garage_reminders_due, state.remindersDue, state.remindersDue)
+            } else {
+                null
+            },
+            links.onReminders,
+        )
+        UtilityRow(
+            FwIcons.Document,
+            stringResource(R.string.garage_documents),
+            if (state.documentsExpiring > 0) {
+                pluralStringResource(
+                    R.plurals.garage_documents_expiring,
+                    state.documentsExpiring,
+                    state.documentsExpiring,
+                )
+            } else {
+                null
+            },
+            links.onDocuments,
+        )
+        UtilityRow(
+            FwIcons.Toll,
+            stringResource(R.string.garage_fastag),
+            state.fastagEstimate?.let {
+                stringResource(R.string.garage_fastag_est, IndianNumberFormat.rupeesWhole(it))
+            },
+            links.onFastag,
+        )
+    }
+}
+
+@Composable
+private fun UtilityRow(icon: Int, title: String, trailing: String?, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(
+            min = 56.dp,
+        ).clickable(onClick = onClick).padding(horizontal = FwTheme.spacing.gutter),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Icon(painterResource(icon), null, tint = FwTheme.colors.ink, modifier = Modifier.size(22.dp))
+        Text(title, style = FwTheme.type.body, color = FwTheme.colors.ink, modifier = Modifier.weight(1f))
+        trailing?.let { Text(it, style = FwTheme.type.bodyS, color = FwTheme.colors.ink2) }
+        Icon(painterResource(FwIcons.ChevronRight), null, tint = FwTheme.colors.ink3)
+    }
+}

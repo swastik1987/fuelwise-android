@@ -1,8 +1,8 @@
 package app.fuelwise.core.domain.recurrence
 
+import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.FastagAccount
 import app.fuelwise.core.model.FastagRecharge
-import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Recurrence
 import app.fuelwise.core.model.RepeatUnit
@@ -30,7 +30,9 @@ private fun Recurrence.occurrences(): Sequence<Long> {
     val zone = runCatching { ZoneId.of(zoneId) }.getOrDefault(ZoneId.systemDefault())
     val start = Instant.ofEpochMilli(startUtcMs).atZone(zone).toLocalDate()
     val step = every.coerceAtLeast(1).toLong()
-    return generateSequence(0L) { it + 1 }.map { n -> start.advance(unit, n * step).atStartOfDay(zone).toInstant().toEpochMilli() }
+    return generateSequence(0L) {
+        it + 1
+    }.map { n -> start.advance(unit, n * step).atStartOfDay(zone).toInstant().toEpochMilli() }
 }
 
 private fun LocalDate.advance(unit: RepeatUnit, amount: Long): LocalDate = when (unit) {
@@ -48,7 +50,10 @@ data class FastagBalance(val estimate: Money, val isLow: Boolean)
 fun FastagAccount.balance(recharges: List<FastagRecharge>, expenses: List<Expense>): FastagBalance {
     val topUps = recharges.filter { it.accountId == id && it.dateTimeUtcMs >= anchorAtUtcMs }.map { it.amount }.sum()
     val tolls = expenses
-        .filter { it.vehicleId == vehicleId && it.categoryId == SystemCategory.TollFastag.id && it.dateTimeUtcMs >= anchorAtUtcMs }
+        .filter {
+            it.vehicleId == vehicleId && it.categoryId == SystemCategory.TollFastag.id &&
+                it.dateTimeUtcMs >= anchorAtUtcMs
+        }
         .map { it.amount }
         .sum()
     val estimate = anchorBalance + topUps - tolls

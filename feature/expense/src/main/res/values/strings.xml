@@ -21,4 +21,7 @@
     <string name="expense_typing">Typing · %1$s</string>
     <string name="expense_next">Next field</string>
     <string name="expense_backspace">Delete</string>
+    <string name="expense_repeat">Repeat</string>
+    <string name="expense_repeat_body">For EMIs, parking passes and other fixed costs. Future entries are added automatically for you to confirm.</string>
+    <string name="expense_repeat_every">Every</string>
 </resources>

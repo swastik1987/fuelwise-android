@@ -21,4 +21,7 @@
     <string name="expense_typing">लिख रहे हैं · %1$s</string>
     <string name="expense_next">अगला</string>
     <string name="expense_backspace">मिटाएँ</string>
+    <string name="expense_repeat">दोहराएँ</string>
+    <string name="expense_repeat_body">EMI, पार्किंग पास और दूसरे तय खर्चों के लिए। आगे की एंट्री अपने-आप जुड़ेंगी, आप बस पक्का करें।</string>
+    <string name="expense_repeat_every">हर</string>
 </resources>

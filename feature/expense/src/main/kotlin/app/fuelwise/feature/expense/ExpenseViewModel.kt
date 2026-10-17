@@ -6,12 +6,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
+import app.fuelwise.core.model.Recurrence
+import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.ui.format.KeypadInput
@@ -19,6 +23,7 @@ import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -52,6 +57,10 @@ data class ExpenseFormState(
     val amountMissing: Boolean = false,
     val categoryMissing: Boolean = false,
     val saving: Boolean = false,
+    /** Repeat this expense (PRD F-04.3); only offered when adding. */
+    val repeat: Boolean = false,
+    val repeatEvery: String = "1",
+    val repeatUnit: RepeatUnit = RepeatUnit.Months,
 )
 
 /** Add / edit an expense or a toll (PRD F-04.1, F-10.2; design.md screens 10 and 11). */
@@ -62,6 +71,7 @@ class ExpenseViewModel @Inject constructor(
     private val categories: CategoryRepository,
     private val entries: EntryRepository,
     private val userData: UserDataRepository,
+    private val recurrences: RecurrenceRepository,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -177,14 +187,54 @@ class ExpenseViewModel @Inject constructor(
                     paymentMethod = if (s.isToll && s.tollByFastag) PaymentMethod.FastagWallet else s.payment,
                     notes = s.notes.ifBlank { null },
                     tollPlaza = if (s.isToll) s.plaza.ifBlank { null } else null,
+                    // Editing an auto-created entry confirms it and keeps its recurrence link (idempotency).
+                    recurrenceId = editing?.recurrenceId,
+                    isAutoCreated = false,
                 ),
             )
+            if (s.repeat && editing == null) saveRecurrence(s, vehicle.id, categoryId, amount)
             savedChannel.send(Unit)
         }
     }
 
+    /** This entry is the first occurrence; the recurrence starts at the next one, so nothing is created twice. */
+    private suspend fun saveRecurrence(s: ExpenseFormState, vehicleId: String, categoryId: String, amount: Money) {
+        val every = s.repeatEvery.toIntOrNull()?.coerceIn(1, MAX_REPEAT) ?: 1
+        val first = Instant.ofEpochMilli(s.dateTimeUtcMs).atZone(zoneId).toLocalDate()
+        val next = when (s.repeatUnit) {
+            RepeatUnit.Days -> first.plusDays(every.toLong())
+            RepeatUnit.Weeks -> first.plusWeeks(every.toLong())
+            RepeatUnit.Months -> first.plusMonths(every.toLong())
+            RepeatUnit.Years -> first.plusYears(every.toLong())
+        }
+        recurrences.save(
+            Recurrence(
+                id = "",
+                vehicleId = vehicleId,
+                categoryId = categoryId,
+                amount = amount,
+                every = every,
+                unit = s.repeatUnit,
+                startUtcMs = next.atStartOfDay(zoneId).toInstant().toEpochMilli(),
+                zoneId = zoneId.id,
+                paymentMethod = s.payment,
+                notes = s.notes.ifBlank { null },
+            ),
+        )
+    }
+
+    fun onRepeat(on: Boolean) = _state.update { it.copy(repeat = on) }
+
+    fun onRepeatEvery(value: String) = _state.update {
+        it.copy(repeatEvery = value.filter(Char::isDigit).take(MAX_REPEAT_DIGITS))
+    }
+
+    fun onRepeatUnit(unit: RepeatUnit) = _state.update { it.copy(repeatUnit = unit) }
+
     private companion object {
         const val MAX_NOTES = 500
         const val MAX_PLAZA = 60
+        const val MAX_REPEAT = 365
+        const val MAX_REPEAT_DIGITS = 3
     }
 }

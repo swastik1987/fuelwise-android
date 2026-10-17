@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reminders_title">Reminders</string>
+    <string name="reminders_back">Back</string>
+    <string name="reminders_add">Add reminder</string>
+    <string name="reminders_upcoming">Upcoming</string>
+    <string name="reminders_done">Done</string>
+    <string name="reminders_empty_title">No reminders yet</string>
+    <string name="reminders_empty_body">Insurance, PUC, service and more, by date, by kilometres or both.</string>
+    <string name="reminders_done_empty">Completed reminders show up here.</string>
+    <string name="reminders_completed">Completed reminder</string>
+    <string name="reminders_notifications_off">Notifications are off, so reminders only show here in the app.</string>
+    <string name="reminders_notifications_turn_on">Turn on notifications</string>
+    <string name="urgency_overdue">Overdue</string>
+    <string name="urgency_due">Due</string>
+    <string name="urgency_soon">Soon</string>
+    <string name="urgency_later">Later</string>
+    <string name="due_today">Today</string>
+    <plurals name="due_in_days">
+        <item quantity="one">in %1$d day</item>
+        <item quantity="other">in %1$d days</item>
+    </plurals>
+    <plurals name="due_days_overdue">
+        <item quantity="one">%1$d day overdue</item>
+        <item quantity="other">%1$d days overdue</item>
+    </plurals>
+    <string name="due_in_km">in ~%1$s km</string>
+    <string name="due_km_overdue">~%1$s km overdue</string>
+    <string name="due_at_km">at %1$s km</string>
+
+    <string name="editor_add_title">Add reminder</string>
+    <string name="editor_edit_title">Edit reminder</string>
+    <string name="editor_presets">What to remind you about</string>
+    <string name="editor_puc_helper">Validity depends on your emission norm and vehicle age. Rules may change, so check your certificate.</string>
+    <string name="editor_title_optional">Title (optional)</string>
+    <string name="editor_title_required">Title</string>
+    <string name="editor_title_missing">Give this reminder a name</string>
+    <string name="editor_due">Due</string>
+    <string name="editor_no_date">No date</string>
+    <string name="editor_pick_date">Pick date</string>
+    <string name="editor_clear">Clear</string>
+    <string name="editor_due_km">At odometer</string>
+    <string name="editor_now_at">Now about %1$s</string>
+    <string name="editor_due_missing">Add a date, an odometer reading, or both. Whichever comes first reminds you.</string>
+    <string name="editor_repeat">Repeat after it\'s done</string>
+    <string name="editor_every_months">Every (months)</string>
+    <string name="editor_every_km">Every (km)</string>
+    <string name="editor_notify">Remind me before</string>
+    <plurals name="editor_days_before">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="editor_notes">Notes</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_mark_done">Mark done</string>
+    <string name="editor_delete">Delete</string>
+</resources>

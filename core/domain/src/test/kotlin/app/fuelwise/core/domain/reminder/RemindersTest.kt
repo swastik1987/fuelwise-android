@@ -84,7 +84,11 @@ class RemindersTest {
 
     @Test
     fun `done moves a recurring reminder forward and retires a one-off`() {
-        val service = reminder("svc", due = date(2026, 10, 20), odo = 24_100.0).copy(repeatMonths = 12, repeatKm = 10_000.0)
+        val service = reminder(
+            "svc",
+            due = date(2026, 10, 20),
+            odo = 24_100.0,
+        ).copy(repeatMonths = 12, repeatKm = 10_000.0)
         val next = service.nextAfterCompletion(clock.millis(), 24_050.0, zone)!!
         assertThat(next.dueDateUtcMs).isEqualTo(date(2027, 10, 16))
         assertThat(next.dueOdometerKm).isEqualTo(34_050.0)
@@ -95,13 +99,24 @@ class RemindersTest {
     fun `PUC defaults come from the rules per emission norm`() {
         val rules = ReminderRules(
             version = 1,
-            presets = mapOf(ReminderKind.Service to PresetRule(12, 10_000.0, listOf(30, 7), twoWheeler = PresetRule(6, 3_000.0))),
+            presets = mapOf(
+                ReminderKind.Service to PresetRule(12, 10_000.0, listOf(30, 7), twoWheeler = PresetRule(6, 3_000.0)),
+            ),
             pucMonthsByNorm = mapOf(EmissionNorm.BS6 to 12, EmissionNorm.BS4 to 6),
             pucDefault = PresetRule(months = 6, notifyDaysBefore = listOf(15, 7, 1)),
             odometerWindowKmCar = 300.0,
             odometerWindowKmTwoWheeler = 150.0,
         )
-        val car = Vehicle("c", "Swift", VehicleType.Car, listOf(Tank("t", EnergyType.PETROL, 37.0, true)), 0.0, 0, emissionNorm = EmissionNorm.BS6)
+        val car =
+            Vehicle(
+                "c",
+                "Swift",
+                VehicleType.Car,
+                listOf(Tank("t", EnergyType.PETROL, 37.0, true)),
+                0.0,
+                0,
+                emissionNorm = EmissionNorm.BS6,
+            )
         val scooter = car.copy(type = VehicleType.Scooter, emissionNorm = null)
         assertThat(rules.defaultsFor(ReminderKind.Puc, car).months).isEqualTo(12)
         assertThat(rules.defaultsFor(ReminderKind.Puc, scooter).months).isEqualTo(6)
@@ -112,7 +127,17 @@ class RemindersTest {
 
     @Test
     fun `monthly recurrence clamps to short months and caps the backfill`() {
-        val emi = Recurrence("r", "swift", SystemCategory.LoanEmi.id, Money(1_200_000), 1, RepeatUnit.Months, date(2026, 1, 31), zone.id)
+        val emi =
+            Recurrence(
+                "r",
+                "swift",
+                SystemCategory.LoanEmi.id,
+                Money(1_200_000),
+                1,
+                RepeatUnit.Months,
+                date(2026, 1, 31),
+                zone.id,
+            )
         assertThat(emi.dueDates(date(2026, 3, 31)))
             .containsExactly(date(2026, 1, 31), date(2026, 2, 28), date(2026, 3, 31)).inOrder()
         assertThat(emi.nextDue(date(2026, 10, 16))).isEqualTo(date(2026, 10, 31))

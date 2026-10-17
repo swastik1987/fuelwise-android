@@ -58,4 +58,16 @@
     <string name="detail_delete_field">Vehicle name</string>
     <string name="detail_delete_confirm">Delete</string>
     <string name="detail_cancel">Cancel</string>
+    <string name="garage_reminders">Reminders</string>
+    <string name="garage_documents">Documents</string>
+    <string name="garage_fastag">FASTag</string>
+    <string name="garage_fastag_est">%1$s est.</string>
+    <plurals name="garage_reminders_due">
+        <item quantity="one">%1$d due</item>
+        <item quantity="other">%1$d due</item>
+    </plurals>
+    <plurals name="garage_documents_expiring">
+        <item quantity="one">%1$d expiring</item>
+        <item quantity="other">%1$d expiring</item>
+    </plurals>
 </resources>

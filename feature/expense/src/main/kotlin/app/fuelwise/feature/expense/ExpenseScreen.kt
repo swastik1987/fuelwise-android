@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -34,10 +35,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.fuelwise.core.designsystem.component.FwCheckboxRow
 import app.fuelwise.core.designsystem.component.FwChoiceChip
 import app.fuelwise.core.designsystem.component.FwEntrySheet
 import app.fuelwise.core.designsystem.component.FwHeaderChip
@@ -53,7 +56,9 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.PaymentMethod
+import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.entry.EntryDateTimePicker
 import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.categoryName
@@ -79,6 +84,9 @@ internal fun ExpenseScreen(onClose: () -> Unit, viewModel: ExpenseViewModel = hi
             onDateTime = viewModel::onDateTime,
             onVehicle = viewModel::onVehicle,
             onSave = viewModel::save,
+            onRepeat = viewModel::onRepeat,
+            onRepeatEvery = viewModel::onRepeatEvery,
+            onRepeatUnit = viewModel::onRepeatUnit,
         ),
         onClose = onClose,
     )
@@ -95,6 +103,9 @@ internal data class ExpenseActions(
     val onDateTime: (Long) -> Unit = {},
     val onVehicle: (String?) -> Unit = {},
     val onSave: () -> Unit = {},
+    val onRepeat: (Boolean) -> Unit = {},
+    val onRepeatEvery: (String) -> Unit = {},
+    val onRepeatUnit: (RepeatUnit) -> Unit = {},
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -251,6 +262,7 @@ internal fun ExpenseContent(
                 singleLine = false,
                 modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocus(null) },
             )
+            if (!state.isEdit && !state.isToll) RepeatSection(state, actions)
         }
     }
     if (pickingVehicle) {
@@ -329,3 +341,32 @@ private fun CategoryGrid(categories: List<Category>, selectedId: String?, onSele
 
 private const val COLUMNS = 4
 private const val MAX_SUGGESTIONS = 4
+
+/** "Repeat every N months" for EMIs, parking passes and the like (PRD F-04.3). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RepeatSection(state: ExpenseFormState, actions: ExpenseActions) {
+    FwCheckboxRow(
+        title = stringResource(R.string.expense_repeat),
+        checked = state.repeat,
+        onCheckedChange = actions.onRepeat,
+        subtitle = stringResource(R.string.expense_repeat_body),
+    )
+    if (!state.repeat) return
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        FwTextField(
+            value = state.repeatEvery,
+            onValueChange = actions.onRepeatEvery,
+            label = stringResource(R.string.expense_repeat_every),
+            keyboardType = KeyboardType.Number,
+            modifier = Modifier.width(120.dp).onFocusChanged { if (it.isFocused) actions.onFocus(null) },
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            RepeatUnit.entries.forEach { unit ->
+                FwChoiceChip(stringResource(CareLabels.repeatUnit(unit)), state.repeatUnit == unit, {
+                    actions.onRepeatUnit(unit)
+                })
+            }
+        }
+    }
+}

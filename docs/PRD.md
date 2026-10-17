@@ -272,7 +272,7 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 Users can add custom categories (name, icon, colour).
 
-**F-04.3 Recurring expenses.** (moved to M6 with WorkManager) Repeats every N days/weeks/months/years (e.g., EMI, parking pass). Auto-creates entries on the due date, marked "auto" until the user confirms (one tap).
+**F-04.3 Recurring expenses.** ✅ built (M6) Repeats every N days/weeks/months/years (e.g., EMI, parking pass). Auto-creates entries on the due date, marked "auto" until the user confirms (one tap).
 
 **F-04.4 Service line items.** An optional itemised breakdown for service/repair (part/labour, qty, amount), so "what did the last service include?" is answerable.
 
@@ -405,9 +405,9 @@ Users can add custom categories (name, icon, colour).
 
 ### F-10 FASTag and tolls — FREE · R1
 
-- **F-10.1 FASTag account per vehicle (optional):** issuer bank and tag ID (last 4 only).
+- **F-10.1 FASTag account per vehicle (optional):** ✅ built (M6) issuer bank and tag ID (last 4 only).
 - **F-10.2 Toll entry:** ✅ built (trip link not yet) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
-- **F-10.3 Recharges:** logged separately. They are transfers, not vehicle expenses, so they're excluded from cost/km. **Estimated balance** = Σ recharges − Σ FASTag tolls since the user's "balance anchor" (the user enters the current balance once). Labelled "est." with low-balance reminder (threshold user-set, default ₹300).
+- **F-10.3 Recharges:** ✅ built (M6; low balance notifies on the day a toll takes it under the threshold, then weekly) logged separately. They are transfers, not vehicle expenses, so they're excluded from cost/km. **Estimated balance** = Σ recharges − Σ FASTag tolls since the user's "balance anchor" (the user enters the current balance once). Labelled "est." with low-balance reminder (threshold user-set, default ₹300).
 - **F-10.4 Share-to-app parser:**
   - The app registers as a share target for `text/plain`.
   - When the user shares a bank/FASTag SMS or text into the app, a parser extracts amount, plaza, date-time and vehicle reg, and pre-fills a toll or recharge entry for confirmation.
@@ -420,7 +420,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-11 Reminders — FREE · R1
+### F-11 Reminders — FREE · R1 ✅ built (M6: presets from assets/rules/india.json, date/odometer/both, daily WorkManager check around 09:30, Done/Snooze/Open actions, in-app banner without the notification permission; "Done" from a notification does not create an expense yet)
 
 **F-11.1 Trigger types:** by date, by odometer, or both (whichever first). Can recur (every N km and/or N months).
 
@@ -459,7 +459,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-12 Documents vault — FREE · R1
+### F-12 Documents vault — FREE · R1 ✅ built (M6: Tink AES-GCM with a Keystore key, photo picker and PDFs, quick view with DigiLocker/mParivahan; camera scan waits for M10, Drive backup of documents for M7)
 
 - **Types:** RC, insurance policy, PUC certificate, driving licence, FASTag, extended warranty/protection plan, service invoice, loan papers, other.
 - **Fields:**

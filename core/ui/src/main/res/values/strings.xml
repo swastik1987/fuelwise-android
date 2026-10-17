@@ -64,4 +64,35 @@
     <string name="picker_next">Next</string>
     <string name="picker_done">Done</string>
     <string name="picker_cancel">Cancel</string>
+
+    <string name="reminder_insurance">Insurance renewal</string>
+    <string name="reminder_puc">PUC renewal</string>
+    <string name="reminder_service">Service</string>
+    <string name="reminder_engine_oil">Engine oil</string>
+    <string name="reminder_tyres">Tyre rotation</string>
+    <string name="reminder_battery">Battery check</string>
+    <string name="reminder_coolant">Coolant</string>
+    <string name="reminder_wipers">Wiper blades</string>
+    <string name="reminder_rc">RC renewal</string>
+    <string name="reminder_fitness">Fitness certificate</string>
+    <string name="reminder_licence">Driving licence</string>
+    <string name="reminder_warranty">Warranty expiry</string>
+    <string name="reminder_fastag">FASTag low balance</string>
+    <string name="reminder_custom">Custom</string>
+    <string name="document_rc">RC</string>
+    <string name="document_insurance">Insurance policy</string>
+    <string name="document_puc">PUC certificate</string>
+    <string name="document_licence">Driving licence</string>
+    <string name="document_fastag">FASTag</string>
+    <string name="document_warranty">Warranty or protection plan</string>
+    <string name="document_service_invoice">Service invoice</string>
+    <string name="document_loan">Loan papers</string>
+    <string name="document_other">Other</string>
+    <string name="policy_comprehensive">Comprehensive</string>
+    <string name="policy_third_party">Third-party</string>
+    <string name="policy_own_damage">Own damage</string>
+    <string name="repeat_days">days</string>
+    <string name="repeat_weeks">weeks</string>
+    <string name="repeat_months">months</string>
+    <string name="repeat_years">years</string>
 </resources>

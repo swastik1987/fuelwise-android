@@ -12,11 +12,14 @@ import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeLogbookRepository
+import app.fuelwise.core.testing.FakeRecurrenceRepository
+import app.fuelwise.core.testing.FakeReminderRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.core.testing.reminderStatuses
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
@@ -39,9 +42,10 @@ class HomeViewModelTest {
     private val userData = FakeUserDataRepository()
 
     private fun viewModel(vehicles: List<Vehicle>, entries: FakeEntryRepository): HomeViewModel {
+        val vehicleRepo = FakeVehicleRepository(vehicles)
         val consumption = ComputeConsumption()
         return HomeViewModel(
-            vehicles = FakeVehicleRepository(vehicles),
+            vehicles = vehicleRepo,
             userData = userData,
             entries = entries,
             logbook = FakeLogbookRepository(entries, zone),
@@ -49,6 +53,10 @@ class HomeViewModelTest {
             summarize = ComputeVehicleSummary(consumption, ComputeCostMetrics(), ComputePredictions(clock), clock),
             lookupIntervals = LookupIntervals(consumption),
             milestones = ComputeMilestones(consumption, clock),
+            care = HomeCareSource(
+                reminderStatuses(FakeReminderRepository(), vehicleRepo, entries, clock),
+                FakeRecurrenceRepository(),
+            ),
             zoneId = zone,
             clock = clock,
         )

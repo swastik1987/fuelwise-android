@@ -63,7 +63,12 @@ interface DocumentRepository {
     /** Tombstones the document, its reminder and attachments; the encrypted files are removed. */
     suspend fun delete(id: String)
 
-    suspend fun addAttachment(ownerId: String, ownerType: Attachment.OwnerType, bytes: ByteArray, mimeType: String): String
+    suspend fun addAttachment(
+        ownerId: String,
+        ownerType: Attachment.OwnerType,
+        bytes: ByteArray,
+        mimeType: String,
+    ): String
 
     suspend fun removeAttachment(attachment: Attachment)
 
@@ -116,7 +121,9 @@ internal class OfflineReminderRepository @Inject constructor(
     private val sync: SyncStamper,
     private val zoneId: ZoneId,
 ) : ReminderRepository {
-    override fun observeReminders(): Flow<List<Reminder>> = dao.observeReminders().map { rows -> rows.map { it.toModel() } }
+    override fun observeReminders(): Flow<List<Reminder>> = dao.observeReminders().map { rows ->
+        rows.map { it.toModel() }
+    }
 
     override fun observeCompletions(): Flow<List<ReminderCompletion>> =
         dao.observeCompletions().map { rows -> rows.map { it.toModel() } }
@@ -138,7 +145,14 @@ internal class OfflineReminderRepository @Inject constructor(
         val at = sync.now()
         val next = reminder.nextAfterCompletion(at, odometerKm, zoneId)
         dao.complete(
-            completion = ReminderCompletion(ids.newId(), id, reminder.vehicleId, at, odometerKm, expenseId).toEntity(sync.stamp()),
+            completion = ReminderCompletion(
+                ids.newId(),
+                id,
+                reminder.vehicleId,
+                at,
+                odometerKm,
+                expenseId,
+            ).toEntity(sync.stamp()),
             next = next?.toEntity(sync.stamp(row.sync.createdAt)),
             retireId = if (next == null) id else null,
             at = at,
@@ -162,7 +176,9 @@ internal class OfflineDocumentRepository @Inject constructor(
     private val ids: IdGenerator,
     private val sync: SyncStamper,
 ) : DocumentRepository {
-    override fun observeDocuments(): Flow<List<Document>> = dao.observeDocuments().map { rows -> rows.map { it.toModel() } }
+    override fun observeDocuments(): Flow<List<Document>> = dao.observeDocuments().map { rows ->
+        rows.map { it.toModel() }
+    }
 
     override fun observeDocument(id: String): Flow<Document?> = dao.observeDocument(id).map { it?.toModel() }
 
@@ -171,7 +187,13 @@ internal class OfflineDocumentRepository @Inject constructor(
 
     override suspend fun save(document: Document): String {
         val id = document.id.ifBlank { ids.newId() }
-        val created = if (document.id.isBlank()) null else dao.observeDocument(document.id).first()?.let { it.sync.createdAt }
+        val created = if (document.id.isBlank()) {
+            null
+        } else {
+            dao.observeDocument(document.id).first()?.let {
+                it.sync.createdAt
+            }
+        }
         val saved = document.copy(id = id)
         dao.upsertDocument(saved.toEntity(sync.stamp(created)))
         syncReminder(saved)
@@ -193,7 +215,13 @@ internal class OfflineDocumentRepository @Inject constructor(
             ?: Reminder.DEFAULT_NOTIFY_DAYS
         reminders.save(
             (existing ?: Reminder("", vehicleId, kind, null, null, null, documentId = document.id))
-                .copy(vehicleId = vehicleId, kind = kind, dueDateUtcMs = expiry, notifyDaysBefore = notify, snoozedUntilUtcMs = null),
+                .copy(
+                    vehicleId = vehicleId,
+                    kind = kind,
+                    dueDateUtcMs = expiry,
+                    notifyDaysBefore = notify,
+                    snoozedUntilUtcMs = null,
+                ),
         )
     }
 
@@ -205,11 +233,18 @@ internal class OfflineDocumentRepository @Inject constructor(
         dao.observeAttachments(id).first().forEach { removeAttachment(it.toModel()) }
     }
 
-    override suspend fun addAttachment(ownerId: String, ownerType: Attachment.OwnerType, bytes: ByteArray, mimeType: String): String {
+    override suspend fun addAttachment(
+        ownerId: String,
+        ownerType: Attachment.OwnerType,
+        bytes: ByteArray,
+        mimeType: String,
+    ): String {
         val id = ids.newId()
         val stored = store.write(id, bytes)
         val digest = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-        dao.upsertAttachment(Attachment(id, ownerId, ownerType, stored, mimeType, bytes.size.toLong(), digest).toEntity(sync.stamp()))
+        dao.upsertAttachment(
+            Attachment(id, ownerId, ownerType, stored, mimeType, bytes.size.toLong(), digest).toEntity(sync.stamp()),
+        )
         return id
     }
 
@@ -218,7 +253,8 @@ internal class OfflineDocumentRepository @Inject constructor(
         store.delete(attachment.storedName)
     }
 
-    override suspend fun readAttachment(attachment: Attachment): ByteArray = store.read(attachment.id, attachment.storedName)
+    override suspend fun readAttachment(attachment: Attachment): ByteArray =
+        store.read(attachment.id, attachment.storedName)
 }
 
 /** The reminder preset a document's expiry maps to. */
@@ -236,13 +272,23 @@ internal class OfflineRecurrenceRepository @Inject constructor(
     private val ids: IdGenerator,
     private val sync: SyncStamper,
 ) : RecurrenceRepository {
-    override fun observeRecurrences(): Flow<List<Recurrence>> = dao.observeRecurrences().map { rows -> rows.map { it.toModel() } }
+    override fun observeRecurrences(): Flow<List<Recurrence>> = dao.observeRecurrences().map { rows ->
+        rows.map { it.toModel() }
+    }
 
-    override fun observeUnconfirmed(): Flow<List<Expense>> = dao.observeUnconfirmed().map { rows -> rows.map { it.toModel() } }
+    override fun observeUnconfirmed(): Flow<List<Expense>> = dao.observeUnconfirmed().map { rows ->
+        rows.map { it.toModel() }
+    }
 
     override suspend fun save(recurrence: Recurrence): String {
         val id = recurrence.id.ifBlank { ids.newId() }
-        val created = if (recurrence.id.isBlank()) null else dao.recurrences().firstOrNull { it.id == recurrence.id }?.sync?.createdAt
+        val created = if (recurrence.id.isBlank()) {
+            null
+        } else {
+            dao.recurrences().firstOrNull {
+                it.id == recurrence.id
+            }?.sync?.createdAt
+        }
         dao.upsertRecurrence(recurrence.copy(id = id).toEntity(sync.stamp(created)))
         return id
     }
@@ -281,20 +327,38 @@ internal class OfflineFastagRepository @Inject constructor(
     private val ids: IdGenerator,
     private val sync: SyncStamper,
 ) : FastagRepository {
-    override fun observeAccounts(): Flow<List<FastagAccount>> = dao.observeAccounts().map { rows -> rows.map { it.toModel() } }
+    override fun observeAccounts(): Flow<List<FastagAccount>> = dao.observeAccounts().map { rows ->
+        rows.map { it.toModel() }
+    }
 
-    override fun observeRecharges(): Flow<List<FastagRecharge>> = dao.observeRecharges().map { rows -> rows.map { it.toModel() } }
+    override fun observeRecharges(): Flow<List<FastagRecharge>> = dao.observeRecharges().map { rows ->
+        rows.map { it.toModel() }
+    }
 
     override suspend fun saveAccount(account: FastagAccount): String {
         val id = account.id.ifBlank { ids.newId() }
-        val created = if (account.id.isBlank()) null else dao.observeAccounts().first().firstOrNull { it.id == account.id }?.sync?.createdAt
+        val created = if (account.id.isBlank()) {
+            null
+        } else {
+            dao.observeAccounts().first().firstOrNull {
+                it.id ==
+                    account.id
+            }?.sync?.createdAt
+        }
         dao.upsertAccount(account.copy(id = id).toEntity(sync.stamp(created)))
         return id
     }
 
     override suspend fun saveRecharge(recharge: FastagRecharge): String {
         val id = recharge.id.ifBlank { ids.newId() }
-        val created = if (recharge.id.isBlank()) null else dao.observeRecharges().first().firstOrNull { it.id == recharge.id }?.sync?.createdAt
+        val created = if (recharge.id.isBlank()) {
+            null
+        } else {
+            dao.observeRecharges().first().firstOrNull {
+                it.id ==
+                    recharge.id
+            }?.sync?.createdAt
+        }
         dao.upsertRecharge(recharge.copy(id = id).toEntity(sync.stamp(created)))
         return id
     }

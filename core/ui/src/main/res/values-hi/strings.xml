@@ -64,4 +64,35 @@
     <string name="picker_next">आगे</string>
     <string name="picker_done">हो गया</string>
     <string name="picker_cancel">रद्द करें</string>
+
+    <string name="reminder_insurance">बीमा रिन्यूअल</string>
+    <string name="reminder_puc">PUC रिन्यूअल</string>
+    <string name="reminder_service">सर्विस</string>
+    <string name="reminder_engine_oil">इंजन ऑयल</string>
+    <string name="reminder_tyres">टायर रोटेशन</string>
+    <string name="reminder_battery">बैटरी जाँच</string>
+    <string name="reminder_coolant">कूलेंट</string>
+    <string name="reminder_wipers">वाइपर ब्लेड</string>
+    <string name="reminder_rc">RC रिन्यूअल</string>
+    <string name="reminder_fitness">फ़िटनेस सर्टिफ़िकेट</string>
+    <string name="reminder_licence">ड्राइविंग लाइसेंस</string>
+    <string name="reminder_warranty">वारंटी खत्म</string>
+    <string name="reminder_fastag">FASTag बैलेंस कम</string>
+    <string name="reminder_custom">अपना</string>
+    <string name="document_rc">RC</string>
+    <string name="document_insurance">बीमा पॉलिसी</string>
+    <string name="document_puc">PUC सर्टिफ़िकेट</string>
+    <string name="document_licence">ड्राइविंग लाइसेंस</string>
+    <string name="document_fastag">FASTag</string>
+    <string name="document_warranty">वारंटी या प्रोटेक्शन प्लान</string>
+    <string name="document_service_invoice">सर्विस बिल</string>
+    <string name="document_loan">लोन के कागज़</string>
+    <string name="document_other">अन्य</string>
+    <string name="policy_comprehensive">कॉम्प्रिहेंसिव</string>
+    <string name="policy_third_party">थर्ड-पार्टी</string>
+    <string name="policy_own_damage">ओन डैमेज</string>
+    <string name="repeat_days">दिन</string>
+    <string name="repeat_weeks">हफ़्ते</string>
+    <string name="repeat_months">महीने</string>
+    <string name="repeat_years">साल</string>
 </resources>

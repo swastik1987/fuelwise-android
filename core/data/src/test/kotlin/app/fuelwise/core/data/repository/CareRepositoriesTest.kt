@@ -13,8 +13,8 @@ import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.Document
 import app.fuelwise.core.model.DocumentType
 import app.fuelwise.core.model.FastagAccount
-import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.FuelSetup
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Recurrence
 import app.fuelwise.core.model.Reminder
 import app.fuelwise.core.model.ReminderKind
@@ -37,7 +37,10 @@ import org.robolectric.annotation.Config
 class CareRepositoriesTest {
     private val zone = ZoneId.of("Asia/Kolkata")
     private val clock = Clock.fixed(LocalDate.of(2026, 10, 16).atTime(9, 30).atZone(zone).toInstant(), zone)
-    private val db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), FuelwiseDatabase::class.java)
+    private val db = Room.inMemoryDatabaseBuilder(
+        ApplicationProvider.getApplicationContext(),
+        FuelwiseDatabase::class.java,
+    )
         .allowMainThreadQueries()
         .build()
     private val ids = UuidV7Generator(clock)
@@ -67,7 +70,8 @@ class CareRepositoriesTest {
             odometerWindowKmTwoWheeler = 150.0,
         )
     }
-    private val documents = OfflineDocumentRepository(db.documentDao(), db.reminderDao(), reminders, vehicles, rules, store, ids, sync)
+    private val documents =
+        OfflineDocumentRepository(db.documentDao(), db.reminderDao(), reminders, vehicles, rules, store, ids, sync)
 
     @After
     fun tearDown() = db.close()
@@ -77,20 +81,44 @@ class CareRepositoriesTest {
     @Test
     fun recurringExpensesAreCreatedOncePerDueDate() = runTest {
         recurrences.save(
-            Recurrence("", "v1", SystemCategory.LoanEmi.id, Money(1_200_000), 1, RepeatUnit.Months, date(2026, 8, 5), zone.id),
+            Recurrence(
+                "",
+                "v1",
+                SystemCategory.LoanEmi.id,
+                Money(1_200_000),
+                1,
+                RepeatUnit.Months,
+                date(2026, 8, 5),
+                zone.id,
+            ),
         )
         assertThat(recurrences.createDueEntries()).isEqualTo(3)
         // Running again, as after a restore or a second worker run, creates nothing.
         assertThat(recurrences.createDueEntries()).isEqualTo(0)
         val auto = recurrences.observeUnconfirmed().first()
-        assertThat(auto.map { it.dateTimeUtcMs }).containsExactly(date(2026, 10, 5), date(2026, 9, 5), date(2026, 8, 5)).inOrder()
+        assertThat(
+            auto.map {
+                it.dateTimeUtcMs
+            },
+        ).containsExactly(date(2026, 10, 5), date(2026, 9, 5), date(2026, 8, 5)).inOrder()
         recurrences.confirm(auto.first().id)
         assertThat(recurrences.observeUnconfirmed().first()).hasSize(2)
     }
 
     @Test
     fun aDeletedAutoEntryIsNotRecreated() = runTest {
-        recurrences.save(Recurrence("", "v1", SystemCategory.Parking.id, Money(150_000), 1, RepeatUnit.Months, date(2026, 10, 1), zone.id))
+        recurrences.save(
+            Recurrence(
+                "",
+                "v1",
+                SystemCategory.Parking.id,
+                Money(150_000),
+                1,
+                RepeatUnit.Months,
+                date(2026, 10, 1),
+                zone.id,
+            ),
+        )
         recurrences.createDueEntries()
         val entry = recurrences.observeUnconfirmed().first().single()
         db.entryDao().tombstoneExpense(entry.id, clock.millis(), "device-a")
@@ -100,7 +128,16 @@ class CareRepositoriesTest {
     @Test
     fun completingARecurringReminderMovesItForward() = runTest {
         val id = reminders.save(
-            Reminder("", "v1", ReminderKind.Service, null, date(2026, 10, 20), 24_100.0, repeatMonths = 12, repeatKm = 10_000.0),
+            Reminder(
+                "",
+                "v1",
+                ReminderKind.Service,
+                null,
+                date(2026, 10, 20),
+                24_100.0,
+                repeatMonths = 12,
+                repeatKm = 10_000.0,
+            ),
         )
         reminders.complete(id, odometerKm = 24_050.0)
         val moved = reminders.reminder(id)!!
@@ -120,7 +157,9 @@ class CareRepositoriesTest {
     @Test
     fun documentExpiryKeepsAReminderInStep() = runTest {
         val vehicleId = vehicles.add(VehicleDraft(name = "Swift", fuelSetup = FuelSetup.Petrol, odometerKm = 20_000.0))
-        val docId = documents.save(Document("", vehicleId, DocumentType.Insurance, number = "OG-27-1234", expiryDateUtcMs = date(2027, 3, 1)))
+        val docId = documents.save(
+            Document("", vehicleId, DocumentType.Insurance, number = "OG-27-1234", expiryDateUtcMs = date(2027, 3, 1)),
+        )
         val reminder = reminders.observeReminders().first().single()
         assertThat(reminder.kind).isEqualTo(ReminderKind.Insurance)
         assertThat(reminder.documentId).isEqualTo(docId)
@@ -139,7 +178,9 @@ class CareRepositoriesTest {
         val docId = documents.save(Document("", null, DocumentType.Licence))
         documents.addAttachment(docId, Attachment.OwnerType.Document, byteArrayOf(1, 2, 3), "image/jpeg")
         val attachment = documents.observeAttachments(docId).first().single()
-        assertThat(documents.readAttachment(attachment).toList()).containsExactly(1.toByte(), 2.toByte(), 3.toByte()).inOrder()
+        assertThat(
+            documents.readAttachment(attachment).toList(),
+        ).containsExactly(1.toByte(), 2.toByte(), 3.toByte()).inOrder()
         assertThat(attachment.sha256).hasLength(64)
         documents.delete(docId)
         assertThat(files).isEmpty()

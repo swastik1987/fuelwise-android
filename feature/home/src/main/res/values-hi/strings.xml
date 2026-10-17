@@ -36,4 +36,18 @@
     <string name="milestone_year_body">पूरे एक साल की फ़्यूल एंट्री और खर्च। अब महीने और मौसम के ट्रेंड मायने रखते हैं।</string>
     <string name="milestone_best_title">अब तक की सबसे अच्छी टंकी</string>
     <string name="milestone_best_body">%1$s km/%2$s: अब तक की सबसे अच्छी फ़ुल से फ़ुल टंकी।</string>
+    <string name="home_upcoming">आने वाले</string>
+    <string name="home_pill_today">आज</string>
+    <string name="home_pill_overdue">देर हो गई</string>
+    <string name="home_pill_km">लगभग %1$s km में</string>
+    <plurals name="home_pill_days">
+        <item quantity="one">%1$d दिन में</item>
+        <item quantity="other">%1$d दिन में</item>
+    </plurals>
+    <plurals name="home_auto_entries">
+        <item quantity="one">%1$d दोहराई जाने वाली एंट्री अपने-आप जुड़ी</item>
+        <item quantity="other">%1$d दोहराई जाने वाली एंट्री अपने-आप जुड़ीं</item>
+    </plurals>
+    <string name="home_auto_confirm">पक्का करें</string>
+    <string name="home_auto_review">लॉगबुक में देखें</string>
 </resources>

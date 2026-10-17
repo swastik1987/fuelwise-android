@@ -52,14 +52,14 @@ object Migrations {
     }
 
     val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
-
 }
 
 private const val SYNC_COLUMNS =
     "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deviceId` TEXT NOT NULL, `deletedAt` INTEGER"
 
 private val V3_STATEMENTS = listOf(
-    "CREATE UNIQUE INDEX IF NOT EXISTS `index_expense_recurrenceId_dateTime` ON `expense` (`recurrenceId`, `dateTime`)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_expense_recurrenceId_dateTime` " +
+        "ON `expense` (`recurrenceId`, `dateTime`)",
     "CREATE TABLE IF NOT EXISTS `reminder` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, `kind` TEXT NOT NULL, " +
         "`title` TEXT, `dueDate` INTEGER, `dueOdometerKm` REAL, `repeatMonths` INTEGER, `repeatKm` REAL, " +
         "`notifyDaysBefore` TEXT NOT NULL, `snoozedUntil` INTEGER, `documentId` TEXT, `notes` TEXT, " +
@@ -73,15 +73,18 @@ private val V3_STATEMENTS = listOf(
     "CREATE INDEX IF NOT EXISTS `index_reminder_completion_vehicleId` ON `reminder_completion` (`vehicleId`)",
     "CREATE TABLE IF NOT EXISTS `document` (`id` TEXT NOT NULL, `vehicleId` TEXT, `type` TEXT NOT NULL, " +
         "`number` TEXT, `issuer` TEXT, `issueDate` INTEGER, `expiryDate` INTEGER, `notes` TEXT, `insurer` TEXT, " +
-        "`policyType` TEXT, `idvPaise` INTEGER, `ncbPercent` INTEGER, `addOns` TEXT, `remindOnExpiry` INTEGER NOT NULL, " +
+        "`policyType` TEXT, `idvPaise` INTEGER, `ncbPercent` INTEGER, `addOns` TEXT, " +
+        "`remindOnExpiry` INTEGER NOT NULL, " +
         "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
     "CREATE INDEX IF NOT EXISTS `index_document_vehicleId` ON `document` (`vehicleId`)",
-    "CREATE TABLE IF NOT EXISTS `attachment` (`id` TEXT NOT NULL, `ownerId` TEXT NOT NULL, `ownerType` TEXT NOT NULL, " +
-        "`storedName` TEXT NOT NULL, `mimeType` TEXT NOT NULL, `sizeBytes` INTEGER NOT NULL, `sha256` TEXT NOT NULL, " +
+    "CREATE TABLE IF NOT EXISTS `attachment` (`id` TEXT NOT NULL, `ownerId` TEXT NOT NULL, " +
+        "`ownerType` TEXT NOT NULL, `storedName` TEXT NOT NULL, `mimeType` TEXT NOT NULL, " +
+        "`sizeBytes` INTEGER NOT NULL, `sha256` TEXT NOT NULL, " +
         "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
     "CREATE INDEX IF NOT EXISTS `index_attachment_ownerId` ON `attachment` (`ownerId`)",
-    "CREATE TABLE IF NOT EXISTS `recurrence` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, `categoryId` TEXT NOT NULL, " +
-        "`amountPaise` INTEGER NOT NULL, `every` INTEGER NOT NULL, `unit` TEXT NOT NULL, `startDate` INTEGER NOT NULL, " +
+    "CREATE TABLE IF NOT EXISTS `recurrence` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, " +
+        "`categoryId` TEXT NOT NULL, `amountPaise` INTEGER NOT NULL, `every` INTEGER NOT NULL, " +
+        "`unit` TEXT NOT NULL, `startDate` INTEGER NOT NULL, " +
         "`zoneId` TEXT NOT NULL, `endDate` INTEGER, `paymentMethod` TEXT, `notes` TEXT, " +
         "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
     "CREATE INDEX IF NOT EXISTS `index_recurrence_vehicleId` ON `recurrence` (`vehicleId`)",
@@ -90,8 +93,10 @@ private val V3_STATEMENTS = listOf(
         "`lowBalancePaise` INTEGER NOT NULL, $SYNC_COLUMNS, PRIMARY KEY(`id`))",
     "CREATE INDEX IF NOT EXISTS `index_fastag_account_vehicleId` ON `fastag_account` (`vehicleId`)",
     "CREATE TABLE IF NOT EXISTS `fastag_recharge` (`id` TEXT NOT NULL, `accountId` TEXT NOT NULL, " +
-        "`vehicleId` TEXT NOT NULL, `dateTime` INTEGER NOT NULL, `zoneId` TEXT NOT NULL, `amountPaise` INTEGER NOT NULL, " +
+        "`vehicleId` TEXT NOT NULL, `dateTime` INTEGER NOT NULL, `zoneId` TEXT NOT NULL, " +
+        "`amountPaise` INTEGER NOT NULL, " +
         "`notes` TEXT, $SYNC_COLUMNS, PRIMARY KEY(`id`))",
     "CREATE INDEX IF NOT EXISTS `index_fastag_recharge_accountId` ON `fastag_recharge` (`accountId`)",
-    "CREATE INDEX IF NOT EXISTS `index_fastag_recharge_vehicleId_dateTime` ON `fastag_recharge` (`vehicleId`, `dateTime`)",
+    "CREATE INDEX IF NOT EXISTS `index_fastag_recharge_vehicleId_dateTime` " +
+        "ON `fastag_recharge` (`vehicleId`, `dateTime`)",
 )

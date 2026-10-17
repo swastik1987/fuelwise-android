@@ -7,8 +7,10 @@ import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
+import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeEntryRepository
+import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -33,6 +35,7 @@ class ExpenseViewModelTest {
     val main = MainDispatcherRule()
 
     private val entries = FakeEntryRepository()
+    private val recurrences = FakeRecurrenceRepository()
     private val categories = object : CategoryRepository {
         override fun observeCategories() = flowOf(
             SystemCategory.entries.mapIndexed { i, c -> Category(c.id, c, null, false, c.includeInCostPerKm, i) },
@@ -45,6 +48,7 @@ class ExpenseViewModelTest {
         categories = categories,
         entries = entries,
         userData = FakeUserDataRepository(),
+        recurrences = recurrences,
         clock = Clock.fixed(Instant.parse("2026-10-16T04:30:00Z"), ZoneOffset.UTC),
         zoneId = ZoneId.of("Asia/Kolkata"),
     )
@@ -95,5 +99,21 @@ class ExpenseViewModelTest {
         cash.save()
         cash.saved.first()
         assertThat(entries.expenses.last().categoryId).isEqualTo(SystemCategory.TollCash.id)
+    }
+
+    @Test
+    fun repeatStartsTheRecurrenceAtTheNextDueDate() = runTest {
+        val vm = viewModel()
+        vm.onCategory(SystemCategory.LoanEmi.id)
+        vm.typeAmount("12000")
+        vm.onRepeat(true)
+        vm.save()
+        vm.saved.first()
+        assertThat(entries.expenses).hasSize(1)
+        val recurrence = recurrences.saved.single()
+        assertThat(recurrence.amount).isEqualTo(Money(1_200_000))
+        assertThat(recurrence.unit).isEqualTo(RepeatUnit.Months)
+        // Saved on 16 Oct (IST): the first auto entry is 16 Nov, so this one is never created twice.
+        assertThat(recurrence.startUtcMs).isEqualTo(Instant.parse("2026-11-15T18:30:00Z").toEpochMilli())
     }
 }

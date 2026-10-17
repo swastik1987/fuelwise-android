@@ -2,9 +2,11 @@ package app.fuelwise.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -35,6 +37,8 @@ fun FwSegmentedControl(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            // Segments share the tallest label's height without stretching to the parent's.
+            .height(IntrinsicSize.Min)
             .heightIn(min = 44.dp)
             .background(colors.surface2, FwTheme.radius.segment)
             .padding(3.dp)

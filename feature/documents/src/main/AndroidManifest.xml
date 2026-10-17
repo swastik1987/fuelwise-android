@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Package visibility for the quick view's "Open DigiLocker / mParivahan" buttons (PRD F-12). Not a permission. -->
+    <queries>
+        <package android:name="com.digilocker.android" />
+        <package android:name="com.nic.mparivahan" />
+    </queries>
+</manifest>

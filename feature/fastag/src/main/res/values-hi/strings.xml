@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fastag_title">FASTag</string>
+    <string name="fastag_back">वापस</string>
+    <string name="fastag_no_vehicles">अभी कोई गाड़ी नहीं</string>
+    <string name="fastag_no_vehicles_body">FASTag का हिसाब रखने के लिए गैराज में गाड़ी जोड़ें।</string>
+    <string name="fastag_setup">FASTag सेट करें</string>
+    <string name="fastag_setup_body">आज का बैलेंस एक बार डालें; टोल और रिचार्ज से अनुमान चलता रहेगा।</string>
+    <string name="fastag_edit">FASTag बदलें</string>
+    <string name="fastag_est">अनुमान</string>
+    <string name="fastag_threshold">%1$s से कम होने पर अलर्ट</string>
+    <string name="fastag_low">%1$s के अलर्ट से कम। रिचार्ज का समय।</string>
+    <string name="fastag_add_toll">टोल जोड़ें</string>
+    <string name="fastag_add_recharge">रिचार्ज जोड़ें</string>
+    <string name="fastag_recent">हाल के</string>
+    <string name="fastag_toll">टोल</string>
+    <string name="fastag_recharge">रिचार्ज</string>
+    <string name="fastag_info_title">बैलेंस का अनुमान कैसे लगता है</string>
+    <string name="fastag_info_body">आपका डाला बैलेंस, उसके बाद दर्ज रिचार्ज जोड़कर और FASTag टोल घटाकर। जो टोल दर्ज नहीं हुए वे नहीं गिने जाते, इसलिए कभी-कभी बैंक ऐप देखकर यहाँ बैलेंस ठीक कर लें।</string>
+    <string name="fastag_account_title">FASTag खाता</string>
+    <string name="fastag_issuer">जारी करने वाला बैंक</string>
+    <string name="fastag_last4">टैग ID के आखिरी 4 अंक</string>
+    <string name="fastag_last4_note">सिर्फ़ आखिरी 4 अंक रखे जाते हैं।</string>
+    <string name="fastag_balance_now">आज का बैलेंस</string>
+    <string name="fastag_balance_correct">बैलेंस ठीक करें (ज़रूरी नहीं)</string>
+    <string name="fastag_threshold_label">इससे कम होने पर अलर्ट</string>
+    <string name="fastag_amount">रकम</string>
+    <string name="fastag_note">नोट</string>
+    <string name="fastag_recharge_note">रिचार्ज ट्रांसफ़र हैं, इसलिए प्रति km खर्च में नहीं गिने जाते।</string>
+    <string name="fastag_save">सेव करें</string>
+</resources>

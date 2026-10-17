@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="documents_title">Documents</string>
+    <string name="documents_back">Back</string>
+    <string name="documents_add">Add document</string>
+    <string name="documents_edit">Edit</string>
+    <string name="documents_empty_title">Keep your papers handy</string>
+    <string name="documents_empty_body">RC, insurance, PUC and licence: photos stay encrypted on this phone, with a reminder before each expiry.</string>
+    <string name="documents_private_note">Personal reference copies, encrypted on this phone.</string>
+    <string name="expiry_expired">Expired</string>
+    <plurals name="expiry_in_days">
+        <item quantity="one">Expires in %1$d day</item>
+        <item quantity="other">Expires in %1$d days</item>
+    </plurals>
+    <string name="expiry_valid_until">Valid until %1$s</string>
+    <string name="view_expires">Expires %1$s</string>
+    <string name="view_attachment">Document photo</string>
+    <string name="view_legal_note">For legal checks, show DigiLocker or mParivahan. This is your personal reference copy.</string>
+    <string name="view_open_digilocker">Open DigiLocker</string>
+    <string name="view_open_mparivahan">Open mParivahan</string>
+
+    <string name="editor_add">Add document</string>
+    <string name="editor_edit">Edit document</string>
+    <string name="editor_type">Type</string>
+    <string name="editor_vehicle">Vehicle</string>
+    <string name="editor_no_vehicle">None</string>
+    <string name="editor_files">Photos and PDFs</string>
+    <string name="editor_add_photo">Add photo</string>
+    <string name="editor_add_pdf">Add PDF</string>
+    <string name="editor_remove_file">Remove file</string>
+    <string name="editor_files_encrypted">Encrypted on this phone. Backed up to Drive only when encrypted backups are on.</string>
+    <string name="editor_attach_failed">Couldn\'t add that file. Files up to 15 MB work.</string>
+    <string name="editor_number">Number</string>
+    <string name="editor_issuer">Issued by</string>
+    <string name="editor_issue_date">Issue date</string>
+    <string name="editor_expiry_date">Expiry date</string>
+    <string name="editor_pick_date">Pick</string>
+    <string name="editor_clear">Clear</string>
+    <string name="editor_remind">Remind me before it expires</string>
+    <string name="editor_remind_body">Adds a reminder that follows this date.</string>
+    <string name="editor_remind_needs_vehicle">Pick a vehicle to get a reminder.</string>
+    <string name="editor_insurance">Policy details</string>
+    <string name="editor_insurer">Insurer</string>
+    <string name="editor_idv">IDV</string>
+    <string name="editor_ncb">NCB</string>
+    <string name="editor_add_ons">Add-ons</string>
+    <string name="editor_notes">Notes</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_delete">Delete document</string>
+</resources>

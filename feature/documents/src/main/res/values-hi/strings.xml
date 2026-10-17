@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="documents_title">कागज़ात</string>
+    <string name="documents_back">वापस</string>
+    <string name="documents_add">कागज़ जोड़ें</string>
+    <string name="documents_edit">बदलें</string>
+    <string name="documents_empty_title">अपने कागज़ात साथ रखें</string>
+    <string name="documents_empty_body">RC, बीमा, PUC और लाइसेंस: फ़ोटो इसी फ़ोन पर एन्क्रिप्ट रहती हैं, और हर एक्सपायरी से पहले रिमाइंडर मिलता है।</string>
+    <string name="documents_private_note">आपकी निजी कॉपी, इसी फ़ोन पर एन्क्रिप्ट।</string>
+    <string name="expiry_expired">एक्सपायर</string>
+    <plurals name="expiry_in_days">
+        <item quantity="one">%1$d दिन में एक्सपायर</item>
+        <item quantity="other">%1$d दिन में एक्सपायर</item>
+    </plurals>
+    <string name="expiry_valid_until">%1$s तक मान्य</string>
+    <string name="view_expires">%1$s को एक्सपायर</string>
+    <string name="view_attachment">कागज़ की फ़ोटो</string>
+    <string name="view_legal_note">कानूनी जाँच के लिए DigiLocker या mParivahan दिखाएँ। यह आपकी निजी कॉपी है।</string>
+    <string name="view_open_digilocker">DigiLocker खोलें</string>
+    <string name="view_open_mparivahan">mParivahan खोलें</string>
+
+    <string name="editor_add">कागज़ जोड़ें</string>
+    <string name="editor_edit">कागज़ बदलें</string>
+    <string name="editor_type">प्रकार</string>
+    <string name="editor_vehicle">गाड़ी</string>
+    <string name="editor_no_vehicle">कोई नहीं</string>
+    <string name="editor_files">फ़ोटो और PDF</string>
+    <string name="editor_add_photo">फ़ोटो जोड़ें</string>
+    <string name="editor_add_pdf">PDF जोड़ें</string>
+    <string name="editor_remove_file">फ़ाइल हटाएँ</string>
+    <string name="editor_files_encrypted">इसी फ़ोन पर एन्क्रिप्ट। Drive पर बैकअप तभी, जब एन्क्रिप्टेड बैकअप चालू हो।</string>
+    <string name="editor_attach_failed">यह फ़ाइल नहीं जुड़ पाई। 15 MB तक की फ़ाइलें चलती हैं।</string>
+    <string name="editor_number">नंबर</string>
+    <string name="editor_issuer">जारी करने वाला</string>
+    <string name="editor_issue_date">जारी होने की तारीख</string>
+    <string name="editor_expiry_date">एक्सपायरी की तारीख</string>
+    <string name="editor_pick_date">चुनें</string>
+    <string name="editor_clear">हटाएँ</string>
+    <string name="editor_remind">एक्सपायरी से पहले याद दिलाएँ</string>
+    <string name="editor_remind_body">इस तारीख के साथ चलने वाला रिमाइंडर जुड़ेगा।</string>
+    <string name="editor_remind_needs_vehicle">रिमाइंडर के लिए गाड़ी चुनें।</string>
+    <string name="editor_insurance">पॉलिसी की जानकारी</string>
+    <string name="editor_insurer">बीमा कंपनी</string>
+    <string name="editor_idv">IDV</string>
+    <string name="editor_ncb">NCB</string>
+    <string name="editor_add_ons">ऐड-ऑन</string>
+    <string name="editor_notes">नोट</string>
+    <string name="editor_save">सेव करें</string>
+    <string name="editor_delete">कागज़ हटाएँ</string>
+</resources>

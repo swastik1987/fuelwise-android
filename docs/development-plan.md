@@ -89,7 +89,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Free insight cards (mileage drop, real vs claimed); Pro cards rendered locked.
 - Monthly recap card (9:16 share image) + milestones.
 
-### M6 — Reminders & Documents, F-11, F-12 (≈2 weeks)
+### M6 — Reminders & Documents, F-11, F-12 (≈2 weeks) ✅ done (also recurring expenses F-04.3 and FASTag F-10.1/10.3 from M3; the SMS share parser stays in M10; service line items deferred)
 - `assets/rules/india.json` (versioned, never hard-coded), presets, date/odo/both triggers, WorkManager scheduling at preferred time, odo evaluation vs predicted odometer, notification actions (Done/Snooze/Open), reboot/restore idempotency.
 - `core:notifications` channels; `POST_NOTIFICATIONS` asked when the first reminder is created.
 - Documents vault with Tink AEAD + Keystore, photo picker, quick view with DigiLocker/mParivahan note, auto-reminder on expiry.

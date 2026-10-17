@@ -5,11 +5,11 @@ import androidx.room.Room
 import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.DocumentDao
+import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
 import app.fuelwise.core.database.dao.ReminderDao
-import app.fuelwise.core.database.dao.EntryDao
-import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.migration.Migrations
 import dagger.Module

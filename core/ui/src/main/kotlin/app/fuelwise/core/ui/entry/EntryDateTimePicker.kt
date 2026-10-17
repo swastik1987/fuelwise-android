@@ -83,3 +83,29 @@ fun EntryDateTimePicker(initialUtcMs: Long, zone: ZoneId, onPicked: (Long) -> Un
         }
     }
 }
+
+/** Date only, any date allowed: due dates and expiries (reminders, documents, recurrences). Returns local midnight. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EntryDatePicker(initialUtcMs: Long, zone: ZoneId, onPicked: (Long) -> Unit, onDismiss: () -> Unit) {
+    val initial = Instant.ofEpochMilli(initialUtcMs).atZone(zone).toLocalDate()
+    // DatePicker works in UTC midnights; convert the local date both ways.
+    val state =
+        rememberDatePickerState(
+            initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+        )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                val date =
+                    state.selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
+                        ?: initial
+                onPicked(date.atStartOfDay(zone).toInstant().toEpochMilli())
+            }) { Text(stringResource(R.string.picker_done), color = FwTheme.colors.ink) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.picker_cancel), color = FwTheme.colors.ink) }
+        },
+    ) { DatePicker(state = state) }
+}

@@ -34,8 +34,21 @@ class ObserveReminderStatuses @Inject constructor(
         val ruleSet = rules.reminderRules()
         val active = vehicleList.associateBy { it.id }
         val outlook = vehicleList.associate { v ->
-            val readings = odometerReadings(v, refuels.filter { it.vehicleId == v.id }, expenses.filter { it.vehicleId == v.id })
-            v.id to OdometerOutlook(predictions.predictedOdometer(readings), predictions.avgKmPerDay(readings), ruleSet.odometerWindowKm(v))
+            val readings =
+                odometerReadings(
+                    v,
+                    refuels.filter { it.vehicleId == v.id },
+                    expenses.filter {
+                        it.vehicleId ==
+                            v.id
+                    },
+                )
+            v.id to
+                OdometerOutlook(
+                    predictions.predictedOdometer(readings),
+                    predictions.avgKmPerDay(readings),
+                    ruleSet.odometerWindowKm(v),
+                )
         }
         // Archived or deleted vehicles keep their rows but stop reminding.
         evaluate(list.filter { it.vehicleId in active }, outlook, zoneId)

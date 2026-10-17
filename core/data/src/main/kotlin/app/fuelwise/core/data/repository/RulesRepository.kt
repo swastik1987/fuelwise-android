@@ -50,7 +50,9 @@ internal fun parseRules(json: String): ReminderRules {
     val byNorm = puc.optJSONObject("monthsByNorm") ?: JSONObject()
     return ReminderRules(
         version = root.optInt("version", 0),
-        presets = ReminderKind.entries.mapNotNull { kind -> presets.optJSONObject(kind.name)?.let { kind to it.toRule() } }.toMap(),
+        presets = ReminderKind.entries.mapNotNull { kind ->
+            presets.optJSONObject(kind.name)?.let { kind to it.toRule() }
+        }.toMap(),
         pucMonthsByNorm = EmissionNorm.entries.mapNotNull { norm ->
             if (byNorm.has(norm.name)) norm to byNorm.getInt(norm.name) else null
         }.toMap(),

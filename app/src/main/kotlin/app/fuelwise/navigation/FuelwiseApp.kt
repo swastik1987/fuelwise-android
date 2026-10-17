@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,14 +23,24 @@ import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.EntrySource
+import app.fuelwise.core.notifications.NotificationRoutes
+import app.fuelwise.feature.documents.DocumentEditorRoute
+import app.fuelwise.feature.documents.DocumentViewRoute
+import app.fuelwise.feature.documents.DocumentsRoute
+import app.fuelwise.feature.documents.documentEditorScreen
+import app.fuelwise.feature.documents.documentViewScreen
+import app.fuelwise.feature.documents.documentsScreen
 import app.fuelwise.feature.expense.ExpenseRoute
 import app.fuelwise.feature.expense.expenseSheet
+import app.fuelwise.feature.fastag.FastagRoute
+import app.fuelwise.feature.fastag.fastagScreen
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
 import app.fuelwise.feature.garage.VehicleDetailRoute
 import app.fuelwise.feature.garage.VehicleEditorRoute
 import app.fuelwise.feature.garage.garageScreen
 import app.fuelwise.feature.garage.vehicleDetailScreen
 import app.fuelwise.feature.garage.vehicleEditorScreen
+import app.fuelwise.feature.home.HomeActions
 import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
 import app.fuelwise.feature.insights.RecapRoute
@@ -47,10 +58,30 @@ import app.fuelwise.feature.onboarding.privacyScreen
 import app.fuelwise.feature.onboarding.welcomeScreen
 import app.fuelwise.feature.refuel.RefuelRoute
 import app.fuelwise.feature.refuel.refuelSheet
+import app.fuelwise.feature.reminders.ReminderEditorRoute
+import app.fuelwise.feature.reminders.RemindersRoute
+import app.fuelwise.feature.reminders.reminderEditorScreen
+import app.fuelwise.feature.reminders.remindersScreen
 
 /** App shell: bottom nav + FAB around a single NavHost. Feature modules only see callbacks, never each other. */
 @Composable
-fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController = rememberNavController()) {
+fun FuelwiseApp(
+    startWithOnboarding: Boolean,
+    openRequest: OpenRequest? = null,
+    onOpenHandled: () -> Unit = {},
+    navController: NavHostController = rememberNavController(),
+) {
+    // A notification tap (core:notifications) asks for a screen; open it once the graph exists.
+    LaunchedEffect(openRequest) {
+        val route: Any = when (openRequest?.target) {
+            NotificationRoutes.OPEN_REMINDERS -> RemindersRoute
+            NotificationRoutes.OPEN_RECAP -> RecapRoute()
+            NotificationRoutes.OPEN_FASTAG -> FastagRoute
+            else -> return@LaunchedEffect
+        }
+        if (!startWithOnboarding) navController.navigate(route)
+        onOpenHandled()
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val destinations = TopLevelDestination.entries
@@ -95,10 +126,14 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                 },
             )
             homeScreen(
-                onLogFuel = openAddEntry,
-                onAddVehicle = openVehicleEditor,
-                onOpenEntry = { source, id -> navController.navigate(EntryDetailRoute(source.name, id)) },
-                onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
+                HomeActions(
+                    onLogFuel = openAddEntry,
+                    onAddVehicle = openVehicleEditor,
+                    onOpenEntry = { source, id -> navController.navigate(EntryDetailRoute(source.name, id)) },
+                    onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
+                    onOpenReminders = { navController.navigate(RemindersRoute) },
+                    onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
+                ),
             )
             refuelSheet(onClose = navController::popBackStack)
             expenseSheet(onClose = navController::popBackStack)
@@ -121,6 +156,29 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
             garageScreen(
                 onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
                 onAddVehicle = openVehicleEditor,
+                onReminders = { navController.navigate(RemindersRoute) },
+                onDocuments = { navController.navigate(DocumentsRoute) },
+                onFastag = { navController.navigate(FastagRoute) },
+            )
+            remindersScreen(
+                onBack = navController::popBackStack,
+                onAdd = { navController.navigate(ReminderEditorRoute()) },
+                onOpen = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
+            )
+            reminderEditorScreen(onClose = navController::popBackStack)
+            documentsScreen(
+                onBack = navController::popBackStack,
+                onAdd = { navController.navigate(DocumentEditorRoute()) },
+                onOpen = { id -> navController.navigate(DocumentViewRoute(id)) },
+            )
+            documentEditorScreen(onClose = navController::popBackStack)
+            documentViewScreen(
+                onBack = navController::popBackStack,
+                onEdit = { id -> navController.navigate(DocumentEditorRoute(documentId = id)) },
+            )
+            fastagScreen(
+                onBack = navController::popBackStack,
+                onAddToll = { vehicleId -> navController.navigate(ExpenseRoute(vehicleId = vehicleId, toll = true)) },
             )
             vehicleEditorScreen(
                 onBack = navController::popBackStack,
@@ -166,3 +224,6 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
         restoreState = true
     }
 }
+
+/** A screen asked for from outside the app (a notification). [id] makes two taps on the same target distinct. */
+data class OpenRequest(val target: String, val id: Long)

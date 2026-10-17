@@ -36,6 +36,7 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.core.domain)
     implementation(projects.core.data)
+    implementation(projects.core.notifications)
     implementation(projects.feature.home)
     implementation(projects.feature.logbook)
     implementation(projects.feature.insights)
@@ -43,6 +44,9 @@ dependencies {
     implementation(projects.feature.onboarding)
     implementation(projects.feature.refuel)
     implementation(projects.feature.expense)
+    implementation(projects.feature.reminders)
+    implementation(projects.feature.documents)
+    implementation(projects.feature.fastag)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -50,4 +54,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 }

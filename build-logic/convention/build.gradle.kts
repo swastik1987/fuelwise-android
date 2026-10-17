@@ -24,6 +24,7 @@ dependencies {
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
     compileOnly(libs.ktlint.gradlePlugin)
+    compileOnly(libs.room.gradlePlugin)
 }
 
 gradlePlugin {
@@ -47,6 +48,10 @@ gradlePlugin {
         register("hilt") {
             id = libs.plugins.fuelwise.hilt.get().pluginId
             implementationClass = "HiltConventionPlugin"
+        }
+        register("androidRoom") {
+            id = libs.plugins.fuelwise.android.room.get().pluginId
+            implementationClass = "AndroidRoomConventionPlugin"
         }
         register("jvmLibrary") {
             id = libs.plugins.fuelwise.jvm.library.get().pluginId

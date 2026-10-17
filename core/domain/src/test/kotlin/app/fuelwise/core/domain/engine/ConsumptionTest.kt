@@ -107,8 +107,9 @@ class ConsumptionTest {
         }.shuffled(random)
 
         repeat(3) { compute(fills) } // warm up the JIT
-        val elapsedMs = measureNanoTime { compute(fills) } / 1_000_000
-        assertThat(elapsedMs).isLessThan(200L)
+        // Best of five, so a busy build machine (parallel Gradle workers) can't fail it by contention alone.
+        val bestMs = List(5) { measureNanoTime { compute(fills) } }.min() / 1_000_000
+        assertThat(bestMs).isLessThan(200L)
     }
 
     private fun fill(id: String, odo: Double, qty: Double, full: Boolean, missed: Boolean = false, time: Long = 0) =

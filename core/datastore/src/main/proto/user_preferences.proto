@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_package = "app.fuelwise.core.datastore";
+option java_multiple_files = true;
+
+// App settings (PRD F-18 and onboarding choices). Included in backups; excluded from sync merges except an
+// allow-list (PRD §7). Field numbers are permanent: never reuse or renumber one.
+message UserPreferences {
+  // Identifies this install on synced rows (CLAUDE.md rule 3). Generated once, never shown.
+  string device_id = 1;
+  bool onboarding_completed = 2;
+  // The vehicle the switcher last selected; empty means "first vehicle".
+  string selected_vehicle_id = 3;
+  string home_city_id = 4;
+  bool weekly_digest = 5;
+  bool monthly_recap = 6;
+  // Off and hidden in R1: no crash reporting SDK (PRD D7).
+  bool crash_reports = 7;
+  ThemeMode theme_mode = 8;
+  bool hide_amounts = 9;
+  FeatureFlags feature_flags = 10;
+}
+
+enum ThemeMode {
+  THEME_MODE_SYSTEM = 0;
+  THEME_MODE_LIGHT = 1;
+  THEME_MODE_DARK = 2;
+}
+
+// R2/R3 features stay behind these flags until their release (CLAUDE.md).
+message FeatureFlags {
+  bool automatic_trips = 1;
+  bool multi_device_sync = 2;
+  bool trip_planner = 3;
+}

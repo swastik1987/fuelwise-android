@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_unlock_overline">आपका असली माइलेज</string>
+    <string name="home_unlock_title">असली माइलेज देखने के लिए 2 बार टंकी फ़ुल कराकर दर्ज करें</string>
+    <string name="home_step_baseline">1 · पहली फ़ुल टंकी</string>
+    <string name="home_step_first_mileage">2 · आपका पहला km/L</string>
+    <string name="home_log_fuel">फ़्यूल दर्ज करें</string>
+    <string name="home_unlock_explainer">माइलेज एक फ़ुल टंकी से अगली फ़ुल टंकी तक मापा जाता है। बीच में कम भरवाया फ़्यूल भी जोड़ा जाता है।</string>
+</resources>

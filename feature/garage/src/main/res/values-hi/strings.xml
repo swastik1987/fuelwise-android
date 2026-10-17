@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="garage_empty_title">अभी कोई गाड़ी नहीं</string>
+    <string name="garage_empty_body">अपनी कार, स्कूटर या बाइक जोड़ें और देखें कि उस पर कितना खर्च होता है।</string>
+    <string name="garage_empty_action">गाड़ी जोड़ें</string>
+</resources>

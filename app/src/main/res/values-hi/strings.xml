@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_home">होम</string>
+    <string name="nav_logbook">लॉगबुक</string>
+    <string name="nav_insights">इनसाइट्स</string>
+    <string name="nav_garage">गैराज</string>
+    <string name="nav_add_entry">फ़्यूल जोड़ें</string>
+</resources>

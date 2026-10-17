@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insights_empty_title">अभी कोई इनसाइट नहीं</string>
+    <string name="insights_empty_body">दो बार टंकी फ़ुल कराकर दर्ज करें, फिर आपका माइलेज, ₹/km और ट्रेंड यहाँ दिखेंगे।</string>
+    <string name="insights_empty_action">फ़्यूल दर्ज करें</string>
+</resources>

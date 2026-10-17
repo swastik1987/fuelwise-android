@@ -19,7 +19,11 @@ internal fun Project.configureKotlinAndroid(android: CommonExtension) {
     android.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
     android.compileOptions.targetCompatibility = JavaVersion.VERSION_17
     android.testOptions.unitTests.isIncludeAndroidResources = true
-    android.testOptions.unitTests.all { it.useJUnitPlatform() }
+    android.testOptions.unitTests.all {
+        it.useJUnitPlatform()
+        // Modules without tests yet (new feature modules) must not fail the build.
+        it.failOnNoDiscoveredTests.set(false)
+    }
     android.lint.apply {
         warningsAsErrors = true
         abortOnError = true

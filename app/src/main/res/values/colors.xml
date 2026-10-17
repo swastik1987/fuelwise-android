@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window and launcher colours mirror design tokens (core:designsystem Color.kt). -->
+    <color name="fw_window_background">#F5F4F0</color>
+    <color name="ic_launcher_background">#F5F4F0</color>
+    <color name="fw_icon_ink">#121212</color>
+    <color name="fw_icon_accent">#FF5B1F</color>
+</resources>

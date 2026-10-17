@@ -13,9 +13,7 @@ fun interface IdGenerator {
  * UUID version 7 (RFC 9562): 48-bit Unix-ms timestamp, then random bits. Lexicographic order follows creation time,
  * which keeps Room indexes and Drive change-sets append-friendly. IDs from the same millisecond stay increasing.
  */
-class UuidV7Generator @Inject constructor(
-    private val clock: Clock,
-) : IdGenerator {
+class UuidV7Generator @Inject constructor(private val clock: Clock) : IdGenerator {
     private val random = SecureRandom()
     private val lock = Any()
     private var lastMillis = -1L
@@ -42,6 +40,8 @@ class UuidV7Generator @Inject constructor(
         return format(msb, lsb)
     }
 
+    // Field widths and offsets are the fixed 8-4-4-4-12 hex layout of a UUID string.
+    @Suppress("MagicNumber")
     private fun format(msb: Long, lsb: Long): String = buildString(UUID_LENGTH) {
         appendHex(msb ushr 32, 8)
         append('-')
@@ -54,6 +54,7 @@ class UuidV7Generator @Inject constructor(
         appendHex(lsb, 12)
     }
 
+    @Suppress("MagicNumber") // 4 bits per hex digit
     private fun StringBuilder.appendHex(value: Long, digits: Int) {
         for (i in digits - 1 downTo 0) {
             append(HEX[((value ushr (i * 4)) and 0xF).toInt()])

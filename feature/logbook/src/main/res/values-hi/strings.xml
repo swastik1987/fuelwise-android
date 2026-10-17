@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="logbook_empty_title">अभी कुछ दर्ज नहीं है</string>
+    <string name="logbook_empty_body">फ़्यूल, चार्जिंग और बाकी खर्च यहाँ दिखेंगे।</string>
+    <string name="logbook_empty_action">पहली बार फ़्यूल दर्ज करें</string>
+</resources>

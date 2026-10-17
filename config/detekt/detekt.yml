@@ -11,6 +11,9 @@ complexity:
     ignoreAnnotatedFunctions: ['Preview']
 
 naming:
+  # Compose files pair a small type (route, UI model) with the composables that use it.
+  MatchingDeclarationName:
+    active: false
   FunctionNaming:
     ignoreAnnotated: ['Composable']
   TopLevelPropertyNaming:

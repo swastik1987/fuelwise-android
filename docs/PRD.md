@@ -210,7 +210,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 A pure Kotlin module (`core:domain`), with no Android dependencies, 100% unit-tested. **This is the product's credibility, so treat it as such.**
 
-**F-03.1 Full-tank algorithm (liquid/gas fuels):**
+**F-03.1 Full-tank algorithm (liquid/gas fuels):** ✅ built
 1. Sort a tank's fill-ups by odometer, with date-time as tiebreaker.
 2. An **interval** opens at a full fill-up `j` and closes at the next full fill-up `i`.
 3. `distance = odo_i − odo_j`
@@ -220,32 +220,32 @@ A pure Kotlin module (`core:domain`), with no Android dependencies, 100% unit-te
 7. Consumption is shown per interval on the closing fill-up.
 8. The **average** is weighted: `Σ fuel(valid intervals) / Σ distance(valid intervals)`. Never use a mean of interval means.
 
-**F-03.2 Units.** Compute internally as L/100km, kg/100km or kWh/100km. Display in the user's chosen unit (km/L default in India).
+**F-03.2 Units.** ✅ built Compute internally as L/100km, kg/100km or kWh/100km. Display in the user's chosen unit (km/L default in India).
 
-**F-03.3 Bi-fuel.**
+**F-03.3 Bi-fuel.** ✅ built
 - Run F-03.1 independently per tank.
 - Per-fuel efficiency is **approximate**, because the distance in an interval is shared with the other fuel. Label it "est." with an info tooltip explaining why.
 - The **hero metric for bi-fuel is combined cost/km**, which is exact.
 
-**F-03.4 EV efficiency:**
+**F-03.4 EV efficiency:** ✅ built
 - **Primary method (SoC):** needs start/end SoC on sessions and the usable battery capacity.
   - `energy_used = (prev.endSoC − curr.startSoC) × capacity` over `distance = curr.odo − prev.odo`
   - `charging_efficiency = ((curr.endSoC − curr.startSoC) × capacity) / kWh_billed`
 - **Fallback (full-charge method):** treat a session with endSoC ≥ 99% (or a "charged to full" toggle) as "full" and apply F-03.1 to kWh.
 - Show "battery-to-wheel" efficiency (SoC method) and "wall-to-wheel" efficiency (billed kWh), labelled clearly.
 
-**F-03.5 Cost metrics:**
+**F-03.5 Cost metrics:** ✅ built (TCO not yet)
 - **Cost/km (period)** = (fuel paid + included expenses) / distance driven in the period.
   - Distance = max odo − min odo of entries in the period. When there is too little data, extrapolate using the closest entries outside the period, and label it.
   - The user can configure which expense categories are included. Default: all except "Purchase" and "Loan EMI".
 - **Fuel-only cost/km**, **cost/day**, **monthly burn**.
 - **Total cost of ownership:** optional. Includes purchase price amortised over N years plus EMI and insurance.
 
-**F-03.6 Predictions:**
+**F-03.6 Predictions:** ✅ built
 - `avgKmPerDay` from the last 90 days. Falls back to all-time; needs a minimum of 2 entries spanning ≥7 days.
 - Predicted odometer today; predicted date for odometer-based reminders; estimated range left (if last fill was full: `capacity × efficiency − distance since`).
 
-**F-03.7 Golden test vectors** (must pass exactly, tolerance 0.001):
+**F-03.7 Golden test vectors** ✅ passing (must pass exactly, tolerance 0.001):
 
 | # | Odo (km) | Qty (L) | Full | Missed prev | Expected interval result |
 |---|---|---|---|---|---|

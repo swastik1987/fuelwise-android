@@ -53,7 +53,7 @@ Design reference: the Claude Design export is in `design/` (see `design/README.m
 
 Sizes are rough, for one builder working with Claude Code.
 
-### M0 — Foundations (≈1 week)
+### M0 — Foundations (≈1 week) ✅ done (PR #1; DataStore + FeatureFlags moved to M2)
 - Gradle: version catalog, `build-logic/` convention plugins (android-library, compose, hilt, room, jvm-library, test), all modules from CLAUDE.md as empty skeletons.
 - Quality: ktlint, detekt, Android Lint warnings-as-errors; GitHub Actions `ci` workflow (`ktlintCheck detekt lintDebug testDebugUnitTest`).
 - `core:model` / `core:domain` basics: `Money` (Long paise), units + conversions, UUIDv7 generator, injected `Clock` and dispatchers.
@@ -62,7 +62,7 @@ Sizes are rough, for one builder working with Claude Code.
 - `app`: Hilt application, empty nav graph with the 5-slot bottom nav + FAB notch. `values/` + `values-hi/` strings.
 - Proto DataStore schema for settings + `FeatureFlags`; `EntitlementRepository` stub (always free).
 
-### M1 — Consumption & cost engine, F-03 (≈1 week)
+### M1 — Consumption & cost engine, F-03 (≈1 week) ✅ done (TCO, F-03.5 optional part, deferred)
 Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - F-03.1 full-tank algorithm, F-03.2 units, F-03.3 bi-fuel (est.), F-03.4 EV SoC + full-charge fallback, F-03.5 cost metrics, F-03.6 predictions.
 - Golden vectors from PRD §F-03.7 as the first tests; property tests for ordering/back-dating; perf test (2,000 entries recompute < 200 ms).

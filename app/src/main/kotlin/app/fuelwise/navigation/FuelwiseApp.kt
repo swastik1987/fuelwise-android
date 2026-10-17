@@ -21,6 +21,7 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.model.EntrySource
 import app.fuelwise.feature.expense.ExpenseRoute
 import app.fuelwise.feature.expense.expenseSheet
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
@@ -32,6 +33,8 @@ import app.fuelwise.feature.garage.vehicleEditorScreen
 import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
 import app.fuelwise.feature.insights.insightsScreen
+import app.fuelwise.feature.logbook.EntryDetailRoute
+import app.fuelwise.feature.logbook.entryDetailScreen
 import app.fuelwise.feature.logbook.logbookScreen
 import app.fuelwise.feature.onboarding.HistoryRoute
 import app.fuelwise.feature.onboarding.PrivacyRoute
@@ -88,10 +91,23 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
                     navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } }
                 },
             )
-            homeScreen(onLogFuel = openAddEntry, onAddVehicle = openVehicleEditor)
+            homeScreen(
+                onLogFuel = openAddEntry,
+                onAddVehicle = openVehicleEditor,
+                onOpenEntry = { source, id -> navController.navigate(EntryDetailRoute(source.name, id)) },
+                onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
+            )
             refuelSheet(onClose = navController::popBackStack)
             expenseSheet(onClose = navController::popBackStack)
-            logbookScreen(onPrimaryAction = openAddEntry)
+            logbookScreen(
+                onAddEntry = openAddEntry,
+                onOpenEntry = { source, id -> navController.navigate(EntryDetailRoute(source.name, id)) },
+                onEditEntry = { source, id -> navController.navigate(source.editRoute(id)) },
+            )
+            entryDetailScreen(
+                onBack = navController::popBackStack,
+                onEdit = { source, id -> navController.navigate(source.editRoute(id)) },
+            )
             insightsScreen(onPrimaryAction = openAddEntry)
             garageScreen(
                 onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
@@ -127,6 +143,11 @@ fun FuelwiseApp(startWithOnboarding: Boolean, navController: NavHostController =
             onDismiss = { quickAddOpen = false },
         )
     }
+}
+
+private fun EntrySource.editRoute(id: String): Any = when (this) {
+    EntrySource.Refuel -> RefuelRoute(refuelId = id)
+    EntrySource.Expense -> ExpenseRoute(expenseId = id)
 }
 
 private fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {

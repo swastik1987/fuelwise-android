@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,38 +30,58 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.fuelwise.core.designsystem.component.Delta
 import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwEmptyState
-import app.fuelwise.core.designsystem.component.FwInkButton
+import app.fuelwise.core.designsystem.component.FwHeroMetric
+import app.fuelwise.core.designsystem.component.FwInfoSheet
+import app.fuelwise.core.designsystem.component.FwMetricTile
 import app.fuelwise.core.designsystem.component.FwOverline
+import app.fuelwise.core.designsystem.component.FwSectionHeader
+import app.fuelwise.core.designsystem.component.FwSparkline
 import app.fuelwise.core.designsystem.icon.FwIcons
-import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.summary.VehicleSummary
+import app.fuelwise.core.model.EntrySource
+import app.fuelwise.core.model.LogbookEntry
+import app.fuelwise.core.model.Money
+import app.fuelwise.core.ui.entry.LogbookEntryRow
+import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
+import java.time.Instant
+import java.time.ZoneId
+import kotlin.math.abs
+import kotlin.math.roundToInt
+
+/** Navigation out of Home; kept in one place so the screen signature stays short. */
+internal data class HomeActions(
+    val onLogFuel: () -> Unit,
+    val onAddVehicle: () -> Unit,
+    val onOpenEntry: (EntrySource, String) -> Unit,
+    val onOpenLogbook: () -> Unit,
+)
 
 @Composable
-internal fun HomeScreen(onLogFuel: () -> Unit, onAddVehicle: () -> Unit, viewModel: HomeViewModel = hiltViewModel()) {
+internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(state, onLogFuel, onAddVehicle, viewModel::selectVehicle)
+    HomeContent(state, actions, viewModel::selectVehicle, viewModel::setHideAmounts)
 }
 
-/**
- * Home (design.md screen 5). Until fill-ups exist (M3) a vehicle shows the brand-new state from screen 05b:
- * log two full tanks to unlock real mileage.
- */
+/** Home (design.md screen 5): ₹/km hero, mileage and spend tiles, last fill-up, range, insight, recent entries. */
 @Composable
 internal fun HomeContent(
     state: HomeUiState,
-    onLogFuel: () -> Unit,
-    onAddVehicle: () -> Unit,
+    actions: HomeActions,
     onSelectVehicle: (String?) -> Unit,
+    onHideAmounts: (Boolean) -> Unit,
 ) {
     var switcherOpen by rememberSaveable { mutableStateOf(false) }
+    var heroInfo by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         when (state) {
             HomeUiState.Loading -> Unit
@@ -68,19 +92,40 @@ internal fun HomeContent(
                     headline = stringResource(R.string.home_no_vehicle_title),
                     body = stringResource(R.string.home_no_vehicle_body),
                     actionLabel = stringResource(R.string.home_no_vehicle_action),
-                    onAction = onAddVehicle,
+                    onAction = actions.onAddVehicle,
                 )
             }
 
             is HomeUiState.Ready -> {
                 Row(
                     Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).height(64.dp)
-                        .padding(horizontal = FwTheme.spacing.gutter),
+                        .padding(start = FwTheme.spacing.gutter, end = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     VehicleSwitcherPill(state.vehicle, onClick = { switcherOpen = true })
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { onHideAmounts(!state.hideAmounts) }) {
+                        Icon(
+                            painterResource(if (state.hideAmounts) FwIcons.VisibilityOff else FwIcons.Visibility),
+                            stringResource(
+                                if (state.hideAmounts) R.string.home_show_amounts else R.string.home_hide_amounts,
+                            ),
+                            tint = FwTheme.colors.ink,
+                        )
+                    }
                 }
-                BrandNewVehicle(onLogFuel)
+                Column(
+                    Modifier.verticalScroll(rememberScrollState())
+                        .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.m),
+                    verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
+                ) {
+                    if (state.summary.hasMileage) {
+                        Dashboard(state, actions) { heroInfo = true }
+                    } else {
+                        BrandNewVehicle(state.summary.fullFillCount, actions.onLogFuel)
+                    }
+                    if (state.recent.isNotEmpty()) Recent(state, actions)
+                }
                 if (switcherOpen) {
                     VehicleSwitcherSheet(
                         vehicles = state.vehicles,
@@ -91,9 +136,19 @@ internal fun HomeContent(
                         },
                         onAddVehicle = {
                             switcherOpen = false
-                            onAddVehicle()
+                            actions.onAddVehicle()
                         },
                         onDismiss = { switcherOpen = false },
+                    )
+                }
+                if (heroInfo) {
+                    FwInfoSheet(
+                        title = stringResource(R.string.home_cost_per_km_title),
+                        paragraphs = listOf(
+                            stringResource(R.string.home_cost_per_km_body1),
+                            stringResource(R.string.home_cost_per_km_body2),
+                        ),
+                        onDismiss = { heroInfo = false },
                     )
                 }
             }
@@ -102,75 +157,160 @@ internal fun HomeContent(
 }
 
 @Composable
-private fun BrandNewVehicle(onLogFuel: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.m),
-        verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
-    ) {
-        FwCard(contentPadding = androidx.compose.foundation.layout.PaddingValues(FwTheme.spacing.xl)) {
-            FwOverline(stringResource(R.string.home_unlock_overline))
-            Text(
-                stringResource(R.string.home_unlock_title),
-                style = FwTheme.type.h1,
-                color = FwTheme.colors.ink,
-                modifier = Modifier.padding(top = FwTheme.spacing.l),
-            )
-            BaselineProgress(completedSteps = 0, modifier = Modifier.padding(top = FwTheme.spacing.l))
-            FwInkButton(
-                text = stringResource(R.string.home_log_fuel),
-                onClick = onLogFuel,
-                leadingIcon = FwIcons.Fuel,
-                modifier = Modifier.padding(top = FwTheme.spacing.l),
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
-            modifier = Modifier.padding(horizontal = 4.dp),
-        ) {
-            Icon(
-                painterResource(FwIcons.Info),
-                contentDescription = null,
-                tint = FwTheme.colors.ink2,
-                modifier = Modifier.size(20.dp),
-            )
-            Text(
-                stringResource(R.string.home_unlock_explainer),
-                style = FwTheme.type.bodyS,
-                color = FwTheme.colors.ink2,
-            )
-        }
+private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo: () -> Unit) {
+    val s = state.summary
+    val hide = state.hideAmounts
+    val unit = state.vehicle.primaryTank?.let {
+        stringResource(VehicleLabels.unit(it.energyType.canonicalUnit))
+    }.orEmpty()
+    FwHeroMetric(
+        overline = stringResource(R.string.home_hero_overline),
+        value = s.month.costPerKm?.let { money(it, hide, whole = false) } ?: "—",
+        unit = stringResource(R.string.home_per_km),
+        delta = s.costPerKmChange?.let { costDelta(it, state.previousMonthLabel) },
+        onInfoClick = onHeroInfo,
+        infoContentDescription = stringResource(R.string.home_cost_per_km_title),
+    )
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        val latest = s.latestInterval
+        FwMetricTile(
+            overline = stringResource(if (s.isEstimate) R.string.home_mileage_est else R.string.home_mileage),
+            value = latest?.let { IndianNumberFormat.decimal(it.kmPerUnit, 1) } ?: "—",
+            unit = "km/$unit",
+            caption = s.averageInterval?.let {
+                stringResource(R.string.home_mileage_avg, IndianNumberFormat.decimal(it.kmPerUnit, 1))
+            },
+            modifier = Modifier.weight(1f),
+            extra = {
+                FwSparkline(s.recentIntervals.map { it.kmPerUnit }, Modifier.padding(top = 8.dp))
+            },
+        )
+        FwMetricTile(
+            overline = stringResource(R.string.home_spent),
+            value = money(s.month.totalSpend, hide, whole = true),
+            caption = s.month.distance?.let {
+                stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(it.km, 0))
+            },
+            modifier = Modifier.weight(1f),
+        )
     }
-}
-
-@Composable
-private fun BaselineProgress(completedSteps: Int, modifier: Modifier = Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            repeat(2) { step ->
-                val color = if (step < completedSteps) FwTheme.colors.ink else FwTheme.colors.surface2
-                Box(Modifier.weight(1f).height(6.dp).background(color, FwTheme.radius.pill))
+    s.lastRefuel?.let { last ->
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            FwOverline(stringResource(R.string.home_last_fill))
+            FwCard(onClick = {
+                actions.onOpenEntry(EntrySource.Refuel, last.id)
+            }, contentPadding = PaddingValues(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            listOf(
+                                shortDate(last.dateTimeUtcMs, last.zoneId),
+                                "${IndianNumberFormat.decimal(last.quantity, 1)} $unit",
+                            )
+                                .joinToString(" · "),
+                            style = FwTheme.type.label,
+                            color = FwTheme.colors.ink,
+                        )
+                        last.stationName?.let { Text(it, style = FwTheme.type.caption, color = FwTheme.colors.ink2) }
+                    }
+                    Text(money(last.paid, hide, whole = true), style = FwTheme.type.label, color = FwTheme.colors.ink)
+                }
+                s.lastRefuelInterval?.let {
+                    Text(
+                        "${IndianNumberFormat.decimal(it.kmPerUnit, 1)} km/$unit",
+                        style = FwTheme.type.caption,
+                        color = FwTheme.colors.ink,
+                        modifier = Modifier.padding(top = 8.dp).background(FwTheme.colors.surface2, FwTheme.radius.pill)
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
+                s.rangeLeftKm?.let { RangeGauge(it, state, s) }
             }
         }
-        Row(Modifier.fillMaxWidth()) {
+    }
+    s.mileageDrop?.let { drop ->
+        FwCard(contentPadding = PaddingValues(16.dp)) {
+            FwOverline(stringResource(R.string.home_insight))
             Text(
-                stringResource(R.string.home_step_baseline),
-                style = FwTheme.type.caption,
-                color = FwTheme.colors.ink2,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                stringResource(R.string.home_step_first_mileage),
-                style = FwTheme.type.caption,
-                color = FwTheme.colors.ink2,
+                stringResource(R.string.home_insight_mileage_drop, (drop.fraction * PERCENT).roundToInt()),
+                style = FwTheme.type.body,
+                color = FwTheme.colors.ink,
+                modifier = Modifier.padding(top = 6.dp),
             )
         }
     }
 }
 
-@Preview
 @Composable
-private fun HomeScreenPreview() {
-    FuelwiseTheme { HomeContent(HomeUiState.NoVehicles, onLogFuel = {}, onAddVehicle = {}, onSelectVehicle = {}) }
+private fun RangeGauge(rangeKm: Double, state: HomeUiState.Ready, s: VehicleSummary) {
+    val fullRange = state.vehicle.custom.rangeKm
+        ?: state.vehicle.primaryTank?.capacity?.let { cap -> s.averageInterval?.let { cap * it.kmPerUnit } }
+    Column(Modifier.padding(top = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            stringResource(R.string.home_range_left, IndianNumberFormat.decimal(rangeKm, 0)),
+            style = FwTheme.type.caption,
+            color = FwTheme.colors.ink2,
+        )
+        if (fullRange != null && fullRange > 0) {
+            val fraction = (rangeKm / fullRange).toFloat().coerceIn(0f, 1f)
+            Box(Modifier.fillMaxWidth().height(4.dp).background(FwTheme.colors.surface2, FwTheme.radius.pill)) {
+                Box(Modifier.fillMaxWidth(fraction).fillMaxHeight().background(FwTheme.colors.ink, FwTheme.radius.pill))
+            }
+        }
+    }
 }
+
+@Composable
+private fun Recent(state: HomeUiState.Ready, actions: HomeActions) {
+    Column {
+        FwSectionHeader(
+            title = stringResource(R.string.home_recent),
+            actionLabel = stringResource(R.string.home_see_all),
+            onAction = actions.onOpenLogbook,
+        )
+        state.recent.forEach { entry: LogbookEntry ->
+            LogbookEntryRow(
+                entry = entry,
+                vehicle = state.vehicle,
+                categories = state.categories,
+                kmPerUnit = state.kmPerUnit[entry.id],
+                onClick = { actions.onOpenEntry(entry.source, entry.id) },
+                amountText = money(entry.amount, state.hideAmounts, whole = true),
+            )
+        }
+    }
+}
+
+@Composable
+private fun costDelta(change: Double, previousMonth: String): Delta {
+    val pct = (abs(change) * PERCENT).roundToInt()
+    val direction = when {
+        pct == 0 -> Delta.Direction.Flat
+        change < 0 -> Delta.Direction.Down
+        else -> Delta.Direction.Up
+    }
+    return Delta(
+        label = stringResource(R.string.home_delta_vs, pct, previousMonth),
+        direction = direction,
+        isImprovement = if (direction == Delta.Direction.Flat) null else change < 0,
+    )
+}
+
+/** Privacy mode masks every ₹ figure (design.md 5, "Privacy blur"). */
+private fun money(value: Money, hide: Boolean, whole: Boolean): String = when {
+    hide -> HIDDEN_AMOUNT
+    whole -> IndianNumberFormat.rupeesWhole(value)
+    else -> IndianNumberFormat.rupees(value)
+}
+
+private fun shortDate(utcMs: Long, zoneId: String): String {
+    val date = Instant.ofEpochMilli(utcMs).atZone(
+        runCatching {
+            ZoneId.of(zoneId)
+        }.getOrDefault(ZoneId.systemDefault()),
+    ).toLocalDate()
+    return IndianNumberFormat.date(date)
+}
+
+private const val PERCENT = 100
+private const val HIDDEN_AMOUNT = "₹ •••"

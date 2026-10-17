@@ -9,4 +9,23 @@
     <string name="home_step_first_mileage">2 · आपका पहला km/L</string>
     <string name="home_log_fuel">फ़्यूल दर्ज करें</string>
     <string name="home_unlock_explainer">माइलेज एक फ़ुल टंकी से अगली फ़ुल टंकी तक मापा जाता है। बीच में कम भरवाया फ़्यूल भी जोड़ा जाता है।</string>
+    <string name="home_hide_amounts">रकम छिपाएँ</string>
+    <string name="home_show_amounts">रकम दिखाएँ</string>
+    <string name="home_hero_overline">इस महीने · प्रति km खर्च</string>
+    <string name="home_per_km">/km</string>
+    <string name="home_delta_vs">%2$s से %1$d%%</string>
+    <string name="home_cost_per_km_title">प्रति km खर्च में क्या जुड़ता है</string>
+    <string name="home_cost_per_km_body1">इस महीने गाड़ी पर हुआ सारा खर्च (फ़्यूल, चार्जिंग, सर्विस, टोल, पार्किंग और बाकी), इस महीने चली दूरी से भाग।</string>
+    <string name="home_cost_per_km_body2">लोन EMI और गाड़ी की कीमत नहीं जुड़ती, ताकि यह गाड़ी चलाने का असली खर्च दिखाए। कौन सी श्रेणियाँ जुड़ें, यह सेटिंग में बदल सकते हैं।</string>
+    <string name="home_mileage">माइलेज</string>
+    <string name="home_mileage_est">माइलेज (अनुमान)</string>
+    <string name="home_mileage_avg">औसत %1$s</string>
+    <string name="home_spent">खर्च</string>
+    <string name="home_spent_km">इस महीने %1$s km</string>
+    <string name="home_last_fill">पिछली बार फ़्यूल</string>
+    <string name="home_range_left">लगभग %1$s km बाकी (अनुमान)</string>
+    <string name="home_insight">सुझाव</string>
+    <string name="home_insight_mileage_drop">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। टायर का प्रेशर जाँचें: यही सबसे आम वजह होती है।</string>
+    <string name="home_recent">हाल की एंट्री</string>
+    <string name="home_see_all">सब देखें</string>
 </resources>

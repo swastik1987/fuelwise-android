@@ -7,8 +7,10 @@ import app.fuelwise.core.data.repository.DataStoreUserDataRepository
 import app.fuelwise.core.data.repository.EntitlementRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FreeTierEntitlementRepository
+import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.OfflineCategoryRepository
 import app.fuelwise.core.data.repository.OfflineEntryRepository
+import app.fuelwise.core.data.repository.OfflineLogbookRepository
 import app.fuelwise.core.data.repository.OfflineVehicleRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
@@ -30,6 +32,9 @@ internal interface DataModule {
 
     @Binds
     fun entryRepository(impl: OfflineEntryRepository): EntryRepository
+
+    @Binds
+    fun logbookRepository(impl: OfflineLogbookRepository): LogbookRepository
 
     @Binds
     fun userDataRepository(impl: DataStoreUserDataRepository): UserDataRepository

@@ -79,7 +79,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Station chip placeholder ("Add station") until M9.
 - Measure the 10-second guardrail in a UI test.
 
-### M4 — Home & Logbook, F-05 + screens 5, 12, 13 (≈1.5 weeks)
+### M4 — Home & Logbook, F-05 + screens 5, 12, 13 (≈1.5 weeks) ✅ done (category/date/payment filters, bi-fuel "CNG saved" tile and the 5,000-entry benchmark deferred; reminder pills wait for M6, prices strip for M9, map mode for M8)
 - Home dashboard incl. brand-new-vehicle state, privacy blur, range gauge, reminder pills (wired in M6), recent entries.
 - Logbook with Paging 3, month headers + totals, filters/search, swipe edit/delete + undo; entry detail. Map mode deferred to M8.
 - Perf: 5,000-entry scroll benchmark.

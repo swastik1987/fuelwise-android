@@ -5,6 +5,7 @@ import androidx.room.Room
 import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.EntryDao
+import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.migration.Migrations
 import dagger.Module
@@ -34,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun entryDao(db: FuelwiseDatabase): EntryDao = db.entryDao()
+
+    @Provides
+    fun logbookDao(db: FuelwiseDatabase): LogbookDao = db.logbookDao()
 }

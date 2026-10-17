@@ -9,11 +9,13 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.datastore)
     implementation(libs.kotlinx.coroutines.core)
+    api(libs.androidx.paging.runtime)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.ext.junit)
     testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.androidx.paging.testing)
     testImplementation(libs.junit4)
     testRuntimeOnly(libs.junit.vintage.engine)
 }

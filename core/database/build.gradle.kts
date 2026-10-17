@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(projects.core.model)
     implementation(libs.kotlinx.coroutines.core)
+    api(libs.androidx.room.paging)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)

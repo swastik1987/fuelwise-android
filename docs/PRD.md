@@ -280,7 +280,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-05 Logbook (timeline) — FREE · R1
+### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters, the map toggle and the 5,000-entry scroll benchmark are still open)
 
 - Unified reverse-chronological list of fill-ups, charges, expenses, trips and reminder completions, grouped by month with a month total.
 - Filters: vehicle, type, category, date range, payment method. Search on notes, station and plaza.

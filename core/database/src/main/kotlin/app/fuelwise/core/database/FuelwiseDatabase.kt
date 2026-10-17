@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.EntryDao
+import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.model.CategoryEntity
 import app.fuelwise.core.database.model.ExpenseEntity
@@ -33,6 +34,8 @@ abstract class FuelwiseDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
 
     abstract fun entryDao(): EntryDao
+
+    abstract fun logbookDao(): LogbookDao
 
     companion object {
         const val NAME = "fuelwise.db"

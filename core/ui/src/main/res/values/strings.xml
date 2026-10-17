@@ -58,6 +58,9 @@
     <string name="charger_dc">DC fast</string>
     <string name="entry_now">Now · %1$s</string>
     <string name="entry_today">Today · %1$s</string>
+    <string name="logbook_fuel">Fuel</string>
+    <string name="logbook_charge">Charge</string>
+    <string name="logbook_toll">Toll</string>
     <string name="picker_next">Next</string>
     <string name="picker_done">Done</string>
     <string name="picker_cancel">Cancel</string>

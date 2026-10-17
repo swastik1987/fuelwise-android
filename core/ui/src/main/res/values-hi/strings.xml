@@ -58,6 +58,9 @@
     <string name="charger_dc">DC फ़ास्ट</string>
     <string name="entry_now">अभी · %1$s</string>
     <string name="entry_today">आज · %1$s</string>
+    <string name="logbook_fuel">फ़्यूल</string>
+    <string name="logbook_charge">चार्जिंग</string>
+    <string name="logbook_toll">टोल</string>
     <string name="picker_next">आगे</string>
     <string name="picker_done">हो गया</string>
     <string name="picker_cancel">रद्द करें</string>

@@ -84,6 +84,39 @@ class MigrationsTest {
         }
     }
 
+    @Test
+    fun migrate3To4KeepsEntriesAndAddsImportBatches() {
+        helper.createDatabase(dbPath, 3).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO refuel (id, vehicleId, tankId, dateTime, zoneId, odometerKm, quantity, unitPricePaise,
+                    totalPaise, discountPaise, paidPaise, isFull, missedPrevious, priceSource, createdAt, updatedAt, deviceId)
+                VALUES ('r1', 'safari', 't1', 2, 'Asia/Kolkata', 42800.0, 40.0, 8895, 355800, 0, 355800, 1, 0, 'Typed', 2, 2, 'd1')
+                """.trimIndent(),
+            )
+        }
+
+        helper.runMigrationsAndValidate(dbPath, 4, true, Migrations.MIGRATION_3_4).use { db ->
+            db.query("SELECT paidPaise, importBatchId FROM refuel WHERE id = 'r1'").use { c ->
+                assertThat(c.moveToFirst()).isTrue()
+                assertThat(c.getLong(0)).isEqualTo(355_800L)
+                assertThat(c.isNull(1)).isTrue()
+            }
+            db.execSQL(
+                """
+                INSERT INTO import_batch (id, source, fileName, importedAt, refuelCount, expenseCount,
+                    createdAt, updatedAt, deviceId)
+                VALUES ('b1', 'Fuelio', 'fuelio.csv', 7, 1, 0, 7, 7, 'd1')
+                """.trimIndent(),
+            )
+            db.execSQL("UPDATE refuel SET importBatchId = 'b1' WHERE id = 'r1'")
+            db.query("SELECT COUNT(*) FROM refuel WHERE importBatchId = 'b1'").use { c ->
+                c.moveToFirst()
+                assertThat(c.getInt(0)).isEqualTo(1)
+            }
+        }
+    }
+
     // An absolute path: on Windows the helper otherwise compares a bare name with the resolved path and refuses.
     private val dbPath: String =
         ApplicationProvider.getApplicationContext<android.content.Context>().getDatabasePath(DB).absolutePath

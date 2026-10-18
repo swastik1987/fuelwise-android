@@ -18,8 +18,8 @@ fun NavGraphBuilder.welcomeScreen(onGetStarted: () -> Unit, onRestore: () -> Uni
     composable<WelcomeRoute> { WelcomeScreen(onGetStarted = onGetStarted, onRestore = onRestore) }
 }
 
-fun NavGraphBuilder.historyScreen(onBack: () -> Unit, onContinue: () -> Unit) {
-    composable<HistoryRoute> { HistoryScreen(onBack = onBack, onContinue = onContinue) }
+fun NavGraphBuilder.historyScreen(onBack: () -> Unit, onContinue: () -> Unit, onImport: () -> Unit) {
+    composable<HistoryRoute> { HistoryScreen(onBack = onBack, onContinue = onContinue, onImport = onImport) }
 }
 
 fun NavGraphBuilder.privacyScreen(onBack: () -> Unit, onDone: () -> Unit) {

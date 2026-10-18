@@ -12,11 +12,13 @@ import app.fuelwise.core.data.repository.EntitlementRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FastagRepository
 import app.fuelwise.core.data.repository.FreeTierEntitlementRepository
+import app.fuelwise.core.data.repository.ImportRepository
 import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.OfflineCategoryRepository
 import app.fuelwise.core.data.repository.OfflineDocumentRepository
 import app.fuelwise.core.data.repository.OfflineEntryRepository
 import app.fuelwise.core.data.repository.OfflineFastagRepository
+import app.fuelwise.core.data.repository.OfflineImportRepository
 import app.fuelwise.core.data.repository.OfflineLogbookRepository
 import app.fuelwise.core.data.repository.OfflineRecurrenceRepository
 import app.fuelwise.core.data.repository.OfflineReminderRepository
@@ -76,6 +78,9 @@ internal interface DataModule {
 
     @Binds
     fun backupSettingsRepository(impl: DataStoreBackupSettingsRepository): BackupSettingsRepository
+
+    @Binds
+    fun importRepository(impl: OfflineImportRepository): ImportRepository
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider

@@ -51,11 +51,28 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+    /** v4 (F-13.2): import batches, and the batch id on fill-ups and expenses so an import can be undone. */
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            V4_STATEMENTS.forEach { db.execSQL(it) }
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 }
 
 private const val SYNC_COLUMNS =
     "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deviceId` TEXT NOT NULL, `deletedAt` INTEGER"
+
+private val V4_STATEMENTS = listOf(
+    "ALTER TABLE `refuel` ADD COLUMN `importBatchId` TEXT",
+    "ALTER TABLE `expense` ADD COLUMN `importBatchId` TEXT",
+    "CREATE INDEX IF NOT EXISTS `index_refuel_importBatchId` ON `refuel` (`importBatchId`)",
+    "CREATE INDEX IF NOT EXISTS `index_expense_importBatchId` ON `expense` (`importBatchId`)",
+    "CREATE TABLE IF NOT EXISTS `import_batch` (`id` TEXT NOT NULL, `source` TEXT NOT NULL, `fileName` TEXT, " +
+        "`importedAt` INTEGER NOT NULL, `refuelCount` INTEGER NOT NULL, `expenseCount` INTEGER NOT NULL, " +
+        "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
+)
 
 private val V3_STATEMENTS = listOf(
     "CREATE UNIQUE INDEX IF NOT EXISTS `index_expense_recurrenceId_dateTime` " +

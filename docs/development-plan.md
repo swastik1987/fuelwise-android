@@ -109,7 +109,8 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 
 ### M10 — Scan, prices, import/export, FASTag parser (≈3 weeks) — needs L5, D2/D3
 - F-15 ML Kit (bundled) pump/receipt/odometer scan with triangle validation.
-- F-13 CSV export (zip), generic import with mapper, Fuelio/Drivvo/Simply Auto presets, dry-run + undo; text reports (PDF = Pro).
+- F-13 CSV export (zip); text reports (PDF = Pro). Drivvo/Simply Auto presets once D9 samples exist.
+- ✅ F-13.2 import brought forward (18 Oct 2026): one Import screen, Fuelio preset, generic mapper, .xlsx bulk-entry template, dry-run + undo (Room v4).
 - F-10.4 share-target SMS parser per issuer, amount-only fallback.
 - F-09 city prices (feed or manual), "did I pay fair?", Maps intent for nearby pumps, price alerts.
 

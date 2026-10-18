@@ -43,9 +43,14 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.City
 
 @Composable
-internal fun HistoryScreen(onBack: () -> Unit, onContinue: () -> Unit, viewModel: HistoryViewModel = hiltViewModel()) {
+internal fun HistoryScreen(
+    onBack: () -> Unit,
+    onContinue: () -> Unit,
+    onImport: () -> Unit,
+    viewModel: HistoryViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HistoryContent(state, onBack, onContinue, viewModel::onQueryChange, viewModel::onCitySelected)
+    HistoryContent(state, onBack, onContinue, viewModel::onQueryChange, viewModel::onCitySelected, onImport)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -56,6 +61,7 @@ internal fun HistoryContent(
     onContinue: () -> Unit,
     onQueryChange: (String) -> Unit,
     onCitySelected: (City) -> Unit,
+    onImport: () -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg).imePadding()) {
         FwTopBar(
@@ -73,27 +79,20 @@ internal fun HistoryContent(
                 Text(stringResource(R.string.history_sub), style = FwTheme.type.body, color = FwTheme.colors.ink2)
             }
             Column(verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
-                // Import presets arrive with F-13 (M10). Shown so people know they're coming; not tappable yet.
+                // One import entry point for Fuelio, the template and any spreadsheet (F-13.2).
                 OptionRow(
                     FwIcons.UploadFile,
-                    stringResource(R.string.history_import_fuelio),
-                    stringResource(R.string.history_coming),
+                    stringResource(R.string.history_import),
+                    stringResource(R.string.history_import_sub),
                     selected = false,
-                    enabled = false,
-                )
-                OptionRow(
-                    FwIcons.Spreadsheet,
-                    stringResource(R.string.history_import_other),
-                    stringResource(R.string.history_coming),
-                    selected = false,
-                    enabled = false,
+                    onClick = onImport,
                 )
                 OptionRow(
                     FwIcons.StartFresh,
                     stringResource(R.string.history_fresh),
                     stringResource(R.string.history_fresh_sub),
                     selected = true,
-                    enabled = true,
+                    onClick = {},
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s)) {
@@ -134,9 +133,10 @@ internal fun HistoryContent(
 }
 
 @Composable
-private fun OptionRow(icon: Int, title: String, subtitle: String, selected: Boolean, enabled: Boolean) {
+private fun OptionRow(icon: Int, title: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
     val colors = FwTheme.colors
     Surface(
+        onClick = onClick,
         shape = FwTheme.radius.card,
         color = colors.surface,
         border = when {
@@ -154,14 +154,10 @@ private fun OptionRow(icon: Int, title: String, subtitle: String, selected: Bool
                 Modifier.size(44.dp).background(colors.surface2, FwTheme.radius.tile),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(painterResource(icon), null, tint = if (enabled) colors.ink else colors.ink3)
+                Icon(painterResource(icon), null, tint = colors.ink)
             }
             Column(Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = FwTheme.type.body.copy(fontWeight = FontWeight.Medium),
-                    color = if (enabled) colors.ink else colors.ink2,
-                )
+                Text(title, style = FwTheme.type.body.copy(fontWeight = FontWeight.Medium), color = colors.ink)
                 Text(subtitle, style = FwTheme.type.bodyS, color = colors.ink2)
             }
             if (selected) Icon(painterResource(FwIcons.CheckCircleFilled), null, tint = colors.ink)

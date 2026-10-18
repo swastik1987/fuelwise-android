@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_title">Import data</string>
+    <string name="import_back">Back</string>
+    <string name="import_pick_title">Bring your entries</string>
+    <string name="import_pick_body">Pick a file and we\'ll work out what it is.</string>
+    <string name="import_pick">Choose a file</string>
+    <string name="import_kind_template">Fuelwise Excel template</string>
+    <string name="import_kind_template_sub">Fill-ups and expenses typed into our template</string>
+    <string name="import_kind_fuelio">Import from Fuelio CSV</string>
+    <string name="import_kind_fuelio_sub">The CSV file Fuelio exports</string>
+    <string name="import_kind_other">Any other spreadsheet or CSV</string>
+    <string name="import_kind_other_sub">You match its columns to ours</string>
+    <string name="import_template_section">Excel template</string>
+    <string name="import_template_body">Add many fill-ups and expenses at once on a computer or phone, then import the file here. Dropdowns list your vehicles, categories and payment methods.</string>
+    <string name="import_template_save">Download template</string>
+    <string name="import_template_saved">Template saved</string>
+    <string name="import_template_failed">Couldn\'t save the template</string>
+    <string name="import_recent">Recent imports</string>
+    <string name="import_undo">Undo</string>
+    <string name="import_undo_title">Undo this import?</string>
+    <plurals name="import_undo_body">
+        <item quantity="one">This removes the %1$d entry this import added, even if you\'ve edited it since.</item>
+        <item quantity="other">This removes the %1$d entries this import added, including any you\'ve edited since.</item>
+    </plurals>
+    <string name="import_undo_confirm">Remove entries</string>
+    <string name="import_cancel">Cancel</string>
+    <string name="import_undone">Import undone</string>
+    <plurals name="import_done">
+        <item quantity="one">Imported %1$d entry</item>
+        <item quantity="other">Imported %1$d entries</item>
+    </plurals>
+    <string name="import_reading">Reading the file…</string>
+    <string name="import_saving">Importing…</string>
+    <string name="import_error_unreadable">This file couldn\'t be read. Use the Fuelwise template, a Fuelio CSV export, or a CSV or Excel file with a header row.</string>
+    <string name="import_error_no_vehicle">Add a vehicle first. Imported entries need a vehicle to go to.</string>
+    <string name="import_error_empty">This file has no rows to import.</string>
+    <string name="import_source_template">Fuelwise template</string>
+    <string name="import_source_fuelio">Fuelio CSV</string>
+    <string name="import_source_spreadsheet">Spreadsheet</string>
+    <plurals name="import_entries">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
+
+    <string name="import_map_title">Match the columns</string>
+    <string name="import_map_body">Tell us which column holds what. We\'ll remember this layout for next time.</string>
+    <string name="import_map_kind">This file has</string>
+    <string name="import_kind_fuel">Fill-ups</string>
+    <string name="import_kind_expense">Expenses</string>
+    <string name="import_map_dates">Dates look like</string>
+    <string name="import_date_dmy">DD/MM/YYYY</string>
+    <string name="import_date_mdy">MM/DD/YYYY</string>
+    <string name="import_map_none">Not in file</string>
+    <string name="import_map_required">Required</string>
+    <string name="import_map_need_two">Match at least two of quantity, price per unit and total.</string>
+    <string name="import_map_continue">Preview</string>
+    <string name="import_map_sample">e.g. %1$s</string>
+    <string name="import_map_column">Column %1$d</string>
+    <string name="import_map_pick">Which column has “%1$s”?</string>
+
+    <string name="field_vehicle">Vehicle</string>
+    <string name="field_date">Date</string>
+    <string name="field_time">Time</string>
+    <string name="field_odometer">Odometer (km)</string>
+    <string name="field_energy">Fuel</string>
+    <string name="field_tank">Tank number</string>
+    <string name="field_quantity">Quantity (L, kg or kWh)</string>
+    <string name="field_unit_price">Price per unit (₹)</string>
+    <string name="field_total">Total (₹)</string>
+    <string name="field_full">Full tank</string>
+    <string name="field_missed">Missed previous fill-up</string>
+    <string name="field_station">Station</string>
+    <string name="field_category">Category</string>
+    <string name="field_amount">Amount (₹)</string>
+    <string name="field_toll_plaza">Toll plaza</string>
+    <string name="field_payment">Payment</string>
+    <string name="field_notes">Notes</string>
+
+    <string name="import_preview_title">Check before importing</string>
+    <string name="import_preview_ready">Ready to import</string>
+    <plurals name="import_count_fuel">
+        <item quantity="one">%1$d fill-up</item>
+        <item quantity="other">%1$d fill-ups</item>
+    </plurals>
+    <plurals name="import_count_expense">
+        <item quantity="one">%1$d expense</item>
+        <item quantity="other">%1$d expenses</item>
+    </plurals>
+    <plurals name="import_preview_duplicates">
+        <item quantity="one">%1$d duplicate skipped</item>
+        <item quantity="other">%1$d duplicates skipped</item>
+    </plurals>
+    <string name="import_preview_duplicates_body">Already in your logbook: same vehicle and day, with the same reading or amount.</string>
+    <plurals name="import_preview_other">
+        <item quantity="one">%1$d expense goes under Other</item>
+        <item quantity="other">%1$d expenses go under Other</item>
+    </plurals>
+    <string name="import_preview_other_body">Their category wasn\'t recognised. The original name is kept in the notes.</string>
+    <plurals name="import_preview_problems">
+        <item quantity="one">%1$d row can\'t be imported</item>
+        <item quantity="other">%1$d rows can\'t be imported</item>
+    </plurals>
+    <string name="import_preview_problems_body">Fix them in the file and import it again. Rows already imported are skipped as duplicates.</string>
+    <plurals name="import_problems_more">
+        <item quantity="one">and %1$d more</item>
+        <item quantity="other">and %1$d more</item>
+    </plurals>
+    <string name="import_preview_vehicle">Rows without a vehicle go to</string>
+    <plurals name="import_preview_confirm">
+        <item quantity="one">Import %1$d entry</item>
+        <item quantity="other">Import %1$d entries</item>
+    </plurals>
+    <string name="import_preview_nothing">Nothing to import</string>
+    <string name="import_row">Row %1$d</string>
+    <string name="import_sheet_row">%1$s, row %2$d</string>
+
+    <string name="issue_vehicle_not_found">No vehicle called “%1$s”</string>
+    <string name="issue_no_vehicle">No vehicle given</string>
+    <string name="issue_missing_date">Date is missing</string>
+    <string name="issue_bad_date">Can\'t read the date “%1$s”</string>
+    <string name="issue_missing_odometer">Odometer is missing</string>
+    <string name="issue_bad_number">Can\'t read the number “%1$s”</string>
+    <string name="issue_missing_fuel">Needs two of quantity, price per unit and total</string>
+    <string name="issue_fuel_not_on_vehicle">This vehicle doesn\'t take “%1$s”</string>
+    <string name="issue_tank_not_found">That tank isn\'t on this vehicle</string>
+    <string name="issue_missing_amount">Amount is missing</string>
+    <string name="issue_income">Income entries can\'t be imported</string>
+    <plurals name="issue_too_many">
+        <item quantity="one">A file can have up to %1$d row. Split it and import each part.</item>
+        <item quantity="other">A file can have up to %1$d rows. Split it and import each part.</item>
+    </plurals>
+
+    <string name="template_sheet_fuel">Fuel</string>
+    <string name="template_sheet_expenses">Expenses</string>
+    <string name="template_sheet_howto">How to fill</string>
+    <string name="template_howto_title">How to fill this template</string>
+    <string name="template_intro_rows">One row per fill-up on the Fuel sheet, one row per expense on the Expenses sheet. Keep the header row as it is.</string>
+    <string name="template_intro_vehicle">Vehicle must match a vehicle in the app, by name or registration number. Pick it from the dropdown.</string>
+    <string name="template_intro_units">Dates as DD-MM-YYYY. Amounts in rupees. Quantity in litres (petrol, diesel, LPG), kg (CNG) or kWh (electric).</string>
+    <string name="template_intro_triangle">For fill-ups, fill any two of quantity, price per unit and total. The third is worked out.</string>
+    <string name="template_intro_import">Save the file, then import it from Garage → Import data. Duplicates are skipped, and you can undo an import.</string>
+    <string name="template_col_column">Column</string>
+    <string name="template_col_meaning">What to enter</string>
+    <string name="template_col_example">Example</string>
+    <string name="help_vehicle">Name or registration number of a vehicle in the app</string>
+    <string name="help_date">Day of the fill-up or expense</string>
+    <string name="help_time">Optional. 24-hour time</string>
+    <string name="help_odometer">Reading in km. Needed for fill-ups, optional for expenses</string>
+    <string name="help_energy">Optional. Which tank, for CNG + petrol or LPG + petrol vehicles. Blank means the main tank</string>
+    <string name="help_quantity">Litres, kg or kWh</string>
+    <string name="help_unit_price">Price per litre, kg or kWh</string>
+    <string name="help_total">What the pump charged</string>
+    <string name="help_full">Yes if you filled the tank to the top. Blank means yes</string>
+    <string name="help_missed">Yes if you didn\'t log the fill-up before this one</string>
+    <string name="help_station">Optional. Name of the pump or charger</string>
+    <string name="help_payment">Optional. Pick from the list</string>
+    <string name="help_notes">Optional</string>
+    <string name="help_category">Pick from the list. Blank means Other</string>
+    <string name="help_amount">Amount paid</string>
+    <string name="help_toll_plaza">Optional. For tolls</string>
+    <string name="template_example_station">IOCL Indiranagar</string>
+    <string name="template_example_notes">Highway trip</string>
+    <string name="template_example_plaza">Nelamangala</string>
+    <string name="template_yes">Yes</string>
+    <string name="template_no">No</string>
+</resources>

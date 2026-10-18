@@ -30,6 +30,13 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+    // Import reads labels in every shipped language (F-13.2) and the app switches language in-app (F-18), so all
+    // languages stay in the base APK rather than Play language splits. EN + HI strings are small.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 
     buildFeatures {
         buildConfig = true
@@ -60,6 +67,7 @@ dependencies {
     implementation(projects.feature.documents)
     implementation(projects.feature.fastag)
     implementation(projects.feature.backup)
+    implementation(projects.feature.dataimport)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

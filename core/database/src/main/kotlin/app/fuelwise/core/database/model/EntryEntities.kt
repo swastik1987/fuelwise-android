@@ -6,7 +6,10 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /** PRD §7 `refuel`: fill-ups and EV charge sessions. Money in paise; quantity in the tank's canonical unit. */
-@Entity(tableName = "refuel", indices = [Index("vehicleId", "dateTime"), Index("tankId")])
+@Entity(
+    tableName = "refuel",
+    indices = [Index("vehicleId", "dateTime"), Index("tankId"), Index("importBatchId")],
+)
 data class RefuelEntity(
     @PrimaryKey val id: String,
     val vehicleId: String,
@@ -34,6 +37,8 @@ data class RefuelEntity(
     val chargerType: String?,
     val chargeDurationMin: Int?,
     val operator: String?,
+    /** Set on rows a file import created, so the whole import can be undone (PRD F-13.2). */
+    val importBatchId: String? = null,
     @Embedded val sync: SyncMeta,
 )
 
@@ -45,6 +50,7 @@ data class RefuelEntity(
         Index("categoryId"),
         // A recurring expense is created at most once per due date, even after a restore (PRD F-04.3 AC).
         Index(value = ["recurrenceId", "dateTime"], unique = true),
+        Index("importBatchId"),
     ],
 )
 data class ExpenseEntity(
@@ -61,5 +67,21 @@ data class ExpenseEntity(
     val tollPlaza: String?,
     val recurrenceId: String?,
     val isAutoCreated: Boolean,
+    val importBatchId: String? = null,
+    @Embedded val sync: SyncMeta,
+)
+
+/**
+ * One file import (PRD F-13.2): where it came from and how many rows it added. Undo tombstones the batch and every
+ * row carrying its id.
+ */
+@Entity(tableName = "import_batch")
+data class ImportBatchEntity(
+    @PrimaryKey val id: String,
+    val source: String,
+    val fileName: String?,
+    val importedAt: Long,
+    val refuelCount: Int,
+    val expenseCount: Int,
     @Embedded val sync: SyncMeta,
 )

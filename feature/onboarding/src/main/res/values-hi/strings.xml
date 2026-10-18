@@ -14,9 +14,8 @@
     <string name="history_title">पुराना हिसाब लाएँ</string>
     <string name="history_sub">ज़रूरी नहीं। बाद में सेटिंग्स से भी इम्पोर्ट कर सकते हैं।</string>
     <string name="history_skip">छोड़ें</string>
-    <string name="history_import_fuelio">Fuelio से इम्पोर्ट करें (CSV)</string>
-    <string name="history_import_other">किसी दूसरे ऐप / स्प्रेडशीट से इम्पोर्ट करें</string>
-    <string name="history_coming">अगले अपडेट में आएगा</string>
+    <string name="history_import">Fuelio या स्प्रेडशीट से इम्पोर्ट करें</string>
+    <string name="history_import_sub">Fuelio की CSV, हमारा Excel टेम्पलेट या कोई भी CSV</string>
     <string name="history_fresh">नई शुरुआत</string>
     <string name="history_fresh_sub">आज के ओडोमीटर से शुरू करें</string>
     <string name="history_city">फ़्यूल के दाम के लिए आपका शहर</string>

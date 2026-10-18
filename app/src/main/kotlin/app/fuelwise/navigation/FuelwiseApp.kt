@@ -26,6 +26,8 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
 import app.fuelwise.feature.backup.backupScreen
+import app.fuelwise.feature.dataimport.ImportRoute
+import app.fuelwise.feature.dataimport.importScreen
 import app.fuelwise.feature.documents.DocumentEditorRoute
 import app.fuelwise.feature.documents.DocumentViewRoute
 import app.fuelwise.feature.documents.DocumentsRoute
@@ -123,7 +125,11 @@ fun FuelwiseApp(
                 onGetStarted = { navController.navigate(VehicleEditorRoute(onboarding = true)) },
                 onRestore = { navController.navigate(BackupRoute) },
             )
-            historyScreen(onBack = navController::popBackStack, onContinue = { navController.navigate(PrivacyRoute) })
+            historyScreen(
+                onBack = navController::popBackStack,
+                onContinue = { navController.navigate(PrivacyRoute) },
+                onImport = { navController.navigate(ImportRoute) },
+            )
             privacyScreen(
                 onBack = navController::popBackStack,
                 onDone = {
@@ -167,6 +173,7 @@ fun FuelwiseApp(
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
+                    onImport = { navController.navigate(ImportRoute) },
                 ),
             )
             remindersScreen(
@@ -190,6 +197,7 @@ fun FuelwiseApp(
                 // Restored data replaces everything, onboarding included: start over on Home.
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
+            importScreen(onBack = navController::popBackStack)
             fastagScreen(
                 onBack = navController::popBackStack,
                 onAddToll = { vehicleId -> navController.navigate(ExpenseRoute(vehicleId = vehicleId, toll = true)) },

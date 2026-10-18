@@ -71,6 +71,7 @@
         <item quantity="other">%1$d expiring</item>
     </plurals>
     <string name="garage_backup">Backup &amp; sync</string>
+    <string name="garage_import">Import data</string>
     <string name="garage_backup_ok">On</string>
     <string name="garage_backup_error">Needs attention</string>
     <string name="garage_backup_off">Off</string>

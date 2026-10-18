@@ -144,6 +144,7 @@ class BackupScheduler @Inject constructor(
         val DATA_TABLES = arrayOf(
             "vehicle", "tank", "category", "refuel", "expense", "reminder", "reminder_completion",
             "document", "attachment", "recurrence", "fastag_account", "fastag_recharge",
+            "import_batch",
         )
     }
 }

@@ -7,6 +7,7 @@ import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.DocumentDao
 import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.ImportDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
 import app.fuelwise.core.database.dao.ReminderDao
@@ -54,4 +55,7 @@ object DatabaseModule {
 
     @Provides
     fun fastagDao(db: FuelwiseDatabase): FastagDao = db.fastagDao()
+
+    @Provides
+    fun importDao(db: FuelwiseDatabase): ImportDao = db.importDao()
 }

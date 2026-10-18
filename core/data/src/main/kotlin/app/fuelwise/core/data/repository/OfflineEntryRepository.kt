@@ -42,15 +42,18 @@ internal class OfflineEntryRepository @Inject constructor(
 
     override suspend fun saveRefuel(refuel: Refuel): String {
         val id = refuel.id.ifBlank { ids.newId() }
-        val created = if (refuel.id.isBlank()) null else dao.observeRefuel(refuel.id).first()?.sync?.createdAt
-        dao.upsertRefuel(refuel.copy(id = id).toEntity(syncFor(created)))
+        val existing = if (refuel.id.isBlank()) null else dao.observeRefuel(refuel.id).first()
+        // An edited entry stays in its import batch, so undoing the import still removes it.
+        val entity = refuel.copy(id = id).toEntity(syncFor(existing?.sync?.createdAt))
+        dao.upsertRefuel(entity.copy(importBatchId = existing?.importBatchId))
         return id
     }
 
     override suspend fun saveExpense(expense: Expense): String {
         val id = expense.id.ifBlank { ids.newId() }
-        val created = if (expense.id.isBlank()) null else dao.observeExpense(expense.id).first()?.sync?.createdAt
-        dao.upsertExpense(expense.copy(id = id).toEntity(syncFor(created)))
+        val existing = if (expense.id.isBlank()) null else dao.observeExpense(expense.id).first()
+        val entity = expense.copy(id = id).toEntity(syncFor(existing?.sync?.createdAt))
+        dao.upsertExpense(entity.copy(importBatchId = existing?.importBatchId))
         return id
     }
 

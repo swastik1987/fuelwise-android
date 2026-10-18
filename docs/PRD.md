@@ -478,10 +478,14 @@ Users can add custom categories (name, icon, colour).
 
 **F-13.1 CSV export:** all data or a filtered range, one file per entity, zipped. Schema documented in `docs/csv-schema.md`.
 
-**F-13.2 CSV import:**
+**F-13.2 CSV import:** ✅ built (Fuelio preset + generic mapper + Excel template; Drivvo and Simply Auto presets not yet, they wait for D9 samples)
 - Generic CSV with a column mapper (remembers mappings).
 - One-tap presets: **Fuelio CSV**, Drivvo CSV, Simply Auto CSV. Collect real sample exports before building (see §13).
+  - *Decided 18 Oct 2026:* Fuelio is built from its documented export layout without a real sample. Columns are found by header name, and the generic mapper is the fallback. Drivvo and Simply Auto go through the generic mapper until samples exist.
 - Dry-run preview: counts, conflicts and unit detection. Import is undoable (batch ID).
+- **Single entry point:** one "Import data" screen (Garage, and onboarding "Bring your history") recognises the file: the Fuelwise template, a Fuelio CSV, or any other CSV/.xlsx (column mapper).
+- **Bulk-entry Excel template (.xlsx):** written and read by the app itself, with no spreadsheet library. Fuel and Expenses sheets have dropdowns (the user's vehicles, fuels, all expense categories, payment methods, yes/no), a "How to fill" sheet and a hidden marker sheet. Headers and lists follow the app language; either language imports. Layout in `docs/import-template.md`.
+- Duplicates are skipped: same vehicle and day, plus the same odometer and quantity for a fill-up, or the same category and amount for an expense. Unknown expense categories go under Other, with the original name kept in the notes. Up to 10,000 rows per file.
 
 **F-13.3 PDF reports (PRO):**
 - **Monthly/yearly vehicle report**

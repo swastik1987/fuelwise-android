@@ -23,6 +23,8 @@ message UserPreferences {
   repeated string shown_milestones = 11;
   // Drive backup (PRD F-14). Restores never overwrite this block: it describes this device's backups.
   BackupSettings backup = 12;
+  // Column mappings the user confirmed on import (PRD F-13.2), keyed by the file's normalized header row.
+  map<string, string> import_mappings = 13;
 }
 
 message BackupSettings {

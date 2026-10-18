@@ -15,9 +15,8 @@
     <string name="history_title">Bring your history</string>
     <string name="history_sub">Optional. You can import later from Settings.</string>
     <string name="history_skip">Skip</string>
-    <string name="history_import_fuelio">Import from Fuelio (CSV)</string>
-    <string name="history_import_other">Import from another app / spreadsheet</string>
-    <string name="history_coming">Coming in a later update</string>
+    <string name="history_import">Import from Fuelio or a spreadsheet</string>
+    <string name="history_import_sub">A Fuelio CSV, our Excel template or any CSV</string>
     <string name="history_fresh">Start fresh</string>
     <string name="history_fresh_sub">Begin from today\'s odometer</string>
     <string name="history_city">Your city for fuel prices</string>

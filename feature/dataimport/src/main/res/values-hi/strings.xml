@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_title">डेटा इम्पोर्ट करें</string>
+    <string name="import_back">वापस</string>
+    <string name="import_pick_title">अपनी एंट्री लाएँ</string>
+    <string name="import_pick_body">फ़ाइल चुनें, बाकी हम पहचान लेंगे।</string>
+    <string name="import_pick">फ़ाइल चुनें</string>
+    <string name="import_kind_template">Fuelwise Excel टेम्पलेट</string>
+    <string name="import_kind_template_sub">हमारे टेम्पलेट में भरे फ़्यूल और ख़र्च</string>
+    <string name="import_kind_fuelio">Fuelio CSV से इम्पोर्ट करें</string>
+    <string name="import_kind_fuelio_sub">Fuelio से एक्सपोर्ट की गई CSV फ़ाइल</string>
+    <string name="import_kind_other">कोई और स्प्रेडशीट या CSV</string>
+    <string name="import_kind_other_sub">आप उसके कॉलम हमारे कॉलम से मिलाएँ</string>
+    <string name="import_template_section">Excel टेम्पलेट</string>
+    <string name="import_template_body">कंप्यूटर या फ़ोन पर एक साथ कई फ़्यूल और ख़र्च भरें, फिर फ़ाइल यहाँ इम्पोर्ट करें। ड्रॉपडाउन में आपकी गाड़ियाँ, कैटेगरी और पेमेंट के तरीके मिलेंगे।</string>
+    <string name="import_template_save">टेम्पलेट डाउनलोड करें</string>
+    <string name="import_template_saved">टेम्पलेट सेव हो गया</string>
+    <string name="import_template_failed">टेम्पलेट सेव नहीं हो पाया</string>
+    <string name="import_recent">हाल के इम्पोर्ट</string>
+    <string name="import_undo">पहले जैसा करें</string>
+    <string name="import_undo_title">यह इम्पोर्ट हटाएँ?</string>
+    <plurals name="import_undo_body">
+        <item quantity="one">इस इम्पोर्ट से जुड़ी %1$d एंट्री हट जाएगी, भले ही आपने उसे बाद में बदला हो।</item>
+        <item quantity="other">इस इम्पोर्ट से जुड़ी %1$d एंट्री हट जाएँगी, बाद में बदली गई एंट्री भी।</item>
+    </plurals>
+    <string name="import_undo_confirm">एंट्री हटाएँ</string>
+    <string name="import_cancel">रद्द करें</string>
+    <string name="import_undone">इम्पोर्ट हटा दिया</string>
+    <plurals name="import_done">
+        <item quantity="one">%1$d एंट्री इम्पोर्ट हुई</item>
+        <item quantity="other">%1$d एंट्री इम्पोर्ट हुईं</item>
+    </plurals>
+    <string name="import_reading">फ़ाइल पढ़ रहे हैं…</string>
+    <string name="import_saving">इम्पोर्ट हो रहा है…</string>
+    <string name="import_error_unreadable">यह फ़ाइल पढ़ी नहीं जा सकी। Fuelwise टेम्पलेट, Fuelio की CSV, या हेडर वाली CSV या Excel फ़ाइल चुनें।</string>
+    <string name="import_error_no_vehicle">पहले एक गाड़ी जोड़ें। इम्पोर्ट की गई एंट्री किसी गाड़ी में ही जाती हैं।</string>
+    <string name="import_error_empty">इस फ़ाइल में इम्पोर्ट करने लायक कोई पंक्ति नहीं है।</string>
+    <string name="import_source_template">Fuelwise टेम्पलेट</string>
+    <string name="import_source_fuelio">Fuelio CSV</string>
+    <string name="import_source_spreadsheet">स्प्रेडशीट</string>
+    <plurals name="import_entries">
+        <item quantity="one">%1$d एंट्री</item>
+        <item quantity="other">%1$d एंट्री</item>
+    </plurals>
+
+    <string name="import_map_title">कॉलम मिलाएँ</string>
+    <string name="import_map_body">बताएँ कि किस कॉलम में क्या है। अगली बार के लिए हम यह याद रखेंगे।</string>
+    <string name="import_map_kind">इस फ़ाइल में हैं</string>
+    <string name="import_kind_fuel">फ़्यूल एंट्री</string>
+    <string name="import_kind_expense">ख़र्च</string>
+    <string name="import_map_dates">तारीख़ ऐसी लिखी है</string>
+    <string name="import_date_dmy">DD/MM/YYYY</string>
+    <string name="import_date_mdy">MM/DD/YYYY</string>
+    <string name="import_map_none">फ़ाइल में नहीं</string>
+    <string name="import_map_required">ज़रूरी</string>
+    <string name="import_map_need_two">मात्रा, प्रति यूनिट दाम और कुल में से कम से कम दो मिलाएँ।</string>
+    <string name="import_map_continue">देखें</string>
+    <string name="import_map_sample">जैसे %1$s</string>
+    <string name="import_map_column">कॉलम %1$d</string>
+    <string name="import_map_pick">“%1$s” किस कॉलम में है?</string>
+
+    <string name="field_vehicle">गाड़ी</string>
+    <string name="field_date">तारीख़</string>
+    <string name="field_time">समय</string>
+    <string name="field_odometer">ओडोमीटर (km)</string>
+    <string name="field_energy">फ़्यूल</string>
+    <string name="field_tank">टैंक नंबर</string>
+    <string name="field_quantity">मात्रा (L, kg या kWh)</string>
+    <string name="field_unit_price">प्रति यूनिट दाम (₹)</string>
+    <string name="field_total">कुल (₹)</string>
+    <string name="field_full">टैंक फ़ुल</string>
+    <string name="field_missed">पिछली फ़्यूल एंट्री छूटी</string>
+    <string name="field_station">पंप</string>
+    <string name="field_category">कैटेगरी</string>
+    <string name="field_amount">रकम (₹)</string>
+    <string name="field_toll_plaza">टोल प्लाज़ा</string>
+    <string name="field_payment">पेमेंट</string>
+    <string name="field_notes">नोट</string>
+
+    <string name="import_preview_title">इम्पोर्ट से पहले देख लें</string>
+    <string name="import_preview_ready">इम्पोर्ट के लिए तैयार</string>
+    <plurals name="import_count_fuel">
+        <item quantity="one">%1$d फ़्यूल एंट्री</item>
+        <item quantity="other">%1$d फ़्यूल एंट्री</item>
+    </plurals>
+    <plurals name="import_count_expense">
+        <item quantity="one">%1$d ख़र्च</item>
+        <item quantity="other">%1$d ख़र्च</item>
+    </plurals>
+    <plurals name="import_preview_duplicates">
+        <item quantity="one">%1$d दोहराई गई एंट्री छोड़ी</item>
+        <item quantity="other">%1$d दोहराई गई एंट्री छोड़ीं</item>
+    </plurals>
+    <string name="import_preview_duplicates_body">ये पहले से आपकी लॉगबुक में हैं: वही गाड़ी, वही दिन, और वही रीडिंग या रकम।</string>
+    <plurals name="import_preview_other">
+        <item quantity="one">%1$d ख़र्च \"अन्य\" में जाएगा</item>
+        <item quantity="other">%1$d ख़र्च \"अन्य\" में जाएँगे</item>
+    </plurals>
+    <string name="import_preview_other_body">इनकी कैटेगरी पहचानी नहीं गई। असली नाम नोट में रखा गया है।</string>
+    <plurals name="import_preview_problems">
+        <item quantity="one">%1$d पंक्ति इम्पोर्ट नहीं हो सकती</item>
+        <item quantity="other">%1$d पंक्तियाँ इम्पोर्ट नहीं हो सकतीं</item>
+    </plurals>
+    <string name="import_preview_problems_body">फ़ाइल में इन्हें ठीक करके फिर इम्पोर्ट करें। पहले इम्पोर्ट हो चुकी पंक्तियाँ दोहराई मानकर छोड़ दी जाएँगी।</string>
+    <plurals name="import_problems_more">
+        <item quantity="one">और %1$d</item>
+        <item quantity="other">और %1$d</item>
+    </plurals>
+    <string name="import_preview_vehicle">बिना गाड़ी वाली पंक्तियाँ इसमें जाएँगी</string>
+    <plurals name="import_preview_confirm">
+        <item quantity="one">%1$d एंट्री इम्पोर्ट करें</item>
+        <item quantity="other">%1$d एंट्री इम्पोर्ट करें</item>
+    </plurals>
+    <string name="import_preview_nothing">इम्पोर्ट करने को कुछ नहीं</string>
+    <string name="import_row">पंक्ति %1$d</string>
+    <string name="import_sheet_row">%1$s, पंक्ति %2$d</string>
+
+    <string name="issue_vehicle_not_found">“%1$s” नाम की कोई गाड़ी नहीं</string>
+    <string name="issue_no_vehicle">गाड़ी नहीं दी गई</string>
+    <string name="issue_missing_date">तारीख़ नहीं है</string>
+    <string name="issue_bad_date">तारीख़ “%1$s” पढ़ी नहीं जा सकी</string>
+    <string name="issue_missing_odometer">ओडोमीटर नहीं है</string>
+    <string name="issue_bad_number">संख्या “%1$s” पढ़ी नहीं जा सकी</string>
+    <string name="issue_missing_fuel">मात्रा, प्रति यूनिट दाम और कुल में से दो चाहिए</string>
+    <string name="issue_fuel_not_on_vehicle">यह गाड़ी “%1$s” नहीं लेती</string>
+    <string name="issue_tank_not_found">यह टैंक इस गाड़ी में नहीं है</string>
+    <string name="issue_missing_amount">रकम नहीं है</string>
+    <string name="issue_income">आमदनी की एंट्री इम्पोर्ट नहीं होतीं</string>
+    <plurals name="issue_too_many">
+        <item quantity="one">एक फ़ाइल में ज़्यादा से ज़्यादा %1$d पंक्तियाँ हो सकती हैं। इसे बाँटकर हर हिस्सा इम्पोर्ट करें।</item>
+        <item quantity="other">एक फ़ाइल में ज़्यादा से ज़्यादा %1$d पंक्तियाँ हो सकती हैं। इसे बाँटकर हर हिस्सा इम्पोर्ट करें।</item>
+    </plurals>
+
+    <string name="template_sheet_fuel">फ़्यूल</string>
+    <string name="template_sheet_expenses">ख़र्च</string>
+    <string name="template_sheet_howto">कैसे भरें</string>
+    <string name="template_howto_title">यह टेम्पलेट कैसे भरें</string>
+    <string name="template_intro_rows">फ़्यूल शीट में हर फ़्यूल एंट्री की एक पंक्ति, ख़र्च शीट में हर ख़र्च की एक पंक्ति। हेडर वाली पंक्ति न बदलें।</string>
+    <string name="template_intro_vehicle">गाड़ी का नाम या रजिस्ट्रेशन नंबर ऐप की किसी गाड़ी से मिलना चाहिए। ड्रॉपडाउन से चुनें।</string>
+    <string name="template_intro_units">तारीख़ DD-MM-YYYY में। रकम रुपये में। मात्रा लीटर (पेट्रोल, डीज़ल, LPG), kg (CNG) या kWh (इलेक्ट्रिक) में।</string>
+    <string name="template_intro_triangle">फ़्यूल एंट्री में मात्रा, प्रति यूनिट दाम और कुल में से कोई दो भरें। तीसरा अपने आप निकल आएगा।</string>
+    <string name="template_intro_import">फ़ाइल सेव करें, फिर गैराज → डेटा इम्पोर्ट करें से इम्पोर्ट करें। दोहराई एंट्री छोड़ दी जाती हैं, और इम्पोर्ट हटाया भी जा सकता है।</string>
+    <string name="template_col_column">कॉलम</string>
+    <string name="template_col_meaning">क्या भरें</string>
+    <string name="template_col_example">उदाहरण</string>
+    <string name="help_vehicle">ऐप में मौजूद गाड़ी का नाम या रजिस्ट्रेशन नंबर</string>
+    <string name="help_date">फ़्यूल या ख़र्च का दिन</string>
+    <string name="help_time">ज़रूरी नहीं। 24 घंटे वाला समय</string>
+    <string name="help_odometer">km में रीडिंग। फ़्यूल एंट्री के लिए ज़रूरी, ख़र्च के लिए नहीं</string>
+    <string name="help_energy">ज़रूरी नहीं। CNG + पेट्रोल या LPG + पेट्रोल गाड़ी में कौन सा टैंक। ख़ाली हो तो मुख्य टैंक</string>
+    <string name="help_quantity">लीटर, kg या kWh</string>
+    <string name="help_unit_price">प्रति लीटर, kg या kWh दाम</string>
+    <string name="help_total">पंप ने जितना लिया</string>
+    <string name="help_full">टैंक पूरा भरवाया तो हाँ। ख़ाली हो तो हाँ माना जाएगा</string>
+    <string name="help_missed">इससे पहले वाली फ़्यूल एंट्री नहीं लिखी तो हाँ</string>
+    <string name="help_station">ज़रूरी नहीं। पंप या चार्जर का नाम</string>
+    <string name="help_payment">ज़रूरी नहीं। सूची से चुनें</string>
+    <string name="help_notes">ज़रूरी नहीं</string>
+    <string name="help_category">सूची से चुनें। ख़ाली हो तो \"अन्य\"</string>
+    <string name="help_amount">दी गई रकम</string>
+    <string name="help_toll_plaza">ज़रूरी नहीं। टोल के लिए</string>
+    <string name="template_example_station">IOCL इंदिरानगर</string>
+    <string name="template_example_notes">हाईवे ट्रिप</string>
+    <string name="template_example_plaza">नेलमंगला</string>
+    <string name="template_yes">हाँ</string>
+    <string name="template_no">नहीं</string>
+</resources>

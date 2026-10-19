@@ -42,6 +42,8 @@ sealed interface RestoreOutcome {
  * Backup and restore (PRD F-14, R1 scope): snapshots to the user's Drive app folder or to a file they pick, encrypted
  * when they chose a passphrase. One operation at a time; every step is safe to rerun after a crash or a kill.
  */
+// Backup, restore, file export, encryption and the "Delete all data" erase share one owner of the Drive lock.
+@Suppress("TooManyFunctions")
 @Singleton
 class BackupManager @Inject constructor(
     private val snapshotter: DatabaseSnapshotter,

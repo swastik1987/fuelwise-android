@@ -225,8 +225,8 @@ fun FuelwiseApp(
                 SettingsLinks(
                     onBack = navController::popBackStack,
                     onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
-                    // TODO(F-09): open the Prices screen once the Prices session's route is on main, e.g.
-                    //  onHomeCity = { navController.navigate(PricesRoute) }. Null hides the row until then.
+                    // TODO(F-09): once :feature:prices is on main, wire
+                    //  onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) }. Null hides the row.
                     onHomeCity = null,
                     // TODO(F-13): open Export & reports once the Export session's route is on main.
                     onExport = null,

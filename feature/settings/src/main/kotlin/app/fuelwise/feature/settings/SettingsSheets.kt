@@ -185,7 +185,11 @@ internal fun DeleteAllDialog(
                 Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
             ) {
-                Text(stringResource(R.string.settings_delete_body), style = FwTheme.type.bodyS, color = FwTheme.colors.ink2)
+                Text(
+                    stringResource(R.string.settings_delete_body),
+                    style = FwTheme.type.bodyS,
+                    color = FwTheme.colors.ink2,
+                )
                 if (driveConnected) {
                     FwSwitchRow(
                         title = stringResource(R.string.settings_delete_drive),

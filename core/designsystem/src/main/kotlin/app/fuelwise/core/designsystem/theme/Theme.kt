@@ -1,6 +1,7 @@
 package app.fuelwise.core.designsystem.theme
 
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +67,7 @@ fun FuelwiseTheme(
 }
 
 /** Whether this device can show Material You colours (Android 12+); Settings hides the switch otherwise. */
+@get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
 val supportsDynamicColor: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
 /**

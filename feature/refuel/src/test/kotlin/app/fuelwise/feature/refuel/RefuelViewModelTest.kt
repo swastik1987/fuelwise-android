@@ -169,7 +169,7 @@ class RefuelViewModelTest {
 
     @Test
     fun homeChargesStartFromTheSettingsTariff() = runTest {
-        // PRD F-02.5: the home tariff from Settings (₹8.20/kWh) fills Home AC charges; public chargers keep their own.
+        // PRD F-02.5: the Settings home tariff (₹8.20/kWh) fills Home AC charges; public chargers keep their own.
         val userData = FakeUserDataRepository().apply { setHomeTariff(Money(820)) }
         val vm = viewModel(vehicleId = "nexon", userData = userData)
         val home = vm.state.first { it.unitPrice.isNotEmpty() }

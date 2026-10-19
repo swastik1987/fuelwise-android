@@ -265,6 +265,7 @@ private fun LogbookMap(chrome: LogbookChrome, actions: LogbookActions) {
                     vehicle = vehicles[pin.entry.vehicleId],
                     categories = chrome.categories,
                     kmPerUnit = chrome.kmPerUnit[pin.entry.id],
+                    units = chrome.units.forVehicle(pin.entry.vehicleId),
                     onClick = { actions.onOpen(pin.entry) },
                     showVehicleName = chrome.allVehicles,
                 )
@@ -309,6 +310,7 @@ private fun LogbookList(chrome: LogbookChrome, items: LazyPagingItems<LogbookIte
                             vehicle = vehicles[row.entry.vehicleId],
                             categories = chrome.categories,
                             kmPerUnit = chrome.kmPerUnit[row.entry.id],
+                            units = chrome.units.forVehicle(row.entry.vehicleId),
                             onClick = { actions.onOpen(row.entry) },
                             showVehicleName = chrome.allVehicles,
                             modifier = Modifier.background(

@@ -103,7 +103,8 @@ internal fun UnitsContent(state: UnitsUiState, actions: UnitsActions) {
             FwSettingsRow(
                 stringResource(R.string.units_efficiency),
                 // On a vehicle, show its own fuel's unit ("kWh/100 km"), not the whole family.
-                value = quantity?.let { efficiencyUnit(it, shown) } ?: stringResource(efficiencyLabel(shown.efficiency)),
+                value = quantity?.let { efficiencyUnit(it, shown) }
+                    ?: stringResource(efficiencyLabel(shown.efficiency)),
                 onClick = if (editable) ({ picking = UnitField.Efficiency }) else null,
             )
             Note(R.string.units_storage_note)
@@ -115,7 +116,9 @@ internal fun UnitsContent(state: UnitsUiState, actions: UnitsActions) {
                 state.vehicles.forEach { row ->
                     FwSettingsRow(
                         row.vehicle.name,
-                        value = row.override?.let { unitsSummaryFor(it, row.vehicle.primaryTank?.energyType?.canonicalUnit) }
+                        value = row.override?.let {
+                            unitsSummaryFor(it, row.vehicle.primaryTank?.energyType?.canonicalUnit)
+                        }
                             ?: stringResource(R.string.units_same_as_default),
                         onClick = { actions.onOpenVehicle(row.vehicle.id) },
                     )
@@ -184,9 +187,11 @@ private fun Note(text: Int) {
 
 /** A vehicle's own units in one line, with its own fuel's mileage unit. */
 @Composable
-private fun unitsSummaryFor(units: DisplayUnits, quantity: QuantityUnit?): String =
-    if (quantity == null) unitsSummary(units) else unitsSummary(units).substringBeforeLast(" · ") +
-        " · " + efficiencyUnit(quantity, units)
+private fun unitsSummaryFor(units: DisplayUnits, quantity: QuantityUnit?): String {
+    val summary = unitsSummary(units)
+    if (quantity == null) return summary
+    return summary.substringBeforeLast(" · ") + " · " + efficiencyUnit(quantity, units)
+}
 
 private fun distanceLabel(unit: DistanceUnit): Int = when (unit) {
     DistanceUnit.KILOMETRE -> R.string.units_distance_km

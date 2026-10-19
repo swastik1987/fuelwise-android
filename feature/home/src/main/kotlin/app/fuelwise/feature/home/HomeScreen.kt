@@ -56,12 +56,18 @@ import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.Urgency
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.domain.trip.MonthTrips
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.entry.LogbookEntryRow
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
+import app.fuelwise.core.ui.format.efficiencyUnit
+import app.fuelwise.core.ui.format.efficiencyValue
+import app.fuelwise.core.ui.format.quantityText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
@@ -195,9 +201,7 @@ internal fun HomeContent(
 private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo: () -> Unit) {
     val s = state.summary
     val hide = state.hideAmounts
-    val unit = state.vehicle.primaryTank?.let {
-        stringResource(VehicleLabels.unit(it.energyType.canonicalUnit))
-    }.orEmpty()
+    val quantity = state.vehicle.primaryTank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE
     FwHeroMetric(
         overline = stringResource(R.string.home_hero_overline),
         value = s.month.costPerKm?.let { money(it, hide, whole = false) } ?: "—",
@@ -207,7 +211,7 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
         infoContentDescription = stringResource(R.string.home_cost_per_km_title),
     )
     Column(verticalArrangement = Arrangement.spacedBy(TILE_GAP)) {
-        MetricTiles(s, hide, unit)
+        MetricTiles(s, hide, quantity, state.units)
         TripTiles(state.trips, actions)
     }
     s.lastRefuel?.let { last ->
@@ -221,7 +225,7 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
                         Text(
                             listOf(
                                 shortDate(last.dateTimeUtcMs, last.zoneId),
-                                "${IndianNumberFormat.decimal(last.quantity, 1)} $unit",
+                                quantityText(last.quantity, quantity, state.units),
                             )
                                 .joinToString(" · "),
                             style = FwTheme.type.label,
@@ -233,7 +237,7 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
                 }
                 s.lastRefuelInterval?.let {
                     Text(
-                        "${IndianNumberFormat.decimal(it.kmPerUnit, 1)} km/$unit",
+                        efficiencyText(it.kmPerUnit, quantity, state.units),
                         style = FwTheme.type.caption,
                         color = FwTheme.colors.ink,
                         modifier = Modifier.padding(top = 8.dp).background(FwTheme.colors.surface2, FwTheme.radius.pill)
@@ -258,18 +262,20 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
 }
 
 @Composable
-private fun MetricTiles(s: VehicleSummary, hide: Boolean, unit: String) {
+private fun MetricTiles(s: VehicleSummary, hide: Boolean, quantity: QuantityUnit, units: DisplayUnits) {
+    // Mileage in the chosen unit (PRD F-18); L/100 km reads lower-is-better, so the sparkline follows the shown value.
+    fun shown(kmPerUnit: Double) = units.efficiency(kmPerUnit, quantity)?.value
     Row(horizontalArrangement = Arrangement.spacedBy(TILE_GAP)) {
         FwMetricTile(
             overline = stringResource(if (s.isEstimate) R.string.home_mileage_est else R.string.home_mileage),
-            value = s.latestInterval?.let { IndianNumberFormat.decimal(it.kmPerUnit, 1) } ?: "—",
-            unit = "km/$unit",
+            value = efficiencyValue(s.latestInterval?.kmPerUnit, quantity, units),
+            unit = efficiencyUnit(quantity, units),
             caption = s.averageInterval?.let {
-                stringResource(R.string.home_mileage_avg, IndianNumberFormat.decimal(it.kmPerUnit, 1))
+                stringResource(R.string.home_mileage_avg, efficiencyValue(it.kmPerUnit, quantity, units))
             },
             modifier = Modifier.weight(1f),
             extra = {
-                FwSparkline(s.recentIntervals.map { it.kmPerUnit }, Modifier.padding(top = 8.dp))
+                FwSparkline(s.recentIntervals.mapNotNull { shown(it.kmPerUnit) }, Modifier.padding(top = 8.dp))
             },
         )
         FwMetricTile(
@@ -358,6 +364,7 @@ private fun Recent(state: HomeUiState.Ready, actions: HomeActions) {
                 vehicle = state.vehicle,
                 categories = state.categories,
                 kmPerUnit = state.kmPerUnit[entry.id],
+                units = state.units,
                 onClick = { actions.onOpenEntry(entry.source, entry.id) },
                 amountText = money(entry.amount, state.hideAmounts, whole = true),
             )

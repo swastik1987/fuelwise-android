@@ -16,6 +16,7 @@ import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.domain.trip.monthTrips
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Vehicle
@@ -55,6 +56,8 @@ sealed interface HomeUiState {
         val care: HomeCare = HomeCare(),
         /** This month's finished trips for the vehicle (Home trips tile). */
         val trips: MonthTrips = MonthTrips.NONE,
+        /** This vehicle's display units (PRD F-18). */
+        val units: DisplayUnits = DisplayUnits.INDIA,
     ) : HomeUiState
 }
 
@@ -111,6 +114,7 @@ class HomeViewModel @Inject constructor(
                     },
                     care = homeCare,
                     trips = monthTrips(tripList, selected.id, YearMonth.now(clock.withZone(zoneId)), zoneId),
+                    units = data.units.forVehicle(selected.id),
                 )
             }
         }

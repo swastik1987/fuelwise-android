@@ -114,23 +114,7 @@ class RefuelViewModel @Inject constructor(
                     socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
                     socEnd = last?.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
                 )
-                // Price defaults to the home tariff for Home AC charges (PRD F-02.5), otherwise the last price paid
-                // for this tank (PRD F-02.3), and counts as one locked edit.
-                val tariff = homeTariff.takeIf { next.isCharge && next.charger == ChargerType.HomeAc }
-                val lastPrice = if (next.isCharge) {
-                    tankFills.filter { it.chargerType == next.charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
-                } else {
-                    last?.unitPrice
-                }
-                val defaultPrice = tariff ?: lastPrice
-                if (defaultPrice != null && current.unitPrice.isEmpty()) {
-                    next = next.copy(
-                        unitPrice = MoneyInput.plain(defaultPrice),
-                        recentEdits = listOf(Field.UnitPrice),
-                        priceSource = if (tariff != null) PriceSource.Typed else PriceSource.LastPaid,
-                        homeTariffPrice = tariff != null,
-                    )
-                }
+                if (current.unitPrice.isEmpty()) next = next.withDefaultPrice(last)
             }
             next.revalidated()
         }
@@ -274,6 +258,26 @@ class RefuelViewModel @Inject constructor(
     }
 
     // --- state helpers ---
+
+    /**
+     * Price defaults to the home tariff for Home AC charges (PRD F-02.5), otherwise the last price paid for this tank
+     * (PRD F-02.3), and counts as one locked edit.
+     */
+    private fun RefuelFormState.withDefaultPrice(last: Refuel?): RefuelFormState {
+        val tariff = homeTariff.takeIf { isCharge && charger == ChargerType.HomeAc }
+        val lastPrice = if (isCharge) {
+            tankFills.filter { it.chargerType == charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+        } else {
+            last?.unitPrice
+        }
+        val price = tariff ?: lastPrice ?: return this
+        return copy(
+            unitPrice = MoneyInput.plain(price),
+            recentEdits = listOf(Field.UnitPrice),
+            priceSource = if (tariff != null) PriceSource.Typed else PriceSource.LastPaid,
+            homeTariffPrice = tariff != null,
+        )
+    }
 
     private fun RefuelFormState.triangleEdit(field: Field, text: String): RefuelFormState {
         val edited = when (field) {

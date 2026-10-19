@@ -2,11 +2,12 @@ package app.fuelwise.core.data.repository
 
 import app.fuelwise.core.datastore.BackupError as ProtoError
 import app.fuelwise.core.datastore.BackupFrequency as ProtoFrequency
-import app.fuelwise.core.datastore.PreferencesDataSource
 import app.fuelwise.core.datastore.DistanceUnitPref
 import app.fuelwise.core.datastore.EfficiencyUnitPref
+import app.fuelwise.core.datastore.PreferencesDataSource
 import app.fuelwise.core.datastore.ThemeMode as ProtoThemeMode
 import app.fuelwise.core.datastore.UnitPreferences
+import app.fuelwise.core.datastore.UserPreferencesKt
 import app.fuelwise.core.datastore.VolumeUnitPref
 import app.fuelwise.core.datastore.unitPreferences
 import app.fuelwise.core.model.BackupError
@@ -131,6 +132,11 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         }
         (values[KEY_UPI_VPA] as? String)?.let { upiVpa = it }
         (values[KEY_UPI_NAME] as? String)?.let { upiName = it }
+        importSettings(values)
+    }
+
+    /** The Settings keys (PRD F-18). */
+    private fun UserPreferencesKt.Dsl.importSettings(values: Map<String, Any?>) {
         (values[KEY_UNITS] as? String)?.let { units = decodeUnits(it) }
         (values[KEY_VEHICLE_UNITS] as? List<*>)?.filterIsInstance<String>()?.let { list ->
             vehicleUnits.clear()

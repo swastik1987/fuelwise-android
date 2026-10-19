@@ -34,6 +34,21 @@ object NotificationRoutes {
 
     /** A trip's detail with the odometer sheet open (PRD F-07.6); [EXTRA_ARG] is the trip id. */
     const val OPEN_TRIP_ODOMETER = "trip_odometer"
+
+    // Widgets, Quick Settings tiles and app shortcuts (PRD F-16) open the app the same way.
+    /** The fill-up sheet; [EXTRA_ARG] may name the vehicle (an EV for "Charge"). */
+    const val OPEN_ADD_FUEL = "add_fuel"
+    const val OPEN_ADD_EXPENSE = "add_expense"
+
+    /** A manual trip, as from the in-app quick-add sheet. */
+    const val OPEN_ADD_TRIP = "add_trip"
+
+    /** The Trips screen starting a GPS trip, asking for location first if needed. */
+    const val OPEN_START_TRIP = "start_trip"
+    const val OPEN_DOCUMENTS = "documents"
+
+    /** Scan pump meter (PRD F-15). */
+    const val OPEN_SCAN = "scan"
 }
 
 /** Channel ids other modules post to (the trip recorder in core:location). */

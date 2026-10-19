@@ -40,6 +40,8 @@ class TripRecordingService : Service() {
 
     @Inject lateinit var clock: Clock
 
+    @Inject lateinit var startTrip: StartTripForSelectedVehicle
+
     @Inject
     @RecorderScope
     lateinit var scope: CoroutineScope
@@ -50,13 +52,20 @@ class TripRecordingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Every start must promptly show the notification, whatever the action.
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification(recorder.state.value),
-            // The type exists from Android 10; before that the manifest declaration is all there is.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0,
-        )
+        try {
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                notification(recorder.state.value),
+                // The type exists from Android 10; before that the manifest declaration is all there is.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0,
+            )
+        } catch (_: SecurityException) {
+            // Location was revoked after a widget last drew its Start button: nothing can record, so don't start.
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        val starting = intent?.action == ACTION_START
         when (intent?.action) {
             ACTION_PAUSE -> recorder.pause()
             ACTION_RESUME -> recorder.resume()
@@ -64,6 +73,8 @@ class TripRecordingService : Service() {
         }
         if (watch == null) {
             watch = scope.launch {
+                // A widget start begins Idle: start first, or the watch would stop the service straight away.
+                if (starting) startTrip()
                 recorder.state.collectLatest { state ->
                     if (state is RecordingState.Idle) {
                         ServiceCompat.stopForeground(this@TripRecordingService, ServiceCompat.STOP_FOREGROUND_REMOVE)
@@ -73,6 +84,8 @@ class TripRecordingService : Service() {
                     }
                 }
             }
+        } else if (starting) {
+            scope.launch { startTrip() }
         }
         return START_NOT_STICKY
     }
@@ -150,6 +163,8 @@ class TripRecordingService : Service() {
     }
 
     internal companion object {
+        /** From a widget tap (PRD F-16): start a trip for the selected vehicle. */
+        const val ACTION_START = "app.fuelwise.trip.START"
         const val ACTION_PAUSE = "app.fuelwise.trip.PAUSE"
         const val ACTION_RESUME = "app.fuelwise.trip.RESUME"
         const val ACTION_STOP = "app.fuelwise.trip.STOP"

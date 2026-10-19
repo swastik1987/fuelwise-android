@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Home-screen widgets and Quick Settings tiles (PRD F-16). No new permissions: BIND_QUICK_SETTINGS_TILE below
+        only restricts who may bind the tiles (the system), it isn't requested by the app.
+    -->
+    <application>
+        <receiver
+            android:name=".QuickAddWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quick_add_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_add_info" />
+        </receiver>
+
+        <receiver
+            android:name=".StatusWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_status_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_status_info" />
+        </receiver>
+
+        <receiver
+            android:name=".TripWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_trip_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_trip_info" />
+        </receiver>
+
+        <service
+            android:name=".LogFuelTileService"
+            android:exported="true"
+            android:icon="@drawable/fw_ic_local_gas_station"
+            android:label="@string/tile_log_fuel"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".StartTripTileService"
+            android:exported="true"
+            android:icon="@drawable/fw_ic_route"
+            android:label="@string/tile_start_trip"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

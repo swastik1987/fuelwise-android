@@ -97,6 +97,20 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
 
+            // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
+            NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
+
+            NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
+
+            NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
+
+            NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+
+            NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
+
+            // TODO(F-15): open the scan route once the Scan PR is merged; the fill-up sheet until then.
+            NotificationRoutes.OPEN_SCAN -> RefuelRoute()
+
             else -> return@LaunchedEffect
         }
         if (!startWithOnboarding) navController.navigate(route)

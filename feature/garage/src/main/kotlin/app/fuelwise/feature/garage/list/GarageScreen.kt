@@ -263,6 +263,7 @@ data class GarageLinks(
     val onTrips: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
+    val onExport: () -> Unit = {},
 )
 
 /** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Trips (design.md screen 21). */
@@ -315,6 +316,7 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
             links.onBackup,
         )
         UtilityRow(FwIcons.UploadFile, stringResource(R.string.garage_import), null, links.onImport)
+        UtilityRow(FwIcons.Download, stringResource(R.string.garage_export), null, links.onExport)
     }
 }
 

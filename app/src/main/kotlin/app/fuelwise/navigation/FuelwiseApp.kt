@@ -26,7 +26,9 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
 import app.fuelwise.feature.backup.backupScreen
+import app.fuelwise.feature.dataimport.ExportRoute
 import app.fuelwise.feature.dataimport.ImportRoute
+import app.fuelwise.feature.dataimport.exportScreen
 import app.fuelwise.feature.dataimport.importScreen
 import app.fuelwise.feature.documents.DocumentEditorRoute
 import app.fuelwise.feature.documents.DocumentViewRoute
@@ -192,6 +194,7 @@ fun FuelwiseApp(
                     onTrips = { navController.navigate(TripsRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onExport = { navController.navigate(ExportRoute) },
                 ),
             )
             remindersScreen(
@@ -216,6 +219,7 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            exportScreen(onBack = navController::popBackStack)
             tripsScreens(
                 TripsLinks(
                     onBack = navController::popBackStack,

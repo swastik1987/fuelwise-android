@@ -63,7 +63,9 @@ internal fun LiveTripScreen(links: TripsLinks, viewModel: LiveTripViewModel = hi
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             while (true) {
                 viewModel.flush()
-                delay(FLUSH_EVERY_MS)
+                // Until the first fix lands, ask often so the map doesn't sit on "Waiting for GPS…".
+                val waiting = viewModel.state.value.recording?.route?.isEmpty() == true
+                delay(if (waiting) FIRST_FIX_FLUSH_MS else FLUSH_EVERY_MS)
             }
         }
     }
@@ -206,7 +208,8 @@ private fun LiveMap(route: List<TrackPoint>, modifier: Modifier) {
             Modifier.fillMaxSize(),
             follow = true,
         )
-        if (route.size < 2) {
+        // One fix is enough: standing still never adds a second point (25 m minimum between fixes).
+        if (route.isEmpty()) {
             Text(
                 stringResource(R.string.trips_live_waiting),
                 style = FwTheme.type.bodyS,
@@ -232,6 +235,7 @@ private fun clock(ms: Long): String {
 }
 
 private const val FLUSH_EVERY_MS = 10_000L
+private const val FIRST_FIX_FLUSH_MS = 2_000L
 private const val TICK_MS = 1_000L
 private const val MS_PER_S = 1_000L
 private const val SECONDS_PER_HOUR = 3_600L

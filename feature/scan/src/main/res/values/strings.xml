@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scan_title">Scan</string>
+    <string name="scan_close">Close scan</string>
+    <string name="scan_mode_pump">Pump meter</string>
+    <string name="scan_mode_receipt">Receipt</string>
+    <string name="scan_mode_odometer">Odometer</string>
+    <string name="scan_guide_pump">Fit the pump display here</string>
+    <string name="scan_guide_receipt">Fit the receipt here</string>
+    <string name="scan_guide_odometer">Fit the odometer here</string>
+    <string name="scan_read_now">Read now</string>
+    <string name="scan_all_valid_cd">All values read, and they match</string>
+    <string name="scan_struggling">Couldn\'t read clearly. Try less glare, or type it in.</string>
+    <string name="scan_type_instead">Type instead</string>
+    <string name="scan_denied_title">Camera is off</string>
+    <string name="scan_denied_body">Scanning reads the display on your phone. Nothing is uploaded. Allow the camera, or type the values in.</string>
+    <string name="scan_allow">Allow camera</string>
+    <string name="scan_review_validated">These values match</string>
+    <string name="scan_review_check">Check each value</string>
+    <string name="scan_review_check_hint">Tick the ones that are right. You can still change them on the next screen.</string>
+    <string name="scan_review_odometer">Is this your odometer?</string>
+    <string name="scan_field_total">Amount</string>
+    <string name="scan_field_quantity">Quantity</string>
+    <string name="scan_field_rate">Rate</string>
+    <string name="scan_field_odometer">Odometer</string>
+    <string name="scan_field_date">Date</string>
+    <string name="scan_field_station">Station</string>
+    <string name="scan_rate">%1$s/%2$s</string>
+    <string name="scan_km">%1$s km</string>
+    <string name="scan_attach_photo">Attach the photo to this entry</string>
+    <string name="scan_attach_photo_hint">Kept encrypted on this phone.</string>
+    <string name="scan_use">Use these values</string>
+    <string name="scan_rescan">Scan again</string>
+</resources>

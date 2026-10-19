@@ -6,6 +6,7 @@ import app.fuelwise.core.data.repository.AssetRulesRepository
 import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.DataStoreBackupSettingsRepository
+import app.fuelwise.core.data.repository.DataStoreScanSettingsRepository
 import app.fuelwise.core.data.repository.DataStoreUserDataRepository
 import app.fuelwise.core.data.repository.DeviceLocalDataReset
 import app.fuelwise.core.data.repository.DocumentRepository
@@ -29,6 +30,7 @@ import app.fuelwise.core.data.repository.OfflineVehicleRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.RulesRepository
+import app.fuelwise.core.data.repository.ScanSettingsRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
@@ -62,6 +64,9 @@ internal interface DataModule {
 
     @Binds
     fun userDataRepository(impl: DataStoreUserDataRepository): UserDataRepository
+
+    @Binds
+    fun scanSettingsRepository(impl: DataStoreScanSettingsRepository): ScanSettingsRepository
 
     @Binds
     fun entitlementRepository(impl: FreeTierEntitlementRepository): EntitlementRepository

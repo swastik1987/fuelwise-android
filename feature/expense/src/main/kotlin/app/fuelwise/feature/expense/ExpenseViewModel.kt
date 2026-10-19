@@ -190,6 +190,7 @@ class ExpenseViewModel @Inject constructor(
                     // Editing an auto-created entry confirms it and keeps its recurrence link (idempotency).
                     recurrenceId = editing?.recurrenceId,
                     isAutoCreated = false,
+                    tripId = editing?.tripId ?: route.tripId,
                 ),
             )
             if (s.repeat && editing == null) saveRecurrence(s, vehicle.id, categoryId, amount)

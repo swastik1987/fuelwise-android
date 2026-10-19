@@ -22,10 +22,12 @@ import app.fuelwise.core.data.repository.OfflineImportRepository
 import app.fuelwise.core.data.repository.OfflineLogbookRepository
 import app.fuelwise.core.data.repository.OfflineRecurrenceRepository
 import app.fuelwise.core.data.repository.OfflineReminderRepository
+import app.fuelwise.core.data.repository.OfflineTripRepository
 import app.fuelwise.core.data.repository.OfflineVehicleRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.RulesRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.data.vault.AttachmentStore
@@ -37,8 +39,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.time.ZoneId
 
+// One binding per repository; the count grows with features, not with complexity.
 @Module
 @InstallIn(SingletonComponent::class)
+@Suppress("TooManyFunctions")
 internal interface DataModule {
     @Binds
     fun vehicleRepository(impl: OfflineVehicleRepository): VehicleRepository
@@ -81,6 +85,9 @@ internal interface DataModule {
 
     @Binds
     fun importRepository(impl: OfflineImportRepository): ImportRepository
+
+    @Binds
+    fun tripRepository(impl: OfflineTripRepository): TripRepository
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider

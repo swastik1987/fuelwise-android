@@ -61,6 +61,7 @@
     <string name="garage_reminders">Reminders</string>
     <string name="garage_documents">Documents</string>
     <string name="garage_fastag">FASTag</string>
+    <string name="garage_trips">Trips</string>
     <string name="garage_fastag_est">%1$s est.</string>
     <plurals name="garage_reminders_due">
         <item quantity="one">%1$d due</item>

@@ -47,6 +47,8 @@ data class Expense(
     val isAutoCreated: Boolean = false,
     /** Set on entries a recurring expense created; with the date it keeps creation idempotent (PRD F-04.3). */
     val recurrenceId: String? = null,
+    /** A toll or parking on a trip; its amount is added to the trip's cost (PRD F-07.1). */
+    val tripId: String? = null,
 )
 
 enum class PaymentMethod { Upi, Card, Cash, FastagWallet, FleetCard }

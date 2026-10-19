@@ -137,4 +137,14 @@ object FwIcons {
     @DrawableRes val ManualTrip = R.drawable.fw_ic_add_road
 
     @DrawableRes val Speed = R.drawable.fw_ic_speed
+
+    @DrawableRes val Share = R.drawable.fw_ic_share
+
+    @DrawableRes val Remove = R.drawable.fw_ic_remove
+
+    @DrawableRes val Business = R.drawable.fw_ic_work
+
+    @DrawableRes val Commute = R.drawable.fw_ic_commute
+
+    @DrawableRes val Person = R.drawable.fw_ic_person
 }

@@ -117,6 +117,37 @@ class MigrationsTest {
         }
     }
 
+    @Test
+    fun migrate4To5KeepsTripLinkedExpensesAndAddsTrips() {
+        helper.createDatabase(dbPath, 4).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO expense (id, vehicleId, categoryId, dateTime, zoneId, amountPaise, tripId, tollPlaza,
+                    isAutoCreated, createdAt, updatedAt, deviceId)
+                VALUES ('e1', 'safari', 'c1', 5, 'Asia/Kolkata', 23000, 'trip1', 'Kaniminike', 0, 5, 5, 'd1')
+                """.trimIndent(),
+            )
+        }
+
+        helper.runMigrationsAndValidate(dbPath, 5, true, Migrations.MIGRATION_4_5).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO trip (id, vehicleId, startTime, zoneId, startOdo, endOdo, distanceKm, purpose, estCostPaise,
+                    source, status, createdAt, updatedAt, deviceId)
+                VALUES ('trip1', 'safari', 9, 'Asia/Kolkata', 42318.0, 42464.0, 146.0, 'Personal', 89600,
+                    'Manual', 'Done', 9, 9, 'd1')
+                """.trimIndent(),
+            )
+            db.query(
+                "SELECT t.distanceKm, SUM(e.amountPaise) FROM trip t JOIN expense e ON e.tripId = t.id GROUP BY t.id",
+            ).use { c ->
+                assertThat(c.moveToFirst()).isTrue()
+                assertThat(c.getDouble(0)).isEqualTo(146.0)
+                assertThat(c.getLong(1)).isEqualTo(23_000L)
+            }
+        }
+    }
+
     // An absolute path: on Windows the helper otherwise compares a bare name with the resolved path and refuses.
     private val dbPath: String =
         ApplicationProvider.getApplicationContext<android.content.Context>().getDatabasePath(DB).absolutePath

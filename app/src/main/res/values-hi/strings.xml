@@ -9,4 +9,5 @@
     <string name="quick_fuel">फ़्यूल या चार्जिंग</string>
     <string name="quick_expense">खर्च</string>
     <string name="quick_toll">टोल</string>
+    <string name="quick_trip">यात्रा</string>
 </resources>

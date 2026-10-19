@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trips_title">Trips</string>
+    <string name="trips_back">Back</string>
+    <string name="trips_deleted">Trip deleted</string>
+    <string name="trips_undo">Undo</string>
+    <string name="trips_empty">No trips yet</string>
+    <string name="trips_empty_body">Log a trip to see what it cost, split it with friends and keep business km for claims.</string>
+    <string name="trips_add_manual">Add manual trip</string>
+    <string name="trips_no_vehicles">No vehicles yet</string>
+    <string name="trips_no_vehicles_body">Add a vehicle in Garage to log trips.</string>
+    <string name="trips_week">Week · %1$s</string>
+    <string name="trips_week_totals">%1$s km · %2$s est.</string>
+    <string name="trips_km">%1$s km</string>
+    <string name="trips_km_unit">km</string>
+    <string name="trips_cost_est">%1$s est.</string>
+    <string name="trips_est">est.</string>
+    <string name="trips_route">%1$s → %2$s</string>
+    <string name="trips_minutes">%1$d min</string>
+    <string name="trips_hours">%1$d h</string>
+    <string name="trips_hours_minutes">%1$d h %2$d min</string>
+
+    <string name="trips_purpose_personal">Personal</string>
+    <string name="trips_purpose_business">Business</string>
+    <string name="trips_purpose_commute">Commute</string>
+    <string name="trips_purpose_other">Other</string>
+
+    <string name="trips_add_title">Add trip</string>
+    <string name="trips_edit_title">Edit trip</string>
+    <string name="trips_close">Close</string>
+    <string name="trips_save">Save trip</string>
+    <string name="trips_start_odometer">Start odometer</string>
+    <string name="trips_end_odometer">End odometer</string>
+    <string name="trips_distance">Distance</string>
+    <string name="trips_distance_hint">Or type the km</string>
+    <string name="trips_distance_from_odometer">= %1$s km from the odometer</string>
+    <string name="trips_error_distance">Enter both odometer readings, or the distance.</string>
+    <string name="trips_error_end_before_start">Must be more than the start reading.</string>
+    <string name="trips_purpose">Purpose</string>
+    <string name="trips_custom_purpose">Purpose name</string>
+    <string name="trips_from">From</string>
+    <string name="trips_to">To</string>
+    <string name="trips_notes">Notes</string>
+    <string name="trips_estimate_none">Log two full fill-ups to estimate fuel cost.</string>
+    <!-- 1: total, 2: quantity, 3: unit (L, kg), 4: km per unit -->
+    <string name="trips_estimate_efficiency">Fuel ≈ %1$s est. · %2$s %3$s at %4$s km/%3$s</string>
+    <!-- 1: total, 2: cost per km -->
+    <string name="trips_estimate_per_km">Fuel ≈ %1$s est. · %2$s/km from your history</string>
+
+    <string name="trips_detail_title">Trip</string>
+    <string name="trips_edit">Edit trip</string>
+    <string name="trips_delete">Delete trip</string>
+    <string name="trips_stat_distance">Distance</string>
+    <string name="trips_stat_duration">Duration</string>
+    <string name="trips_stat_cost">Cost</string>
+    <string name="trips_odometer_range">%1$s → %2$s</string>
+    <string name="trips_costs">What it cost</string>
+    <string name="trips_fuel">Fuel (est.)</string>
+    <string name="trips_fuel_efficiency">Fuel · %1$s %2$s at %3$s km/%2$s</string>
+    <string name="trips_fuel_per_km">Fuel · %1$s/km</string>
+    <string name="trips_add_toll">Add toll</string>
+    <string name="trips_add_cost">Add cost</string>
+    <string name="trips_split">Split cost</string>
+    <string name="trips_people_fewer">Fewer people</string>
+    <string name="trips_people_more">More people</string>
+    <plurals name="trips_people">
+        <item quantity="one">%1$d person</item>
+        <item quantity="other">%1$d people</item>
+    </plurals>
+    <string name="trips_each">each</string>
+    <plurals name="trips_people_total">
+        <item quantity="one">%1$d person · %2$s total</item>
+        <item quantity="other">%1$d people · %2$s total</item>
+    </plurals>
+    <string name="trips_preview">Message preview</string>
+    <string name="trips_share_upi">Share with UPI link</string>
+    <string name="trips_share">Share</string>
+    <string name="trips_never_pays">Fuelwise never makes payments. Friends pay you from their own UPI app.</string>
+    <!-- 1: trip title, 2: date, 3: km, 4: total, 5: share -->
+    <string name="trips_share_message">%1$s, %2$s. %3$s km, %4$s incl. tolls. Your share is %5$s.</string>
+    <string name="trips_share_message_solo">%1$s, %2$s. %3$s km, %4$s incl. tolls.</string>
+    <string name="trips_share_pay">Pay with UPI: %1$s</string>
+
+    <string name="trips_upi_title">Your UPI ID</string>
+    <string name="trips_upi_body">Friends will pay this ID from their own UPI app. You type it once; it stays on this phone and in your backup.</string>
+    <string name="trips_upi_id">UPI ID</string>
+    <string name="trips_upi_id_hint">name@bank</string>
+    <string name="trips_upi_invalid">That doesn\'t look like a UPI ID (name@bank).</string>
+    <string name="trips_upi_name">Your name (shown to friends)</string>
+    <string name="trips_upi_save">Save and share</string>
+</resources>

@@ -23,8 +23,8 @@
 ### Needed later (not blocking M0–M4)
 | # | Where | When | Action |
 |---|---|---|---|
-| L1 | Google Cloud | Before M7 | Create a GCP project; enable **Google Drive API**; configure OAuth consent screen (External, scope `drive.appdata` + optional `drive.file`); create an **Android OAuth client** (package + debug SHA-1) and a **Web client ID** (Credential Manager needs it). |
-| L2 | Google Cloud | Before M8 | Enable **Maps SDK for Android**, create a key restricted to package + SHA-1 and to that API. Put it in `local.properties` as `MAPS_API_KEY` (never committed). |
+| L1 ✅ done 19 Oct 2026 | Google Cloud | Before M7 | Create a GCP project; enable **Google Drive API**; configure OAuth consent screen (External, scope `drive.appdata` + optional `drive.file`); create an **Android OAuth client** (package + debug SHA-1) and a **Web client ID** (Credential Manager needs it). |
+| L2 ✅ done 19 Oct 2026 | Google Cloud | Before M8 | Enable **Maps SDK for Android**, create a key restricted to package + SHA-1 and to that API. Put it in `local.properties` as `MAPS_API_KEY` (never committed). |
 | L3 | GitHub | Before release CI | Repo secrets: upload keystore (base64), its passwords, `MAPS_API_KEY` for CI builds. |
 | L4 | Play Console | Before M11 | Developer account; create the app; in-app products (monthly, yearly with trial, lifetime) for Billing tests; license testers. New personal accounts need a closed test (currently 12 testers × 14 days — verify). |
 | L5 | Data | Before M10 | D9 samples: Fuelio / Drivvo / Simply Auto CSV exports; FASTag SMS texts from 5+ issuers; 50 pump-display photos. |
@@ -94,11 +94,11 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - `core:notifications` channels; `POST_NOTIFICATIONS` asked when the first reminder is created.
 - Documents vault with Tink AEAD + Keystore, photo picker, quick view with DigiLocker/mParivahan note, auto-reminder on expiry.
 
-### M7 — Backup & restore, F-14 (R1 scope) (≈2 weeks) — needs L1 ✅ done (code complete; Drive sign-in needs the L1 web client ID in local.properties to work on a device; drive.file visible export deferred)
+### M7 — Backup & restore, F-14 (R1 scope) (≈2 weeks) — needs L1 ✅ done (Drive sign-in verified on the emulator 19 Oct 2026 with the L1 client ID; drive.file visible export deferred)
 - Credential Manager sign-in + `AuthorizationClient` for `drive.appdata`; snapshot export/import (schema-versioned, gz), content-addressed attachments, retention (10 + monthly), WorkManager schedules + constraints.
 - Encrypted backups (Argon2id + AES-256-GCM), restore to temp DB → validate → swap, status UI with error fixes, local SAF backup file.
 
-### M8 — Trips, F-07 (≈2 weeks) — needs L2
+### M8 — Trips, F-07 (≈2 weeks) — needs L2 — in progress (slice 1 F-07.1 manual trips ✅: Room v5 `trip`, weekly list, editor, detail with UPI split. Next: slice 2 GPS recording, slice 3 maps, slice 4 odometer prompt + GPX. Approved 19 Oct 2026: play-services-location, maps-compose, location + foreground-service permissions, Maps SDK endpoint. Privacy default: raw points only while recording, then an encrypted simplified route; routes in Drive backups only when encrypted)
 - Manual trips; GPS trip foreground service (`location` type), batched sampling per CLAUDE.md rule 11, 15 s persistence, interrupted-trip recovery, live trip screen, trip detail with UPI split, GPX export, weekly view.
 - Logbook map mode (Maps Compose).
 - Field test: 20 km drive within ±3 % → `docs/perf.md`.

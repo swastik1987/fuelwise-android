@@ -18,6 +18,9 @@ data class UserData(
     val flags: FeatureFlags,
     /** Milestone keys already shown (PRD F-17). */
     val shownMilestones: Set<String> = emptySet(),
+    /** For trip-split UPI links (PRD F-07.4). Null until typed once. */
+    val upiVpa: String? = null,
+    val upiName: String? = null,
 )
 
 enum class ThemeMode { System, Light, Dark }
@@ -41,6 +44,8 @@ interface UserDataRepository {
     suspend fun setHideAmounts(hide: Boolean)
 
     suspend fun markMilestoneShown(key: String)
+
+    suspend fun setUpiPayee(vpa: String, name: String)
 }
 
 internal class DataStoreUserDataRepository @Inject constructor(private val source: PreferencesDataSource) :
@@ -64,6 +69,8 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
                 tripPlanner = p.featureFlags.tripPlanner,
             ),
             shownMilestones = p.shownMilestonesList.toSet(),
+            upiVpa = p.upiVpa.ifEmpty { null },
+            upiName = p.upiName.ifEmpty { null },
         )
     }
 
@@ -93,5 +100,10 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
 
     override suspend fun markMilestoneShown(key: String) = source.update {
         if (key !in shownMilestones) shownMilestones.add(key)
+    }
+
+    override suspend fun setUpiPayee(vpa: String, name: String) = source.update {
+        upiVpa = vpa.trim()
+        upiName = name.trim()
     }
 }

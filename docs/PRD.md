@@ -328,7 +328,7 @@ Users can add custom categories (name, icon, colour).
 
 ### F-07 Trips — FREE · R1 (automatic trips FREE · R2, see F-21.3)
 
-**F-07.1 Manual trip:**
+**F-07.1 Manual trip:** ✅ built (M8 slice 1: odometers or distance, date, purpose, from/to places, notes; the fuel estimate is fixed at save from the vehicle's own km per unit × last price paid, or its history ₹/km for bi-fuel and EV; tolls and other costs link to the trip from its detail screen. Trip odometers don't feed predictions yet)
 - Start/end odometer (or distance), date, purpose (Personal / Business / Commute / custom), note.
 - Cost auto-estimated from average efficiency × current price. Linked tolls/parking are added.
 
@@ -339,7 +339,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.3 Crash resilience.** Points are persisted every 15 s. On process death or reboot, the app offers to resume or finish the interrupted trip (Fuelio parity).
 
-**F-07.4 Trip detail:**
+**F-07.4 Trip detail:** ✅ built except the map (M8 slice 1: stats, costs, split with a UPI link; the UPI ID and name are typed once on first share, and Settings shows them in M11. Shares round to the whole rupee. The map arrives with slice 3)
 - Map, stats, estimated cost, cost per person.
 - **Split with friends:** N people → share text that includes a UPI "pay me" link (`upi://pay?pa=<user VPA>&pn=<name>&am=<share>&cu=INR&tn=<trip>`). The VPA is entered once in settings. The app never initiates payments.
 
@@ -347,7 +347,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.6 Post-trip odometer prompt.** A notification action "Update odometer" opens a single-field sheet. **No floating overlay window.**
 
-**F-07.7 Weekly view and combined map:**
+**F-07.7 Weekly view and combined map:** (weekly list ✅ built in M8 slice 1; the combined map is Pro and R2, §6)
 - Week-by-week list with totals.
 - "Show all trips on map" for any date range (a top Fuelio review request).
 
@@ -819,6 +819,9 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. Brand verification only. |
 | Network endpoints (M7) | `www.googleapis.com` Drive v3 only (`/drive/v3/files`, `/upload/drive/v3/files`), with the user's own token, app folder only. No other user-data endpoint. |
 | New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
+| Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. No coordinates go to any lookup API (no Places, no geocoding). |
+| New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added with M8 slices 2 and 3. |
+| Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added with M8 slice 2. |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |
 | Target audience | 18+ (driving); not designed for children |
 | Store listing | No competitor names in title or short description. "No ads. Your data stays with you." |

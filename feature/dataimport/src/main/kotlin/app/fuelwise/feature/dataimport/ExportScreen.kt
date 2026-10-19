@@ -33,9 +33,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -90,7 +90,9 @@ internal fun ExportScreen(onBack: () -> Unit, viewModel: ExportViewModel = hiltV
         viewModel.events.collect { event ->
             when (event) {
                 is ExportEvent.PickExportFile -> saveZip.launch(event.fileName)
+
                 is ExportEvent.PickReportFile -> saveCsv.launch(event.fileName)
+
                 is ExportEvent.Exported -> snackbar.showSnackbar(
                     resources.getQuantityString(R.plurals.export_done, event.files, event.files),
                 )
@@ -193,7 +195,12 @@ private fun ExportSection(state: ExportUiState, actions: ExportActions) {
         }
     }
     state.problem?.let { problem ->
-        FwCard(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, contentPadding = PaddingValues(16.dp)) {
+        FwCard(
+            Modifier.fillMaxWidth().semantics {
+                liveRegion = LiveRegionMode.Polite
+            },
+            contentPadding = PaddingValues(16.dp),
+        ) {
             Text(
                 stringResource(
                     when (problem) {
@@ -305,7 +312,7 @@ private fun PeriodStepper(state: ExportUiState, actions: ExportActions) {
                 painterResource(FwIcons.ChevronRight),
                 stringResource(R.string.report_previous),
                 tint = FwTheme.colors.ink,
-                modifier = Modifier.rotate(180f),
+                modifier = Modifier.rotate(HALF_TURN_DEGREES),
             )
         }
         Text(
@@ -338,7 +345,13 @@ private fun ReportPreview(state: ExportUiState) {
         if (report == null) {
             Text(
                 stringResource(
-                    if (state.reportKind == ReportKind.Business) R.string.report_need_rate else R.string.report_pick_vehicle,
+                    if (state.reportKind ==
+                        ReportKind.Business
+                    ) {
+                        R.string.report_need_rate
+                    } else {
+                        R.string.report_pick_vehicle
+                    },
                 ),
                 style = FwTheme.type.body,
                 color = FwTheme.colors.ink2,
@@ -369,3 +382,4 @@ private fun kindLabel(kind: ReportKind): Int = when (kind) {
 
 private const val ZIP_MIME = "application/zip"
 private const val CSV_MIME = "text/csv"
+private const val HALF_TURN_DEGREES = 180f

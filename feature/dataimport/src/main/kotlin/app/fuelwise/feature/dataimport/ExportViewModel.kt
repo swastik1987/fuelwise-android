@@ -21,6 +21,7 @@ import app.fuelwise.core.domain.export.CsvFile
 import app.fuelwise.core.domain.export.ExportData
 import app.fuelwise.core.domain.export.ExportFilter
 import app.fuelwise.core.domain.export.ZipWriter
+import app.fuelwise.core.domain.insights.VehicleHistory
 import app.fuelwise.core.domain.report.BuildReports
 import app.fuelwise.core.domain.report.ReportPeriod
 import app.fuelwise.core.model.Category
@@ -76,8 +77,8 @@ data class ExportUiState(
     /** Vehicle and seller reports need one; the business report takes null as every vehicle. */
     val reportVehicleId: String? = null,
     val span: ReportSpan = ReportSpan.Month,
-    val month: YearMonth = YearMonth.of(2026, 1),
-    val thisMonth: YearMonth = YearMonth.of(2026, 1),
+    val month: YearMonth = YearMonth.from(LocalDate.EPOCH),
+    val thisMonth: YearMonth = YearMonth.from(LocalDate.EPOCH),
     val rateText: String = "",
     val report: Report? = null,
     /** PDF reports are Pro (PRD F-13.3); free users get text and CSV. Billing arrives with F-19. */
@@ -101,6 +102,7 @@ sealed interface ExportEvent {
 
 /** Export & reports (PRD F-13.1 CSV export, F-13.3 free text/CSV reports, F-07.9 business mileage). */
 @HiltViewModel
+@Suppress("LongParameterList") // One repository per exported entity.
 class ExportViewModel @Inject constructor(
     private val vehicles: VehicleRepository,
     private val categories: CategoryRepository,
@@ -176,12 +178,24 @@ class ExportViewModel @Inject constructor(
         return when (s.reportKind) {
             ReportKind.Vehicle -> vehicle?.let {
                 Report.Vehicle(
-                    buildReports.vehicle(it, src.refuels, src.expenses, src.categories, reportPeriod(s), zoneId),
+                    buildReports.vehicle(
+                        VehicleHistory(it, src.refuels, src.expenses),
+                        src.categories,
+                        reportPeriod(s),
+                        zoneId,
+                    ),
                 )
             }
 
             ReportKind.Seller -> vehicle?.let {
-                Report.Seller(buildReports.seller(it, src.refuels, src.expenses, src.trips, src.documents, zoneId))
+                Report.Seller(
+                    buildReports.seller(
+                        VehicleHistory(it, src.refuels, src.expenses),
+                        src.trips,
+                        src.documents,
+                        zoneId,
+                    ),
+                )
             }
 
             ReportKind.Business -> rate?.let {

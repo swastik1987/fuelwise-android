@@ -10,9 +10,9 @@ import app.fuelwise.core.domain.report.VehicleReport
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.ui.R as UiR
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
-import app.fuelwise.core.ui.R as UiR
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -32,6 +32,7 @@ sealed interface Report {
  * [IndianNumberFormat] in text and through [CsvValues] (plain rupees) in CSV. A PDF renderer (Pro) will sit beside
  * this one and take the same [Report].
  */
+@Suppress("TooManyFunctions") // Text and CSV renderers for each of the three reports.
 internal class ReportFormatter(
     private val resources: Resources,
     private val vehicles: List<Vehicle>,
@@ -61,8 +62,7 @@ internal class ReportFormatter(
         else -> s(R.string.report_period_range, date(period.start), date(period.end))
     }
 
-    private fun heading(vehicle: Vehicle) =
-        listOfNotNull(vehicle.name, vehicle.registrationNumber).joinToString(" · ")
+    private fun heading(vehicle: Vehicle) = listOfNotNull(vehicle.name, vehicle.registrationNumber).joinToString(" · ")
 
     fun title(report: Report): String = when (report) {
         is Report.Vehicle -> s(R.string.report_vehicle_title)
@@ -186,30 +186,51 @@ internal class ReportFormatter(
 
     private fun vehicleCsv(r: VehicleReport): String {
         val rows = buildList {
-            r.distance?.let { add(listOf(s(R.string.report_csv_distance), null, CsvValues.decimal(it.km), s(UiR.string.unit_km), null)) }
+            r.distance?.let {
+                add(
+                    listOf(
+                        s(R.string.report_csv_distance),
+                        null,
+                        CsvValues.decimal(it.km),
+                        s(UiR.string.unit_km),
+                        null,
+                    ),
+                )
+            }
             r.energy.forEach { e ->
                 add(
                     listOf(
-                        s(VehicleLabels.energy(e.energyType)), e.fillUps.toString(),
-                        CsvValues.decimal(e.quantity, 3), unit(e.energyType), CsvValues.rupees(e.paid.paise),
+                        s(VehicleLabels.energy(e.energyType)),
+                        e.fillUps.toString(),
+                        CsvValues.decimal(e.quantity, QUANTITY_DECIMALS),
+                        unit(e.energyType),
+                        CsvValues.rupees(e.paid.paise),
                     ),
                 )
             }
             r.categories.forEach { c ->
                 add(
                     listOf(
-                        CsvValues.text(categoryName(c.categoryId)), c.entries.toString(), null, null,
+                        CsvValues.text(categoryName(c.categoryId)),
+                        c.entries.toString(),
+                        null,
+                        null,
                         CsvValues.rupees(c.amount.paise),
                     ),
                 )
             }
             add(listOf(s(R.string.report_csv_total), null, null, null, CsvValues.rupees(r.totalSpend.paise)))
-            r.costPerKm?.let { add(listOf(s(R.string.report_csv_cost_per_km), null, null, null, CsvValues.rupees(it.paise))) }
+            r.costPerKm?.let {
+                add(listOf(s(R.string.report_csv_cost_per_km), null, null, null, CsvValues.rupees(it.paise)))
+            }
         }
         return CsvWriter.write(
             listOf(
-                s(R.string.report_csv_item), s(R.string.report_csv_count), s(R.string.report_csv_quantity),
-                s(R.string.report_csv_unit), s(R.string.report_csv_amount),
+                s(R.string.report_csv_item),
+                s(R.string.report_csv_count),
+                s(R.string.report_csv_quantity),
+                s(R.string.report_csv_unit),
+                s(R.string.report_csv_amount),
             ),
             rows,
         )
@@ -219,15 +240,31 @@ internal class ReportFormatter(
         val service = s(R.string.report_csv_service)
         val document = s(R.string.report_csv_document)
         val rows = buildList {
-            add(listOf(s(R.string.report_csv_odometer), null, CsvValues.decimal(r.odometerKm), CsvValues.text(r.vehicle.name)))
+            add(
+                listOf(
+                    s(R.string.report_csv_odometer),
+                    null,
+                    CsvValues.decimal(r.odometerKm),
+                    CsvValues.text(r.vehicle.name),
+                ),
+            )
             r.service.forEach {
-                add(listOf(service, it.date.toString(), it.odometerKm?.let(CsvValues::decimal), CsvValues.text(categoryName(it.categoryId))))
+                add(
+                    listOf(
+                        service,
+                        it.date.toString(),
+                        it.odometerKm?.let(CsvValues::decimal),
+                        CsvValues.text(categoryName(it.categoryId)),
+                    ),
+                )
             }
             r.documents.forEach { add(listOf(document, it.expiry?.toString(), null, s(CareLabels.document(it.type)))) }
         }
         return CsvWriter.write(
             listOf(
-                s(R.string.report_csv_section), s(R.string.report_csv_date), s(R.string.report_csv_odometer_km),
+                s(R.string.report_csv_section),
+                s(R.string.report_csv_date),
+                s(R.string.report_csv_odometer_km),
                 s(R.string.report_csv_item),
             ),
             rows,
@@ -238,23 +275,41 @@ internal class ReportFormatter(
         val rate = CsvValues.rupees(r.ratePerKm.paise)
         val rows = r.trips.map { t ->
             listOf(
-                t.date.toString(), CsvValues.text(vehicleName(t.vehicleId)), CsvValues.text(t.fromPlace),
-                CsvValues.text(t.toPlace), CsvValues.text(t.notes), CsvValues.decimal(t.distanceKm), rate,
+                t.date.toString(),
+                CsvValues.text(vehicleName(t.vehicleId)),
+                CsvValues.text(t.fromPlace),
+                CsvValues.text(t.toPlace),
+                CsvValues.text(t.notes),
+                CsvValues.decimal(t.distanceKm),
+                rate,
                 CsvValues.rupees(t.amount.paise),
             )
         } + listOf(
             listOf(
-                s(R.string.report_csv_total), null, null, null, null, CsvValues.decimal(r.totalKm), rate,
+                s(R.string.report_csv_total),
+                null,
+                null,
+                null,
+                null,
+                CsvValues.decimal(r.totalKm),
+                rate,
                 CsvValues.rupees(r.totalAmount.paise),
             ),
         )
         return CsvWriter.write(
             listOf(
-                s(R.string.report_csv_date), s(R.string.report_csv_vehicle), s(R.string.report_csv_from),
-                s(R.string.report_csv_to), s(R.string.report_csv_notes), s(R.string.report_csv_distance_km),
-                s(R.string.report_csv_rate), s(R.string.report_csv_amount),
+                s(R.string.report_csv_date),
+                s(R.string.report_csv_vehicle),
+                s(R.string.report_csv_from),
+                s(R.string.report_csv_to),
+                s(R.string.report_csv_notes),
+                s(R.string.report_csv_distance_km),
+                s(R.string.report_csv_rate),
+                s(R.string.report_csv_amount),
             ),
             rows,
         )
     }
 }
+
+private const val QUANTITY_DECIMALS = 3

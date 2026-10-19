@@ -353,7 +353,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Trimming route ends near private places waits for the F-21.6 setting, R2)
 
-**F-07.9 Business mileage report** (PDF, PRO; CSV free):
+**F-07.9 Business mileage report** (PDF, PRO; CSV free): ✅ built (free text/CSV version, see F-13.3; the ₹/km rate is remembered in preferences)
 - Business trips in a period × reimbursement rate (₹/km, user-set).
 
 **AC:**
@@ -476,7 +476,7 @@ Users can add custom categories (name, icon, colour).
 
 ### F-13 Reports, import and export — FREE (PDF reports PRO) · R1
 
-**F-13.1 CSV export:** all data or a filtered range, one file per entity, zipped. Schema documented in `docs/csv-schema.md`.
+**F-13.1 CSV export:** ✅ built (Garage → Export & reports: every vehicle or some, all time or a preset period; 11 CSV files zipped with java.util.zip and saved through the system file picker; fill-up and expense files re-import through F-13.2) all data or a filtered range, one file per entity, zipped. Schema documented in `docs/csv-schema.md`.
 
 **F-13.2 CSV import:** ✅ built (Fuelio preset + generic mapper + Excel template; Drivvo and Simply Auto presets not yet, they wait for D9 samples)
 - Generic CSV with a column mapper (remembers mappings).
@@ -492,7 +492,7 @@ Users can add custom categories (name, icon, colour).
 - **Seller's report:** service history, km and documents — prices hidden, Fuelio parity
 - **Business mileage report** (F-07.9)
 
-FREE users can generate a text/CSV version of each.
+FREE users can generate a text/CSV version of each. ✅ built (free text/CSV versions: shared as text or saved as CSV from Export & reports; PDF waits for Pro, F-19)
 
 **F-13.4 GPX export** (F-07.8).
 

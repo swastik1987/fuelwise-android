@@ -9,6 +9,7 @@ import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.PeriodDistance
 import app.fuelwise.core.domain.engine.Spend
 import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.domain.insights.VehicleHistory
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Document
 import app.fuelwise.core.model.DocumentType
@@ -128,16 +129,16 @@ class BuildReports @Inject constructor(
     private val costMetrics: ComputeCostMetrics,
     private val consumption: ComputeConsumption,
 ) {
+    /** [history] may hold every vehicle's entries; only its own vehicle's count. */
     fun vehicle(
-        vehicle: Vehicle,
-        refuels: List<Refuel>,
-        expenses: List<Expense>,
+        history: VehicleHistory,
         categories: List<Category>,
         period: ReportPeriod,
         zone: ZoneId,
     ): VehicleReport {
-        val mine = refuels.filter { it.vehicleId == vehicle.id }
-        val myExpenses = expenses.filter { it.vehicleId == vehicle.id }
+        val vehicle = history.vehicle
+        val mine = history.refuels.filter { it.vehicleId == vehicle.id }
+        val myExpenses = history.expenses.filter { it.vehicleId == vehicle.id }
         val span = period.toPeriod(zone)
         val included = categories.associate { it.id to it.includeInCostPerKm }
         val spends = mine.map { Spend(it.paid, it.dateTimeUtcMs, Spend.Kind.Energy) } +
@@ -167,16 +168,10 @@ class BuildReports @Inject constructor(
         )
     }
 
-    fun seller(
-        vehicle: Vehicle,
-        refuels: List<Refuel>,
-        expenses: List<Expense>,
-        trips: List<Trip>,
-        documents: List<Document>,
-        zone: ZoneId,
-    ): SellerReport {
-        val mine = refuels.filter { it.vehicleId == vehicle.id }
-        val myExpenses = expenses.filter { it.vehicleId == vehicle.id }
+    fun seller(history: VehicleHistory, trips: List<Trip>, documents: List<Document>, zone: ZoneId): SellerReport {
+        val vehicle = history.vehicle
+        val mine = history.refuels.filter { it.vehicleId == vehicle.id }
+        val myExpenses = history.expenses.filter { it.vehicleId == vehicle.id }
         val readings = odometerReadings(vehicle, mine, myExpenses, trips)
         val logged = (mine.map { it.dateTimeUtcMs } + myExpenses.map { it.dateTimeUtcMs }).minOrNull()
         return SellerReport(

@@ -1,7 +1,7 @@
 package app.fuelwise.core.domain.export
 
-import app.fuelwise.core.domain.importing.Csv
 import app.fuelwise.core.domain.importing.ColumnMapping
+import app.fuelwise.core.domain.importing.Csv
 import app.fuelwise.core.domain.importing.EntryKind
 import app.fuelwise.core.domain.importing.ImportContext
 import app.fuelwise.core.domain.importing.ImportPlanner
@@ -86,9 +86,14 @@ class CsvExportTest {
             notes = "=SUM(A1) oil, filter",
         ),
         Expense(
-            id = "e2", vehicleId = nexon.id, categoryId = SystemCategory.TollFastag.id,
-            dateTimeUtcMs = at(2026, 10, 4), zoneId = zone.id, amount = Money(16_500),
-            paymentMethod = PaymentMethod.FastagWallet, tollPlaza = "Attibele",
+            id = "e2",
+            vehicleId = nexon.id,
+            categoryId = SystemCategory.TollFastag.id,
+            dateTimeUtcMs = at(2026, 10, 4),
+            zoneId = zone.id,
+            amount = Money(16_500),
+            paymentMethod = PaymentMethod.FastagWallet,
+            tollPlaza = "Attibele",
         ),
     )
     private val categories = SystemCategory.entries.mapIndexed { i, key ->
@@ -103,8 +108,14 @@ class CsvExportTest {
         expenses = expenses,
         trips = listOf(
             Trip(
-                "trip1", nexon.id, at(2026, 10, 6), zone.id, 42.5, TripPurpose.Business,
-                fromPlace = "HSR Layout", toPlace = "Whitefield",
+                "trip1",
+                nexon.id,
+                at(2026, 10, 6),
+                zone.id,
+                42.5,
+                TripPurpose.Business,
+                fromPlace = "HSR Layout",
+                toPlace = "Whitefield",
             ),
         ),
         documents = listOf(
@@ -137,7 +148,7 @@ class CsvExportTest {
         assertThat(CsvValues.text("=SUM(A1)")).isEqualTo("'=SUM(A1)")
         assertThat(CsvValues.text("HSR")).isEqualTo("HSR")
         val text = CsvWriter.write(listOf("a", "b"), listOf(listOf("1", null)))
-        assertThat(text).isEqualTo("﻿a,b\r\n1,\r\n")
+        assertThat(text).isEqualTo(Char(0xFEFF) + "a,b\r\n1,\r\n")
     }
 
     @Test
@@ -145,7 +156,7 @@ class CsvExportTest {
         val bundle = export()
         assertThat(bundle.files.map { it.name }).containsExactly(
             "vehicles.csv", "tanks.csv", "categories.csv", "refuels.csv", "expenses.csv", "trips.csv",
-            "reminders.csv", "documents.csv", "fastag_accounts.csv", "fastag_recharges.csv", "recurrences.csv",
+            "fastag_recharges.csv", "reminders.csv", "documents.csv", "fastag_accounts.csv", "recurrences.csv",
         ).inOrder()
         val refuelRows = rows(bundle.file(CsvExport.REFUELS))
         val header = refuelRows.first()

@@ -24,14 +24,14 @@ object CsvWriter {
         append("\r\n")
     }
 
-    internal fun field(value: String): String =
-        if (value.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
-            "\"" + value.replace("\"", "\"\"") + "\""
-        } else {
-            value
-        }
+    internal fun field(value: String): String = if (value.any { it in QUOTE_TRIGGERS }) {
+        "\"" + value.replace("\"", "\"\"") + "\""
+    } else {
+        value
+    }
 
     private val BOM = Char(BYTE_ORDER_MARK).toString()
+    private val QUOTE_TRIGGERS = setOf(',', '"', '\n', '\r')
     private const val BYTE_ORDER_MARK = 0xFEFF
 }
 

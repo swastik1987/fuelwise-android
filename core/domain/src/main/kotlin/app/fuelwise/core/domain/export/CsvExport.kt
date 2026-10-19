@@ -39,7 +39,8 @@ data class ExportData(
 data class ExportFilter(val vehicleIds: Set<String>? = null, val fromUtcMs: Long? = null, val toUtcMs: Long? = null) {
     fun hasVehicle(id: String?): Boolean = vehicleIds == null || id in vehicleIds
 
-    fun hasTime(utcMs: Long): Boolean = (fromUtcMs == null || utcMs >= fromUtcMs) && (toUtcMs == null || utcMs < toUtcMs)
+    fun hasTime(utcMs: Long): Boolean =
+        (fromUtcMs == null || utcMs >= fromUtcMs) && (toUtcMs == null || utcMs < toUtcMs)
 }
 
 data class CsvFile(val name: String, val text: String, val rows: Int)
@@ -89,58 +90,72 @@ object CsvExport {
             listOf(
                 file(VEHICLES, VEHICLE_HEADER, vehicles.map { context.vehicle(it) }),
                 file(TANKS, TANK_HEADER, vehicles.flatMap { v -> v.orderedTanks().map { context.tank(v, it) } }),
-                file(CATEGORIES, CATEGORY_HEADER, data.categories.sortedBy { it.sortOrder }.map { context.category(it) }),
                 file(
-                    REFUELS,
-                    REFUEL_HEADER,
-                    data.refuels.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
-                        .sortedBy { it.dateTimeUtcMs }
-                        .map { r -> context.refuel(r, data.vehicles.firstOrNull { it.id == r.vehicleId }) },
+                    CATEGORIES,
+                    CATEGORY_HEADER,
+                    data.categories.sortedBy {
+                        it.sortOrder
+                    }.map { context.category(it) },
                 ),
-                file(
-                    EXPENSES,
-                    EXPENSE_HEADER,
-                    data.expenses.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
-                        .sortedBy { it.dateTimeUtcMs }.map { context.expense(it) },
-                ),
-                file(
-                    TRIPS,
-                    TRIP_HEADER,
-                    data.trips.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.startUtcMs) }
-                        .sortedBy { it.startUtcMs }.map { context.trip(it) },
-                ),
-                file(
-                    REMINDERS,
-                    REMINDER_HEADER,
-                    data.reminders.filter { filter.hasVehicle(it.vehicleId) }.map { context.reminder(it) },
-                ),
-                file(
-                    DOCUMENTS,
-                    DOCUMENT_HEADER,
-                    data.documents.filter { d ->
-                        if (d.vehicleId == null) filter.vehicleIds == null else filter.hasVehicle(d.vehicleId)
-                    }.map { context.document(it) },
-                ),
-                file(
-                    FASTAG_ACCOUNTS,
-                    FASTAG_ACCOUNT_HEADER,
-                    data.fastagAccounts.filter { filter.hasVehicle(it.vehicleId) }.map { context.account(it) },
-                ),
-                file(
-                    FASTAG_RECHARGES,
-                    FASTAG_RECHARGE_HEADER,
-                    data.fastagRecharges.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
-                        .sortedBy { it.dateTimeUtcMs }.map { context.recharge(it) },
-                ),
-                file(
-                    RECURRENCES,
-                    RECURRENCE_HEADER,
-                    data.recurrences.filter { filter.hasVehicle(it.vehicleId) }.map { context.recurrence(it) },
-                ),
-            ),
+            ) + historyFiles(data, filter, context) + careFiles(data, filter, context),
             dateLimited = filter.fromUtcMs != null || filter.toUtcMs != null,
         )
     }
+
+    /** Dated history: the period applies. */
+    private fun historyFiles(data: ExportData, filter: ExportFilter, context: Context) = listOf(
+        file(
+            REFUELS,
+            REFUEL_HEADER,
+            data.refuels.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
+                .sortedBy { it.dateTimeUtcMs }
+                .map { r -> context.refuel(r, data.vehicles.firstOrNull { it.id == r.vehicleId }) },
+        ),
+        file(
+            EXPENSES,
+            EXPENSE_HEADER,
+            data.expenses.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
+                .sortedBy { it.dateTimeUtcMs }.map { context.expense(it) },
+        ),
+        file(
+            TRIPS,
+            TRIP_HEADER,
+            data.trips.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.startUtcMs) }
+                .sortedBy { it.startUtcMs }.map { context.trip(it) },
+        ),
+        file(
+            FASTAG_RECHARGES,
+            FASTAG_RECHARGE_HEADER,
+            data.fastagRecharges.filter { filter.hasVehicle(it.vehicleId) && filter.hasTime(it.dateTimeUtcMs) }
+                .sortedBy { it.dateTimeUtcMs }.map { context.recharge(it) },
+        ),
+    )
+
+    /** Records that aren't dated: only the vehicle filter applies. Driver documents need every vehicle. */
+    private fun careFiles(data: ExportData, filter: ExportFilter, context: Context) = listOf(
+        file(
+            REMINDERS,
+            REMINDER_HEADER,
+            data.reminders.filter { filter.hasVehicle(it.vehicleId) }.map { context.reminder(it) },
+        ),
+        file(
+            DOCUMENTS,
+            DOCUMENT_HEADER,
+            data.documents.filter { d ->
+                if (d.vehicleId == null) filter.vehicleIds == null else filter.hasVehicle(d.vehicleId)
+            }.map { context.document(it) },
+        ),
+        file(
+            FASTAG_ACCOUNTS,
+            FASTAG_ACCOUNT_HEADER,
+            data.fastagAccounts.filter { filter.hasVehicle(it.vehicleId) }.map { context.account(it) },
+        ),
+        file(
+            RECURRENCES,
+            RECURRENCE_HEADER,
+            data.recurrences.filter { filter.hasVehicle(it.vehicleId) }.map { context.recurrence(it) },
+        ),
+    )
 
     private fun file(name: String, header: List<String>, rows: List<List<String?>>) =
         CsvFile(name, CsvWriter.write(header, rows), rows.size)
@@ -197,6 +212,7 @@ object CsvExport {
     )
 
     /** Turns models into rows; names are looked up once. */
+    @Suppress("TooManyFunctions") // One row builder per exported entity.
     private class Context(
         private val vehicleNames: Map<String, String>,
         private val categoryNames: Map<String, String>,
@@ -225,14 +241,24 @@ object CsvExport {
         )
 
         fun tank(v: Vehicle, t: Tank) = listOf(
-            t.id, v.id, vehicleName(v.id), (v.orderedTanks().indexOf(t) + 1).toString(), t.energyType.name,
-            t.energyType.canonicalUnit.symbol(), t.capacity?.let { CsvValues.decimal(it, QUANTITY_SCALE) },
+            t.id,
+            v.id,
+            vehicleName(v.id),
+            (v.orderedTanks().indexOf(t) + 1).toString(),
+            t.energyType.name,
+            t.energyType.canonicalUnit.symbol(),
+            t.capacity?.let { CsvValues.decimal(it, QUANTITY_SCALE) },
             CsvValues.flag(t.isPrimary),
         )
 
         fun category(c: Category) = listOf(
-            c.id, c.systemKey?.name, CsvValues.text(categoryNames[c.id] ?: c.customName), CsvValues.text(c.customName),
-            CsvValues.flag(c.isHidden), CsvValues.flag(c.includeInCostPerKm), c.sortOrder.toString(),
+            c.id,
+            c.systemKey?.name,
+            CsvValues.text(categoryNames[c.id] ?: c.customName),
+            CsvValues.text(c.customName),
+            CsvValues.flag(c.isHidden),
+            CsvValues.flag(c.includeInCostPerKm),
+            c.sortOrder.toString(),
         )
 
         fun refuel(r: Refuel, vehicle: Vehicle?): List<String?> {

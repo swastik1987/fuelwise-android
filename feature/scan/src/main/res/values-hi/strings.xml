@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scan_title">स्कैन</string>
+    <string name="scan_close">स्कैन बंद करें</string>
+    <string name="scan_mode_pump">पंप मीटर</string>
+    <string name="scan_mode_receipt">रसीद</string>
+    <string name="scan_mode_odometer">ओडोमीटर</string>
+    <string name="scan_guide_pump">पंप का डिस्प्ले यहाँ रखें</string>
+    <string name="scan_guide_receipt">रसीद यहाँ रखें</string>
+    <string name="scan_guide_odometer">ओडोमीटर यहाँ रखें</string>
+    <string name="scan_read_now">अभी पढ़ें</string>
+    <string name="scan_all_valid_cd">सभी मान पढ़ लिए, और वे आपस में मेल खाते हैं</string>
+    <string name="scan_struggling">साफ़ नहीं पढ़ पाए। चमक कम करके देखें, या ख़ुद लिखें।</string>
+    <string name="scan_type_instead">ख़ुद लिखें</string>
+    <string name="scan_denied_title">कैमरा बंद है</string>
+    <string name="scan_denied_body">स्कैनिंग आपके फ़ोन पर ही डिस्प्ले पढ़ती है। कुछ भी अपलोड नहीं होता। कैमरा चालू करें, या मान ख़ुद लिखें।</string>
+    <string name="scan_allow">कैमरा चालू करें</string>
+    <string name="scan_review_validated">ये मान मेल खाते हैं</string>
+    <string name="scan_review_check">हर मान जाँचें</string>
+    <string name="scan_review_check_hint">जो सही हैं उन पर टिक करें। अगली स्क्रीन पर भी बदल सकते हैं।</string>
+    <string name="scan_review_odometer">क्या यही आपका ओडोमीटर है?</string>
+    <string name="scan_field_total">रक़म</string>
+    <string name="scan_field_quantity">मात्रा</string>
+    <string name="scan_field_rate">रेट</string>
+    <string name="scan_field_odometer">ओडोमीटर</string>
+    <string name="scan_field_date">तारीख़</string>
+    <string name="scan_field_station">पंप</string>
+    <string name="scan_rate">%1$s/%2$s</string>
+    <string name="scan_km">%1$s km</string>
+    <string name="scan_attach_photo">फ़ोटो इस एंट्री के साथ जोड़ें</string>
+    <string name="scan_attach_photo_hint">इसी फ़ोन पर एन्क्रिप्ट करके रखी जाती है।</string>
+    <string name="scan_use">ये मान इस्तेमाल करें</string>
+    <string name="scan_rescan">फिर से स्कैन करें</string>
+</resources>

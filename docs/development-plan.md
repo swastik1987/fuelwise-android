@@ -1,6 +1,6 @@
 # Development plan — Fuelwise (R1)
 
-> Derived from `docs/PRD.md` v1.1, `docs/design.md` and `CLAUDE.md`. Last updated 17 Oct 2026.
+> Derived from `docs/PRD.md` v1.1, `docs/design.md` and `CLAUDE.md`. Last updated 19 Oct 2026.
 > One PR per F-ID (or sub-ID). Each milestone is a set of vertical slices: entity → DAO → repository → use-case → ViewModel → UI → tests.
 
 ---
@@ -103,23 +103,23 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Logbook map mode (Maps Compose).
 - Field test: 20 km drive within ±3 % → `docs/perf.md`.
 
-### M9 — Station auto-detect, F-21.1–21.2 (≈1.5 weeks) — needs L6
+### M9 — Station auto-detect, F-21.1–21.2 (≈1.5 weeks) — needs L6 — ⏸ deferred (19 Oct 2026)
 - Build script to turn an India OSM extract into a compact bundled file (< 3 MB target); `station_osm` read-only + `station_user`.
 - Single-fix request (balanced, 10 s, 2 min max age), matcher (history boost → distance → fuel fit), station chip states, picker sheet with ODbL attribution, learning from corrections.
 
-### M10 — Scan, prices, import/export, FASTag parser (≈3 weeks) — needs L5, D2/D3
+### M10 — Scan, prices, import/export, FASTag parser (≈3 weeks) — needs L5, D2/D3 — 🚧 in progress (19 Oct 2026): F-15 scan, F-09 prices (manual + feed client, feed off with no URL until D2/D3), F-13.1 export + free reports, in parallel sessions
 - F-15 ML Kit (bundled) pump/receipt/odometer scan with triangle validation.
 - F-13 CSV export (zip); text reports (PDF = Pro). Drivvo/Simply Auto presets once D9 samples exist.
 - ✅ F-13.2 import brought forward (18 Oct 2026): one Import screen, Fuelio preset, generic mapper, .xlsx bulk-entry template, dry-run + undo (Room v4).
-- F-10.4 share-target SMS parser per issuer, amount-only fallback.
+- F-10.4 share-target SMS parser per issuer, amount-only fallback. ⏸ deferred (19 Oct 2026).
 - F-09 city prices (feed or manual), "did I pay fair?", Maps intent for nearby pumps, price alerts.
 
-### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4
+### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ⏸ deferred
 - Settings screen (units, theme, Material You opt-in, app lock via BiometricPrompt, hide amounts, delete all data incl. Drive).
 - Glance widgets (Quick add, Status, Trip controls; Pro Dashboard/Consumption), QS tiles, app shortcuts.
 - Play Billing: products, paywall sheet, restore, 7-day offline grace; `EntitlementRepository` goes live.
 
-### M12 — Release hardening (≈1.5 weeks)
+### M12 — Release hardening (≈1.5 weeks) — ⏸ deferred (19 Oct 2026)
 - Baseline profile, cold-start and sheet-open budgets, 200 % font scale, TalkBack pass, Hindi review + pseudo-locale, data safety form, privacy policy, store listing, closed test.
 
 **Total R1 estimate: roughly 5 months.** If time-boxed, cut in PRD §12.9 order: F-17 → Pro widgets → F-10.4 parser → F-09.

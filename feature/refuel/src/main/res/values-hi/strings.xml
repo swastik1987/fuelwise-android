@@ -58,4 +58,7 @@
     <string name="reward_not_measured_title">सेव हो गया।</string>
     <string name="reward_not_measured_body">माइलेज की गिनती इस फ़ुल टंकी से फिर शुरू होगी।</string>
     <string name="reward_dismiss">बंद करने के लिए नीचे स्वाइप करें</string>
+    <string name="refuel_scan_banner">पंप मीटर स्कैन करें</string>
+    <string name="refuel_scan_photo">स्कैन की फ़ोटो साथ जुड़ेगी</string>
+    <string name="refuel_scan_photo_remove">हटाएँ</string>
 </resources>

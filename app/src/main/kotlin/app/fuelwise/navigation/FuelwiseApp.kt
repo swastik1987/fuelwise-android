@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
@@ -64,11 +65,14 @@ import app.fuelwise.feature.onboarding.historyScreen
 import app.fuelwise.feature.onboarding.privacyScreen
 import app.fuelwise.feature.onboarding.welcomeScreen
 import app.fuelwise.feature.refuel.RefuelRoute
+import app.fuelwise.feature.refuel.SCAN_RESULT_KEY
 import app.fuelwise.feature.refuel.refuelSheet
 import app.fuelwise.feature.reminders.ReminderEditorRoute
 import app.fuelwise.feature.reminders.RemindersRoute
 import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
+import app.fuelwise.feature.scan.ScanRoute
+import app.fuelwise.feature.scan.scanScreen
 import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
@@ -166,7 +170,15 @@ fun FuelwiseApp(
                     onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
                 ),
             )
-            refuelSheet(onClose = navController::popBackStack)
+            refuelSheet(
+                onClose = navController::popBackStack,
+                onScan = { vehicleId -> navController.navigate(ScanRoute(vehicleId = vehicleId)) },
+            )
+            scanScreen(
+                onBack = navController::popBackStack,
+                onResult = { prefill -> navController.openRefuelWithScan(prefill.encode()) },
+                onTypeInstead = { navController.openRefuelWithScan(null) },
+            )
             expenseSheet(onClose = navController::popBackStack)
             logbookScreen(
                 onAddEntry = openAddEntry,
@@ -301,3 +313,18 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
  * names the record, e.g. a trip id.
  */
 data class OpenRequest(val target: String, val id: Long, val arg: String? = null)
+
+/**
+ * Hands a scan back to the Add fuel sheet that opened it, or opens one (the app shortcut starts on Scan). [scan] is
+ * `ScanPrefill.encode()`; null means "type instead".
+ */
+private fun NavHostController.openRefuelWithScan(scan: String?) {
+    val previous = previousBackStackEntry
+    if (previous?.destination?.hasRoute<RefuelRoute>() == true) {
+        if (scan != null) previous.savedStateHandle[SCAN_RESULT_KEY] = scan
+        popBackStack()
+    } else {
+        val vehicleId = currentBackStackEntry?.toRoute<ScanRoute>()?.vehicleId
+        navigate(RefuelRoute(vehicleId = vehicleId, scan = scan)) { popUpTo<ScanRoute> { inclusive = true } }
+    }
+}

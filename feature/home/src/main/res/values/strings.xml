@@ -22,6 +22,9 @@
     <string name="home_mileage_avg">avg %1$s</string>
     <string name="home_spent">Spent</string>
     <string name="home_spent_km">%1$s km this month</string>
+    <string name="home_trips">Trips</string>
+    <string name="home_start_trip">Start trip</string>
+    <string name="home_start_trip_caption">Record with GPS</string>
     <string name="home_last_fill">Last fill-up</string>
     <string name="home_range_left">~%1$s km left (est.)</string>
     <string name="home_insight">Insight</string>

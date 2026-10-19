@@ -80,7 +80,7 @@ internal data class TripsActions(
 )
 
 @Composable
-internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltViewModel()) {
+internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewModel: TripsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val resources = LocalResources.current
@@ -110,6 +110,14 @@ internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltView
         } else {
             pending = action
             permission.launch(locationPermissions())
+        }
+    }
+    // Opened from Home's "Start trip": start once, not again on rotation or when coming back from the live screen.
+    var autoStarted by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(startTrip) {
+        if (startTrip && !autoStarted) {
+            autoStarted = true
+            withLocation(START)
         }
     }
     var choosingRange by rememberSaveable { mutableStateOf(false) }

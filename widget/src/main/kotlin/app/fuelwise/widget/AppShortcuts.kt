@@ -25,7 +25,6 @@ object AppShortcuts {
     fun publish(context: Context) {
         val shortcuts = listOf(
             Spec(ID_ADD_FUEL, R.string.shortcut_add_fuel, R.string.shortcut_add_fuel_long, FwIcons.Fuel, NotificationRoutes.OPEN_ADD_FUEL),
-            // TODO(F-15): OPEN_SCAN opens the fill-up sheet until the Scan PR's route is merged into FuelwiseApp.
             Spec(ID_SCAN, R.string.shortcut_scan, R.string.shortcut_scan_long, FwIcons.Camera, NotificationRoutes.OPEN_SCAN),
             Spec(
                 ID_START_TRIP,

@@ -76,6 +76,7 @@ class TripRecorder @Inject constructor(
     private val estimateCost: EstimateTripCost,
     private val source: TripLocationSource,
     private val host: RecordingHost,
+    private val prompts: TripPrompts,
     private val clock: Clock,
     private val zoneId: ZoneId,
     @param:RecorderScope private val scope: CoroutineScope,
@@ -183,6 +184,8 @@ class TripRecorder @Inject constructor(
         val id = finish(active.tripId, clock.millis(), trips.points(active.tripId))
         points = mutableListOf()
         _state.value = RecordingState.Idle
+        // Ask for the odometer while the drive is fresh (PRD F-07.6).
+        if (id != null) prompts.odometerAfterTrip(id, trips.observeTrip(id).first()?.distanceKm ?: 0.0)
         return id
     }
 

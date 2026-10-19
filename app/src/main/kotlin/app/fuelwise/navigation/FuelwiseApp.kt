@@ -87,9 +87,16 @@ fun FuelwiseApp(
     LaunchedEffect(openRequest) {
         val route: Any = when (openRequest?.target) {
             NotificationRoutes.OPEN_REMINDERS -> RemindersRoute
+
             NotificationRoutes.OPEN_RECAP -> RecapRoute()
+
             NotificationRoutes.OPEN_FASTAG -> FastagRoute
+
             NotificationRoutes.OPEN_LIVE_TRIP -> LiveTripRoute
+
+            NotificationRoutes.OPEN_TRIP_ODOMETER ->
+                openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
+
             else -> return@LaunchedEffect
         }
         if (!startWithOnboarding) navController.navigate(route)
@@ -283,5 +290,8 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
     }
 }
 
-/** A screen asked for from outside the app (a notification). [id] makes two taps on the same target distinct. */
-data class OpenRequest(val target: String, val id: Long)
+/**
+ * A screen asked for from outside the app (a notification). [id] makes two taps on the same target distinct; [arg]
+ * names the record, e.g. a trip id.
+ */
+data class OpenRequest(val target: String, val id: Long, val arg: String? = null)

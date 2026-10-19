@@ -3,10 +3,12 @@ package app.fuelwise.core.location.di
 import app.fuelwise.core.domain.Dispatcher
 import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.location.FusedTripLocationSource
+import app.fuelwise.core.location.NotificationTripPrompts
 import app.fuelwise.core.location.RecorderScope
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.ServiceRecordingHost
 import app.fuelwise.core.location.TripLocationSource
+import app.fuelwise.core.location.TripPrompts
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -25,6 +27,9 @@ internal interface LocationModule {
 
     @Binds
     fun recordingHost(impl: ServiceRecordingHost): RecordingHost
+
+    @Binds
+    fun tripPrompts(impl: NotificationTripPrompts): TripPrompts
 
     companion object {
         @Provides

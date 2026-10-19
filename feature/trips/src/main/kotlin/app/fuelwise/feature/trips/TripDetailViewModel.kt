@@ -1,5 +1,6 @@
 package app.fuelwise.feature.trips
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,18 +10,27 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.domain.entry.tripEndOdometerHint
 import app.fuelwise.core.domain.trip.EstimateTripCost
+import app.fuelwise.core.domain.trip.GpxTrack
+import app.fuelwise.core.domain.trip.GpxWriter
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripSplit
 import app.fuelwise.core.domain.trip.UpiPayLink
+import app.fuelwise.core.domain.trip.gpxTrackName
 import app.fuelwise.core.domain.trip.splitTripCost
 import app.fuelwise.core.domain.trip.tripCost
+import app.fuelwise.core.domain.trip.withEndOdometer
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.ui.format.NumberInput
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +61,13 @@ data class TripDetailUiState(
     val upiError: Boolean = false,
     /** The recorded route of a GPS trip; empty for manual trips or a restore without encrypted backups. */
     val route: List<TrackPoint> = emptyList(),
+    /** GPS trips without an end reading ask for one (PRD F-07.6). */
+    val needsOdometer: Boolean = false,
+    /** Last known reading before the trip plus its distance: a placeholder, never a value. */
+    val odometerHint: Double? = null,
+    /** Opened from the post-trip notification: show the odometer sheet once. */
+    val askOdometer: Boolean = false,
+    val odometerError: Boolean = false,
 )
 
 sealed interface TripDetailEvent {
@@ -59,6 +76,9 @@ sealed interface TripDetailEvent {
 
     /** Ask for the user's UPI ID before sharing. */
     data object NeedUpi : TripDetailEvent
+
+    /** The GPX file was written ([saved]) or couldn't be (PRD F-07.8). */
+    data class GpxExported(val saved: Boolean) : TripDetailEvent
 }
 
 /** Trip detail with cost split (design.md screen 19; PRD F-07.1, F-07.4). */
@@ -71,18 +91,21 @@ class TripDetailViewModel @Inject constructor(
     categories: CategoryRepository,
     private val userData: UserDataRepository,
     private val estimateCost: EstimateTripCost,
+    private val files: TripFileWriter,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<TripDetailRoute>()
     private val people = MutableStateFlow(DEFAULT_PEOPLE)
     private val upiError = MutableStateFlow(false)
+    private val odometerError = MutableStateFlow(false)
+    private val askOdometer = MutableStateFlow(route.editOdometer)
 
     val state: StateFlow<TripDetailUiState> = combine(
         combine(trips.observeTrip(route.tripId), vehicles.observeVehicles(), entries.observeAllRefuels(), ::Triple),
         entries.observeAllExpenses(),
         categories.observeCategories(),
         userData.userData,
-        combine(people, upiError, flow { emit(trips.route(route.tripId)) }, ::Triple),
-    ) { (trip, vehicleList, refuels), expenses, cats, user, (count, badUpi, recorded) ->
+        combine(people, upiError, odometerError, askOdometer, flow { emit(trips.route(route.tripId)) }, ::Extras),
+    ) { (trip, vehicleList, refuels), expenses, cats, user, extras ->
         if (trip == null) return@combine TripDetailUiState(loading = false)
         val vehicle = vehicleList.firstOrNull { it.id == trip.vehicleId }
         val byId = cats.associateBy { it.id }
@@ -93,11 +116,24 @@ class TripDetailViewModel @Inject constructor(
             vehicle = vehicle,
             linked = expenses.filter { it.tripId == trip.id }.map { LinkedCost(it, byId[it.categoryId]) },
             fuelBasis = now?.takeIf { it.fuelCost == trip.estimatedFuelCost }?.basis,
-            split = tripCost(trip, expenses)?.let { splitTripCost(it, count) },
+            split = tripCost(trip, expenses)?.let { splitTripCost(it, extras.people) },
             upiVpa = user.upiVpa,
             upiName = user.upiName,
-            upiError = badUpi,
-            route = recorded,
+            upiError = extras.upiError,
+            route = extras.route,
+            needsOdometer = trip.source != TripSource.Manual && trip.endOdometerKm == null,
+            odometerHint = vehicle?.let { v ->
+                tripEndOdometerHint(
+                    trip,
+                    odometerReadings(
+                        v,
+                        refuels.filter { it.vehicleId == v.id },
+                        expenses.filter { it.vehicleId == v.id },
+                    ),
+                )
+            },
+            askOdometer = extras.askOdometer,
+            odometerError = extras.odometerError,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), TripDetailUiState())
 
@@ -105,6 +141,36 @@ class TripDetailViewModel @Inject constructor(
     val events = eventChannel.receiveAsFlow()
 
     fun onPeople(count: Int) = people.update { count.coerceIn(1, MAX_PEOPLE) }
+
+    /** Writes this trip's saved route as GPX 1.1 to the file the user picked (PRD F-07.8). */
+    fun exportGpx(uri: Uri) {
+        val s = state.value
+        val trip = s.trip ?: return
+        viewModelScope.launch {
+            val gpx = GpxWriter.write(listOf(GpxTrack(gpxTrackName(trip, ZoneId.of(trip.zoneId)), s.route)))
+            eventChannel.send(TripDetailEvent.GpxExported(files.write(uri, gpx)))
+        }
+    }
+
+    fun onOdometerAsked() {
+        askOdometer.value = false
+    }
+
+    fun clearOdometerError() {
+        odometerError.value = false
+    }
+
+    /** Saves the odometer typed after a GPS trip (PRD F-07.6); false (and an error shown) if it can't be right. */
+    fun saveOdometer(text: String): Boolean {
+        val trip = state.value.trip ?: return false
+        // Not below the last reading before the trip: the hint is that reading plus the distance.
+        val floor = state.value.odometerHint?.let { it - trip.distanceKm }
+        val updated = NumberInput.parseDecimal(text)?.let { trip.withEndOdometer(it, floor) }
+        odometerError.value = updated == null
+        if (updated == null) return false
+        viewModelScope.launch { trips.save(updated) }
+        return true
+    }
 
     /** Shares the split; the UPI link goes with it once the user's UPI ID is known (PRD F-07.4). */
     fun share(note: String) {
@@ -152,3 +218,12 @@ class TripDetailViewModel @Inject constructor(
         const val MAX_PEOPLE = 20
     }
 }
+
+/** The screen's own inputs, folded into one flow. */
+private data class Extras(
+    val people: Int,
+    val upiError: Boolean,
+    val odometerError: Boolean,
+    val askOdometer: Boolean,
+    val route: List<TrackPoint>,
+)

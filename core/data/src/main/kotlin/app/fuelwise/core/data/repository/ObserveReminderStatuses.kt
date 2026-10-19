@@ -20,6 +20,7 @@ class ObserveReminderStatuses @Inject constructor(
     private val reminders: ReminderRepository,
     private val vehicles: VehicleRepository,
     private val entries: EntryRepository,
+    private val trips: TripRepository,
     private val rules: RulesRepository,
     private val predictions: ComputePredictions,
     private val evaluate: EvaluateReminders,
@@ -30,7 +31,8 @@ class ObserveReminderStatuses @Inject constructor(
         vehicles.observeVehicles(),
         entries.observeAllRefuels(),
         entries.observeAllExpenses(),
-    ) { list, vehicleList, refuels, expenses ->
+        trips.observeTrips(),
+    ) { list, vehicleList, refuels, expenses, tripList ->
         val ruleSet = rules.reminderRules()
         val active = vehicleList.associateBy { it.id }
         val outlook = vehicleList.associate { v ->
@@ -42,6 +44,7 @@ class ObserveReminderStatuses @Inject constructor(
                         it.vehicleId ==
                             v.id
                     },
+                    tripList,
                 )
             v.id to
                 OdometerOutlook(

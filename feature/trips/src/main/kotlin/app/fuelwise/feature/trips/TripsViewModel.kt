@@ -1,5 +1,6 @@
 package app.fuelwise.feature.trips
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +9,13 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.trip.ExportRange
+import app.fuelwise.core.domain.trip.GpxTrack
+import app.fuelwise.core.domain.trip.GpxWriter
+import app.fuelwise.core.domain.trip.gpxTrackName
 import app.fuelwise.core.domain.trip.groupByWeek
 import app.fuelwise.core.domain.trip.tripCost
+import app.fuelwise.core.domain.trip.tripsToExport
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.model.Money
@@ -17,6 +23,7 @@ import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripStatus
 import app.fuelwise.core.model.sum
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
@@ -62,6 +69,9 @@ sealed interface TripsEvent {
 
     /** The trip was too short to keep and was discarded. */
     data object TooShort : TripsEvent
+
+    /** A range export finished: [saved] trips written, or none to write (PRD F-07.8). */
+    data class GpxExported(val saved: Int, val failed: Boolean = false) : TripsEvent
 }
 
 /** Trips list (design.md screen 17; PRD F-07.1, F-07.7 weekly view). */
@@ -72,7 +82,9 @@ class TripsViewModel @Inject constructor(
     entries: EntryRepository,
     private val userData: UserDataRepository,
     private val recorder: TripRecorder,
-    zoneId: ZoneId,
+    private val files: TripFileWriter,
+    private val clock: Clock,
+    private val zoneId: ZoneId,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val state: StateFlow<TripsUiState> = combine(
@@ -130,6 +142,21 @@ class TripsViewModel @Inject constructor(
             val vehicle = all.firstOrNull { it.id == selected } ?: all.firstOrNull() ?: return@launch
             recorder.start(vehicle.id)
             eventChannel.send(TripsEvent.OpenLive)
+        }
+    }
+
+    /** Writes the GPS trips in [range] as one GPX file with a track each (PRD F-07.8). */
+    fun exportRange(uri: Uri, range: ExportRange) {
+        viewModelScope.launch {
+            val tracks = tripsToExport(trips.observeTrips().first(), range, clock.millis(), zoneId)
+                .map { GpxTrack(gpxTrackName(it, ZoneId.of(it.zoneId)), trips.route(it.id)) }
+                .filter { it.points.isNotEmpty() }
+            if (tracks.isEmpty()) {
+                eventChannel.send(TripsEvent.GpxExported(saved = 0))
+                return@launch
+            }
+            val saved = files.write(uri, GpxWriter.write(tracks))
+            eventChannel.send(TripsEvent.GpxExported(if (saved) tracks.size else 0, failed = !saved))
         }
     }
 

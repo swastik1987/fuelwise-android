@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.designsystem.component.KeypadKey
@@ -43,6 +44,7 @@ class RefuelViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleRepository,
     private val entries: EntryRepository,
+    private val trips: TripRepository,
     private val userData: UserDataRepository,
     private val checkFillUp: CheckFillUp,
     private val computeReward: ComputeFillReward,
@@ -93,7 +95,9 @@ class RefuelViewModel @Inject constructor(
         val refuels = entries.observeRefuels(vehicle.id).first()
         val expenses = entries.observeExpenses(vehicle.id).first()
         tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
-        val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses))
+        // A finished trip's odometer counts too (PRD F-07.6), so the hint follows recent driving.
+        val tripList = trips.observeTrips().first()
+        val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses, tripList))
         _state.update { current ->
             var next = current.copy(predictedOdometer = predicted)
             if (applyDefaults) {

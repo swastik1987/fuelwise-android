@@ -14,6 +14,7 @@ import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.Vehicle
 import java.time.Clock
 import java.time.Instant
@@ -59,6 +60,8 @@ class ComputeVehicleSummary @Inject constructor(
         expenses: List<Expense>,
         categories: List<Category>,
         zone: ZoneId,
+        // Finished trips' odometer readings sharpen the predicted odometer and range (PRD F-07.6).
+        trips: List<Trip> = emptyList(),
     ): VehicleSummary {
         val now = clock.millis()
         val thisMonth = YearMonth.from(Instant.ofEpochMilli(now).atZone(zone))
@@ -68,7 +71,7 @@ class ComputeVehicleSummary @Inject constructor(
         val included = categories.associate { it.id to it.includeInCostPerKm }
         val spends = refuels.map { Spend(it.paid, it.dateTimeUtcMs, Spend.Kind.Energy) } +
             expenses.map { Spend(it.amount, it.dateTimeUtcMs, Spend.Kind.Expense, included[it.categoryId] ?: true) }
-        val readings = odometerReadings(vehicle, refuels, expenses)
+        val readings = odometerReadings(vehicle, refuels, expenses, trips)
         // The current month runs to now, so cost per day reflects days elapsed, not the whole month.
         val month = costMetrics(spends, readings, Period(monthStart, maxOf(now, monthStart + 1)))
         val previous = costMetrics(spends, readings, Period(previousStart, monthStart))

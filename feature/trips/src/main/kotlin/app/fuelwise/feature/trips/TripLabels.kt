@@ -9,6 +9,7 @@ import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import java.time.Duration
+import java.time.LocalDate
 
 internal object TripLabels {
     @StringRes
@@ -71,3 +72,9 @@ internal fun formatKm(km: Double): String =
 private const val MINUTES_PER_HOUR = 60L
 private const val SECONDS_PER_MINUTE = 60L
 private const val WHOLE_KM_FROM = 100.0
+
+/** "fuelwise-trip-2026-10-12.gpx": the name the file picker suggests for one trip. */
+internal fun gpxFileName(date: LocalDate) = "fuelwise-trip-$date.gpx"
+
+/** "fuelwise-trips-2026-10-19.gpx" for a range export, dated the day it was made. */
+internal fun gpxRangeFileName(today: LocalDate) = "fuelwise-trips-$today.gpx"

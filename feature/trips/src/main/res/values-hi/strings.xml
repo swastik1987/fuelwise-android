@@ -112,4 +112,23 @@
     <string name="trips_stat_idle">रुका रहा</string>
     <string name="trips_map_live">अब तक के रास्ते का नक्शा</string>
     <string name="trips_map_route">रास्ते का नक्शा: %1$s</string>
+    <string name="trips_add_odometer">ओडोमीटर रीडिंग जोड़ें</string>
+    <string name="trips_odometer_title">अभी का ओडोमीटर</string>
+    <string name="trips_odometer_body">इस यात्रा के अंत की रीडिंग लिखें। इससे अनुमान और सर्विस रिमाइंडर सही रहते हैं।</string>
+    <string name="trips_odometer_hint">लगभग %1$s</string>
+    <string name="trips_export_gpx">GPX एक्सपोर्ट करें</string>
+    <string name="trips_export_title">रिकॉर्ड हुई यात्राएँ GPX में एक्सपोर्ट करें</string>
+    <string name="trips_export_note">हर यात्रा का एक ट्रैक, एक ही फ़ाइल में। फ़ाइल सिर्फ़ वहीं जाती है जहाँ आप सेव करें।</string>
+    <string name="trips_range_week">इस हफ़्ते</string>
+    <string name="trips_range_month">इस महीने</string>
+    <string name="trips_range_three_months">पिछले 3 महीने</string>
+    <string name="trips_range_all">अब तक की सभी</string>
+    <string name="trips_gpx_saved">GPX के रूप में सेव हुई</string>
+    <string name="trips_gpx_failed">फ़ाइल सेव नहीं हो सकी। कोई और जगह चुनें।</string>
+    <string name="trips_gpx_none">उस अवधि में कोई रिकॉर्ड हुई यात्रा नहीं।</string>
+    <plurals name="trips_gpx_saved_many">
+        <item quantity="one">%1$d यात्रा GPX के रूप में सेव हुई</item>
+        <item quantity="other">%1$d यात्राएँ GPX के रूप में सेव हुईं</item>
+    </plurals>
+    <string name="trips_odometer_invalid">यह यात्रा की शुरुआती रीडिंग से कम है।</string>
 </resources>

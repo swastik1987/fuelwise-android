@@ -13,7 +13,11 @@ import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripPurpose
+import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.testing.FakeEntryRepository
+import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -23,6 +27,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -40,10 +45,15 @@ class RefuelViewModelTest {
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.nexonEv))
     private val entries = FakeEntryRepository()
 
-    private fun viewModel(vehicleId: String = "safari", refuelId: String? = null) = RefuelViewModel(
+    private fun viewModel(
+        vehicleId: String = "safari",
+        refuelId: String? = null,
+        trips: FakeTripRepository = FakeTripRepository(),
+    ) = RefuelViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId)),
         vehicles = vehicles,
         entries = entries,
+        trips = trips,
         userData = FakeUserDataRepository(),
         checkFillUp = CheckFillUp(),
         computeReward = ComputeFillReward(ComputeConsumption()),
@@ -78,6 +88,26 @@ class RefuelViewModelTest {
         assertThat(vm.state.value.priceSource).isEqualTo(PriceSource.LastPaid)
         vm.type(NumericField.Total, "3558")
         assertThat(vm.state.value.quantity).isEqualTo("40.00")
+    }
+
+    @Test
+    fun aFinishedTripMovesTheOdometerHint() = runTest {
+        entries.saveRefuel(fill("a", odo = 42_500.0, time = now.toEpochMilli() - 10 * DAY))
+        assertThat(viewModel().state.first { it.predictedOdometer != null }.predictedOdometer!!).isLessThan(42_600.0)
+        val trip = Trip(
+            id = "t1",
+            vehicleId = "safari",
+            startUtcMs = now.toEpochMilli() - 2 * DAY,
+            endUtcMs = now.toEpochMilli() - DAY,
+            zoneId = "Asia/Kolkata",
+            distanceKm = 140.0,
+            purpose = TripPurpose.Personal,
+            startOdometerKm = 42_860.0,
+            endOdometerKm = 43_000.0,
+            source = TripSource.Gps,
+        )
+        val withTrip = viewModel(trips = FakeTripRepository(listOf(trip)))
+        assertThat(withTrip.state.first { it.predictedOdometer != null }.predictedOdometer!!).isAtLeast(43_000.0)
     }
 
     @Test

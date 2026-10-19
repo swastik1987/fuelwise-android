@@ -68,7 +68,8 @@ class MainActivity : ComponentActivity() {
 
     private fun readOpenRequest(intent: Intent?) {
         val target = intent?.getStringExtra(NotificationRoutes.EXTRA_OPEN) ?: return
-        openRequest = OpenRequest(target, System.nanoTime())
+        openRequest = OpenRequest(target, System.nanoTime(), intent.getStringExtra(NotificationRoutes.EXTRA_ARG))
         intent.removeExtra(NotificationRoutes.EXTRA_OPEN)
+        intent.removeExtra(NotificationRoutes.EXTRA_ARG)
     }
 }

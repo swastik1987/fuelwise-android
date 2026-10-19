@@ -151,4 +151,6 @@ object FwIcons {
     @DrawableRes val Map = R.drawable.fw_ic_map
 
     @DrawableRes val ListView = R.drawable.fw_ic_format_list_bulleted
+
+    @DrawableRes val Download = R.drawable.fw_ic_download
 }

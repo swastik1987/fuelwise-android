@@ -14,6 +14,7 @@ import app.fuelwise.core.model.ReminderKind
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeReminderRepository
 import app.fuelwise.core.testing.FakeRulesRepository
+import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -56,6 +57,7 @@ class RemindersTest {
         rules = FakeRulesRepository(),
         userData = FakeUserDataRepository(),
         entries = FakeEntryRepository(SampleEntries.safariRefuels),
+        trips = FakeTripRepository(),
         predictions = ComputePredictions(clock),
         clock = clock,
         zoneId = zone,

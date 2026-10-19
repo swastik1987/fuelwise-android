@@ -102,3 +102,15 @@ fun Trip.averageKmh(): Double? {
 }
 
 private const val SECONDS_PER_HOUR = 3_600.0
+
+/**
+ * Records the odometer the user typed after a GPS trip (PRD F-07.6). Without a start reading, the start is worked
+ * back from the recorded distance. Null when the reading can't be right: not positive, below the start, or below
+ * [floorKm], the last reading known before the trip.
+ */
+fun Trip.withEndOdometer(endKm: Double, floorKm: Double? = null): Trip? {
+    if (endKm <= 0.0 || (floorKm != null && endKm < floorKm)) return null
+    val start = startOdometerKm ?: (endKm - distanceKm).takeIf { it >= 0.0 }
+    if (start != null && endKm < start) return null
+    return copy(startOdometerKm = start, endOdometerKm = endKm)
+}

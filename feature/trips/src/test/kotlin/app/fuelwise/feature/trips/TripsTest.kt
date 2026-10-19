@@ -1,5 +1,6 @@
 package app.fuelwise.feature.trips
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.isRoot
@@ -9,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
+import app.fuelwise.core.domain.trip.ExportRange
 import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
@@ -16,6 +18,7 @@ import app.fuelwise.core.domain.trip.TripSplit
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripLocationSource
+import app.fuelwise.core.location.TripPrompts
 import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Expense
@@ -107,15 +110,25 @@ class TripsTest {
         zone,
     )
 
-    private fun detail(trips: FakeTripRepository) = TripDetailViewModel(
-        SavedStateHandle(mapOf("tripId" to "mysuru")),
+    private fun detail(trips: FakeTripRepository, tripId: String = "mysuru") = TripDetailViewModel(
+        SavedStateHandle(mapOf("tripId" to tripId, "editOdometer" to false)),
         trips,
         vehicles,
         FakeEntryRepository(refuels = SampleEntries.safariRefuels, expenses = listOf(toll)),
         FakeCategoryRepository(),
         userData,
         estimate,
+        files,
     )
+
+    // Keeps what was written, keyed by the uri, instead of touching storage.
+    private val written = mutableMapOf<String, String>()
+    private val files = object : TripFileWriter {
+        override suspend fun write(uri: Uri, text: String): Boolean {
+            written[uri.toString()] = text
+            return true
+        }
+    }
 
     @Test
     fun manualTripFromOdometersGetsAFuelEstimate() = runTest {
@@ -182,6 +195,8 @@ class TripsTest {
             FakeEntryRepository(expenses = listOf(toll)),
             userData,
             recorder(repo),
+            files,
+            clock,
             zone,
             SavedStateHandle(),
         )
@@ -231,6 +246,8 @@ class TripsTest {
             FakeEntryRepository(),
             userData,
             recorder,
+            files,
+            clock,
             zone,
             SavedStateHandle(),
         )
@@ -269,8 +286,7 @@ class TripsTest {
         )
         val repo = FakeTripRepository(listOf(cut))
         repo.appendPoints("cut", (0..10).map { TrackPoint(it * 5_000L, 12.900 + it * 0.001, 77.6, 8f, null, 0) })
-        val list =
-            TripsViewModel(repo, vehicles, FakeEntryRepository(), userData, recorder(repo), zone, SavedStateHandle())
+        val list = listViewModel(repo)
         val state = list.state.first { !it.loading }
         assertThat(state.interrupted.map { it.id }).containsExactly("cut")
         // Unfinished trips stay out of the weekly list until finished.
@@ -278,6 +294,67 @@ class TripsTest {
         list.finishInterrupted("cut")
         assertThat(list.events.first()).isEqualTo(TripsEvent.OpenTrip("cut"))
         assertThat(repo.trips.single().status).isEqualTo(TripStatus.Done)
+    }
+
+    private fun TestScope.listViewModel(repo: FakeTripRepository) = TripsViewModel(
+        repo,
+        vehicles,
+        FakeEntryRepository(),
+        userData,
+        recorder(repo),
+        files,
+        clock,
+        zone,
+        SavedStateHandle(),
+    )
+
+    @Test
+    fun gpsTripAsksForTheOdometerAndExportsGpx() = runTest {
+        val route = liveState().recording!!.route
+        val gps = mysuru.copy(
+            id = "gps",
+            source = TripSource.Gps,
+            startOdometerKm = null,
+            endOdometerKm = null,
+            distanceKm = 23.4,
+            recordedSeconds = 2_292,
+        )
+        val repo = FakeTripRepository(listOf(gps))
+        repo.finishRecording(gps, route)
+        val vm = detail(repo, tripId = "gps")
+        val state = vm.state.first { !it.loading && it.route.isNotEmpty() }
+        assertThat(state.needsOdometer).isTrue()
+        // Last reading before the trip (r3, 43,690 km on 30 Sept) plus 23.4 km.
+        assertThat(state.odometerHint!!).isWithin(0.01).of(43_713.4)
+
+        assertThat(vm.saveOdometer("100")).isFalse()
+        assertThat(vm.state.first { it.odometerError }.odometerError).isTrue()
+        assertThat(vm.saveOdometer("43715")).isTrue()
+        val saved = vm.state.first { !it.needsOdometer }.trip!!
+        assertThat(saved.endOdometerKm).isEqualTo(43_715.0)
+        assertThat(saved.startOdometerKm!!).isWithin(0.01).of(43_691.6)
+
+        vm.exportGpx(Uri.parse("content://test/trip.gpx"))
+        assertThat((vm.events.first() as TripDetailEvent.GpxExported).saved).isTrue()
+        val gpx = written.getValue("content://test/trip.gpx")
+        assertThat(gpx).contains("<name>Bengaluru → Mysuru</name>")
+        assertThat(Regex("<trkseg>").findAll(gpx).count()).isEqualTo(2)
+    }
+
+    @Test
+    fun rangeExportWritesOneTrackPerRecordedTrip() = runTest {
+        val route = liveState().recording!!.route
+        val repo = FakeTripRepository(listOf(mysuru))
+        val list = listViewModel(repo)
+        list.exportRange(Uri.parse("content://test/none.gpx"), ExportRange.All)
+        // Manual trips have no route: nothing to write.
+        assertThat(list.events.first()).isEqualTo(TripsEvent.GpxExported(saved = 0))
+
+        val gps = mysuru.copy(id = "gps", source = TripSource.Gps, fromPlace = null, toPlace = null)
+        repo.finishRecording(gps, route)
+        list.exportRange(Uri.parse("content://test/all.gpx"), ExportRange.All)
+        assertThat(list.events.first()).isEqualTo(TripsEvent.GpxExported(saved = 1))
+        assertThat(written.getValue("content://test/all.gpx")).contains("<name>Trip 2026-10-12 07:00</name>")
     }
 
     @Test fun liveLight() = capture("trip_live_light", false) {
@@ -309,6 +386,7 @@ class TripsTest {
                     maxSpeedKmh = 96.0,
                 ),
                 route = liveState().recording!!.route,
+                needsOdometer = true,
             ),
             TripsLinks(),
             TripDetailActions(),
@@ -423,6 +501,9 @@ class TripsTest {
         source,
         object : RecordingHost {
             override fun startForegroundRecording() = Unit
+        },
+        object : TripPrompts {
+            override fun odometerAfterTrip(tripId: String, distanceKm: Double) = Unit
         },
         clock,
         zone,

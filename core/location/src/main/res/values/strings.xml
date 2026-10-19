@@ -6,4 +6,7 @@
     <string name="trip_notif_pause">Pause</string>
     <string name="trip_notif_resume">Resume</string>
     <string name="trip_notif_stop">Stop</string>
+    <string name="trip_notif_saved">Trip saved · %1$s km</string>
+    <string name="trip_notif_odometer_body">Add the odometer reading so predictions and reminders stay right.</string>
+    <string name="trip_notif_update_odometer">Update odometer</string>
 </resources>

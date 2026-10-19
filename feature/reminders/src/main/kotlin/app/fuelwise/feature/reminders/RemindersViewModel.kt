@@ -8,6 +8,7 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.ObserveReminderStatuses
 import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.RulesRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.engine.ComputePredictions
@@ -109,6 +110,7 @@ class ReminderEditorViewModel @Inject constructor(
     private val rules: RulesRepository,
     private val userData: UserDataRepository,
     private val entries: EntryRepository,
+    private val trips: TripRepository,
     private val predictions: ComputePredictions,
     private val clock: Clock,
     private val zoneId: ZoneId,
@@ -166,6 +168,7 @@ class ReminderEditorViewModel @Inject constructor(
                 vehicle,
                 entries.observeRefuels(vehicleId).first(),
                 entries.observeExpenses(vehicleId).first(),
+                trips.observeTrips().first(),
             )
         return predictions.predictedOdometer(readings)
     }

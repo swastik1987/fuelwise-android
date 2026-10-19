@@ -24,10 +24,16 @@ import kotlin.math.roundToLong
 /** Where a notification tap lands; MainActivity reads [EXTRA_OPEN]. */
 object NotificationRoutes {
     const val EXTRA_OPEN = "app.fuelwise.extra.OPEN"
+
+    /** The record the screen is for, e.g. a trip id. */
+    const val EXTRA_ARG = "app.fuelwise.extra.ARG"
     const val OPEN_REMINDERS = "reminders"
     const val OPEN_RECAP = "recap"
     const val OPEN_FASTAG = "fastag"
     const val OPEN_LIVE_TRIP = "live_trip"
+
+    /** A trip's detail with the odometer sheet open (PRD F-07.6); [EXTRA_ARG] is the trip id. */
+    const val OPEN_TRIP_ODOMETER = "trip_odometer"
 }
 
 /** Channel ids other modules post to (the trip recorder in core:location). */

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- PRD F-15 / §9 (approved 19 Oct 2026): asked only when the user taps a scan action. Phones without a camera
+         still install the app; scanning then shows "Type instead". -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+</manifest>

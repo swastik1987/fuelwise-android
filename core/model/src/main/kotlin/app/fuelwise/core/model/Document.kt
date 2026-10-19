@@ -33,7 +33,10 @@ data class Document(
     val remindOnExpiry: Boolean = true,
 )
 
-/** A photo or PDF attached to a document or an expense. [storedName] is the encrypted file in app storage. */
+/**
+ * A photo or PDF attached to a document, an expense, a trip or a fill-up. [storedName] is the encrypted file in app
+ * storage.
+ */
 data class Attachment(
     val id: String,
     val ownerId: String,
@@ -44,6 +47,6 @@ data class Attachment(
     /** Of the plaintext, for content-addressed backups (M7). */
     val sha256: String,
 ) {
-    /** [Trip] holds a GPS trip's simplified route (PRD F-07.2). */
-    enum class OwnerType { Document, Expense, Trip }
+    /** [Trip] holds a GPS trip's simplified route (PRD F-07.2); [Refuel] a pump or receipt scan photo (PRD F-15). */
+    enum class OwnerType { Document, Expense, Trip, Refuel }
 }

@@ -9,6 +9,8 @@
         where documents and routes can be encrypted.
     -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- USE_BIOMETRIC (§9, approved 19 Oct 2026): the optional app lock (PRD F-18). Normal permission, no prompt. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:name=".FuelwiseApplication"

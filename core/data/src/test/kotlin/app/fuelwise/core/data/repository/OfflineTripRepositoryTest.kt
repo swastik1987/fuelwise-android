@@ -50,6 +50,8 @@ class OfflineTripRepositoryTest {
         override suspend fun delete(storedName: String) {
             files.remove(storedName)
         }
+
+        override suspend fun deleteAll() = files.clear()
     }
 
     // Reverses and tags the bytes: enough to prove what's stored isn't the plain encoding, and that AD is checked.

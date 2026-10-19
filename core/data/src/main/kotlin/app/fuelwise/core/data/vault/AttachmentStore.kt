@@ -23,6 +23,9 @@ interface AttachmentStore {
     suspend fun read(attachmentId: String, storedName: String): ByteArray
 
     suspend fun delete(storedName: String)
+
+    /** Removes every stored file ("Delete all data", PRD F-18). */
+    suspend fun deleteAll()
 }
 
 /** Authenticated encryption for data at rest: documents, receipts and raw trip points (CLAUDE.md rule 5). */
@@ -84,6 +87,10 @@ internal class TinkAttachmentStore @Inject constructor(
 
     override suspend fun delete(storedName: String) {
         withContext(io) { File(dir, storedName).delete() }
+    }
+
+    override suspend fun deleteAll() {
+        withContext(io) { dir.listFiles()?.forEach { it.deleteRecursively() } }
     }
 
     private companion object {

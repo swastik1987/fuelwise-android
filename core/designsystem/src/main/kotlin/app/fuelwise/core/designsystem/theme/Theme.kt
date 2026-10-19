@@ -1,14 +1,19 @@
 package app.fuelwise.core.designsystem.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
 
 private val LocalFwColors = staticCompositionLocalOf { LightFwColors }
 private val LocalFwTypography = staticCompositionLocalOf { FwTypography() }
@@ -33,8 +38,21 @@ object FwTheme {
  * but screens should read [FwTheme] directly rather than `MaterialTheme` defaults.
  */
 @Composable
-fun FuelwiseTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) DarkFwColors else LightFwColors
+fun FuelwiseTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    val brand = if (darkTheme) DarkFwColors else LightFwColors
+    val context = LocalContext.current
+    // Material You (PRD F-18, off by default): Android 12+ only; older devices keep the brand palette.
+    val colors = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        remember(darkTheme, context) {
+            brand.withDynamic(if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context))
+        }
+    } else {
+        brand
+    }
     val typography = FwTypography()
     CompositionLocalProvider(
         LocalFwColors provides colors,
@@ -46,6 +64,22 @@ fun FuelwiseTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
         )
     }
 }
+
+/** Whether this device can show Material You colours (Android 12+); Settings hides the switch otherwise. */
+val supportsDynamicColor: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+/**
+ * Wallpaper colours replace the accent and the neutral surfaces. Ink, hairlines and the semantic colours (positive,
+ * warning, negative) stay ours so text contrast and delta meanings never change.
+ */
+internal fun FwColors.withDynamic(scheme: ColorScheme): FwColors = copy(
+    bg = scheme.surface,
+    surface = scheme.surfaceContainerLowest,
+    surface2 = scheme.surfaceContainerHigh,
+    accent = scheme.primary,
+    onAccent = scheme.onPrimary,
+    accentSoft = scheme.primaryContainer,
+)
 
 private fun FwColors.toMaterialScheme(): ColorScheme {
     val base = if (isDark) darkColorScheme() else lightColorScheme()

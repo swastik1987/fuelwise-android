@@ -12,4 +12,8 @@
     <string name="quick_expense">Expense</string>
     <string name="quick_toll">Toll</string>
     <string name="quick_trip">Trip</string>
+    <string name="lock_title">Fuelwise is locked</string>
+    <string name="lock_body">Unlock with your fingerprint, face or screen lock.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock Fuelwise</string>
 </resources>

@@ -59,6 +59,8 @@ class CareRepositoriesTest {
         override suspend fun delete(storedName: String) {
             files.remove(storedName)
         }
+
+        override suspend fun deleteAll() = files.clear()
     }
     private val rules = object : RulesRepository {
         override suspend fun reminderRules() = ReminderRules(

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_back">वापस</string>
+
+    <string name="settings_section_general">सामान्य</string>
+    <string name="settings_section_appearance">दिखावट</string>
+    <string name="settings_section_privacy">प्राइवेसी</string>
+    <string name="settings_section_notifications">सूचनाएँ</string>
+    <string name="settings_section_data">आपका डेटा</string>
+    <string name="settings_section_about">ऐप के बारे में</string>
+
+    <string name="settings_units">यूनिट</string>
+    <plurals name="settings_units_overrides">
+        <item quantity="one">%1$s · %2$d गाड़ी की अपनी यूनिट</item>
+        <item quantity="other">%1$s · %2$d गाड़ियों की अपनी यूनिट</item>
+    </plurals>
+    <string name="settings_currency">मुद्रा</string>
+    <string name="settings_currency_inr">₹ भारतीय रुपया</string>
+    <string name="settings_home_city">आपका शहर</string>
+    <string name="settings_home_city_value">फ़्यूल के दाम के लिए</string>
+    <string name="settings_tariff">घर पर चार्जिंग का रेट</string>
+    <string name="settings_tariff_value">%1$s प्रति kWh</string>
+    <string name="settings_tariff_unset">सेट नहीं है। EV चार्ज में पिछली बार का दाम भरा जाता है।</string>
+    <string name="settings_tariff_hint">Home AC चार्ज लिखते समय यही दाम भरा जाएगा।</string>
+    <string name="settings_tariff_label">रेट</string>
+    <string name="settings_tariff_unit">₹/kWh</string>
+    <string name="settings_tariff_error">₹0.01 से ₹100 प्रति kWh के बीच रेट डालें।</string>
+    <string name="settings_upi">UPI ID</string>
+    <string name="settings_upi_unset">ट्रिप का खर्च बाँटने के लिए</string>
+    <string name="settings_upi_hint">ट्रिप स्प्लिट लिंक से दोस्त इसी ID पर पैसे भेजेंगे। यह इसी फ़ोन पर रहती है।</string>
+    <string name="settings_upi_vpa">UPI ID</string>
+    <string name="settings_upi_vpa_placeholder">name@bank</string>
+    <string name="settings_upi_name">पैसे भेजने वालों को दिखने वाला नाम</string>
+    <string name="settings_upi_error">यह UPI ID जैसी नहीं लगती। यह name@bank जैसी होनी चाहिए।</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_language_system">फ़ोन की भाषा</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_hi">हिन्दी</string>
+
+    <string name="settings_theme">थीम</string>
+    <string name="settings_theme_system">सिस्टम</string>
+    <string name="settings_theme_light">लाइट</string>
+    <string name="settings_theme_dark">डार्क</string>
+    <string name="settings_dynamic_color">वॉलपेपर से रंग</string>
+    <string name="settings_dynamic_color_body">Material You. बंद रखने पर Fuelwise का नारंगी रंग रहेगा।</string>
+
+    <string name="settings_app_lock">ऐप लॉक</string>
+    <string name="settings_app_lock_body">Fuelwise खोलते समय फ़िंगरप्रिंट, चेहरा या फ़ोन का स्क्रीन लॉक।</string>
+    <string name="settings_app_lock_unavailable">पहले फ़ोन पर स्क्रीन लॉक लगाएँ।</string>
+    <string name="settings_app_lock_prompt_title">ऐप लॉक चालू करें</string>
+    <string name="settings_app_lock_after">कब लॉक हो</string>
+    <string name="settings_app_lock_immediately">तुरंत</string>
+    <plurals name="settings_app_lock_minutes">
+        <item quantity="one">बैकग्राउंड में %d मिनट के बाद</item>
+        <item quantity="other">बैकग्राउंड में %d मिनट के बाद</item>
+    </plurals>
+    <string name="settings_hide_amounts">होम पर रकम छिपाएँ</string>
+    <string name="settings_hide_amounts_body">आँख वाले आइकन पर टैप करने तक ₹ धुंधले रहेंगे।</string>
+
+    <string name="settings_weekly_digest">हफ़्ते का सार</string>
+    <string name="settings_weekly_digest_body">हर सोमवार पिछले हफ़्ते का ₹/km।</string>
+    <string name="settings_monthly_recap">महीने का हिसाब</string>
+    <string name="settings_monthly_recap_body">हर 1 तारीख़ को: पिछले महीने का खर्च, एक कार्ड में।</string>
+    <string name="settings_channel_reminders">रिमाइंडर</string>
+    <string name="settings_channel_trips">ट्रिप रिकॉर्डिंग</string>
+    <string name="settings_channel_system">आवाज़ और स्टाइल फ़ोन की सेटिंग्स में</string>
+
+    <string name="settings_import">इम्पोर्ट</string>
+    <string name="settings_import_value">Fuelio CSV, स्प्रेडशीट</string>
+    <string name="settings_export">एक्सपोर्ट और रिपोर्ट</string>
+    <string name="settings_backup">बैकअप और सिंक</string>
+    <string name="settings_delete_all">सारा डेटा मिटाएँ</string>
+    <string name="settings_delete_all_value">इस फ़ोन की हर गाड़ी, एंट्री, डॉक्यूमेंट और सेटिंग</string>
+
+    <string name="settings_delete_title">सारा डेटा मिटाएँ?</string>
+    <string name="settings_delete_body">गाड़ियाँ, फ़्यूल, खर्च, ट्रिप, रिमाइंडर, डॉक्यूमेंट और सेटिंग्स इस फ़ोन से मिट जाएँगी। यह वापस नहीं होगा।</string>
+    <string name="settings_delete_drive">मेरे Google Drive बैकअप भी मिटाएँ</string>
+    <string name="settings_delete_drive_body">इसके बिना आप बाद में Drive से रीस्टोर कर सकते हैं।</string>
+    <string name="settings_delete_type">पक्का करने के लिए %1$s लिखें</string>
+    <string name="settings_delete_confirm">सब कुछ मिटाएँ</string>
+    <string name="settings_delete_cancel">रद्द करें</string>
+    <string name="settings_deleting">मिटाया जा रहा है…</string>
+    <string name="settings_deleted_toast">सारा डेटा मिटा दिया गया।</string>
+    <string name="settings_delete_drive_failed">Google Drive से कनेक्ट नहीं हो सका, इसलिए कुछ नहीं मिटाया गया। फिर कोशिश करें या Drive बैकअप वाला विकल्प हटाएँ।</string>
+
+    <string name="settings_version">वर्शन</string>
+
+    <string name="settings_save">सेव करें</string>
+    <string name="settings_clear">हटाएँ</string>
+
+    <string name="units_title">यूनिट</string>
+    <string name="units_vehicle_title">यूनिट · %1$s</string>
+    <string name="units_distance">दूरी</string>
+    <string name="units_volume">लिक्विड फ़्यूल</string>
+    <string name="units_efficiency">माइलेज</string>
+    <string name="units_distance_km">किलोमीटर (km)</string>
+    <string name="units_distance_mi">मील (mi)</string>
+    <string name="units_volume_litre">लीटर (L)</string>
+    <string name="units_volume_us">US गैलन</string>
+    <string name="units_volume_uk">UK गैलन</string>
+    <string name="units_efficiency_distance">km/L · km/kg · km/kWh</string>
+    <string name="units_efficiency_per100">L/100 km · kg/100 km · kWh/100 km</string>
+    <string name="units_efficiency_mpg_us">mpg (US)</string>
+    <string name="units_efficiency_mpg_uk">mpg (UK)</string>
+    <string name="units_efficiency_note">mpg चुनने पर CNG और EV में mi/kg और mi/kWh दिखेगा।</string>
+    <string name="units_storage_note">एंट्री हमेशा km, L, kg और kWh में सेव होती हैं, इसलिए यूनिट बदलने से आपका डेटा नहीं बदलता।</string>
+    <string name="units_per_vehicle">हर गाड़ी के लिए</string>
+    <string name="units_same_as_default">डिफ़ॉल्ट जैसी</string>
+    <string name="units_own">इस गाड़ी की अपनी यूनिट</string>
+    <string name="units_own_body">बंद रखने पर डिफ़ॉल्ट यूनिट लागू होंगी।</string>
+</resources>

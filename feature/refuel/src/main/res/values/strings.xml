@@ -17,6 +17,7 @@
     <string name="refuel_price">Price per %1$s</string>
     <string name="refuel_tariff">Tariff per %1$s</string>
     <string name="refuel_price_last_paid">last price you paid</string>
+    <string name="refuel_price_home_tariff">home tariff from Settings</string>
     <string name="refuel_total">Total ₹</string>
     <string name="refuel_cost">Cost ₹</string>
     <string name="refuel_auto">auto</string>

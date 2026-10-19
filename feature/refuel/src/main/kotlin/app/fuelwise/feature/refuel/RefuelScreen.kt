@@ -289,10 +289,11 @@ private fun TriangleSection(state: RefuelFormState, actions: RefuelActions) {
             focused = state.focus == NumericField.UnitPrice,
             onClick = { actions.onFocus(NumericField.UnitPrice) },
             autoLabel = auto,
-            caption = if (state.priceSource == PriceSource.LastPaid && state.computedField != Field.UnitPrice) {
-                stringResource(R.string.refuel_price_last_paid)
-            } else {
-                null
+            caption = when {
+                state.computedField == Field.UnitPrice -> null
+                state.homeTariffPrice -> stringResource(R.string.refuel_price_home_tariff)
+                state.priceSource == PriceSource.LastPaid -> stringResource(R.string.refuel_price_last_paid)
+                else -> null
             },
         )
         FwTriangleRow(

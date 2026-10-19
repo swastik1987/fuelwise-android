@@ -55,6 +55,9 @@ class RefuelViewModel @Inject constructor(
     private val route = savedStateHandle.toRoute<RefuelRoute>()
     private var editing: Refuel? = null
     private var tankFills: List<Refuel> = emptyList()
+
+    /** Home charging tariff from Settings (PRD F-02.5, F-18); Home AC charges start from it when set. */
+    private var homeTariff: Money? = null
     private var attemptedSave = false
 
     private val _state = MutableStateFlow(
@@ -95,6 +98,7 @@ class RefuelViewModel @Inject constructor(
         val refuels = entries.observeRefuels(vehicle.id).first()
         val expenses = entries.observeExpenses(vehicle.id).first()
         tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
+        homeTariff = userData.userData.first().homeTariff
         // A finished trip's odometer counts too (PRD F-07.6), so the hint follows recent driving.
         val tripList = trips.observeTrips().first()
         val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses, tripList))
@@ -110,17 +114,21 @@ class RefuelViewModel @Inject constructor(
                     socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
                     socEnd = last?.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
                 )
-                // Price defaults to the last price paid for this tank (PRD F-02.3) and counts as one locked edit.
+                // Price defaults to the home tariff for Home AC charges (PRD F-02.5), otherwise the last price paid
+                // for this tank (PRD F-02.3), and counts as one locked edit.
+                val tariff = homeTariff.takeIf { next.isCharge && next.charger == ChargerType.HomeAc }
                 val lastPrice = if (next.isCharge) {
                     tankFills.filter { it.chargerType == next.charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
                 } else {
                     last?.unitPrice
                 }
-                if (lastPrice != null && current.unitPrice.isEmpty()) {
+                val defaultPrice = tariff ?: lastPrice
+                if (defaultPrice != null && current.unitPrice.isEmpty()) {
                     next = next.copy(
-                        unitPrice = MoneyInput.plain(lastPrice),
+                        unitPrice = MoneyInput.plain(defaultPrice),
                         recentEdits = listOf(Field.UnitPrice),
-                        priceSource = PriceSource.LastPaid,
+                        priceSource = if (tariff != null) PriceSource.Typed else PriceSource.LastPaid,
+                        homeTariffPrice = tariff != null,
                     )
                 }
             }
@@ -196,8 +204,11 @@ class RefuelViewModel @Inject constructor(
 
     fun onCharger(type: ChargerType) {
         _state.update { it.copy(charger = type) }
-        // Tariff follows the charger type: home tariff for Home AC, the last public price otherwise.
-        val lastPrice = tankFills.filter { it.chargerType == type }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+        // Tariff follows the charger type: the Settings home tariff for Home AC when set, else the last price paid
+        // with this charger type.
+        val tariff = homeTariff.takeIf { type == ChargerType.HomeAc }
+        val lastPrice = tariff
+            ?: tankFills.filter { it.chargerType == type }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
         if (lastPrice != null && !_state.value.isEdit) {
             _state.update { s ->
                 s.copy(unitPrice = MoneyInput.plain(lastPrice), priceSource = PriceSource.LastPaid)
@@ -210,7 +221,10 @@ class RefuelViewModel @Inject constructor(
                             it.triangleEdit(Field.UnitPrice, it.unitPrice)
                         }
                     }
+                    .copy(homeTariffPrice = tariff != null)
             }
+        } else {
+            _state.update { it.copy(homeTariffPrice = false) }
         }
     }
 
@@ -264,7 +278,7 @@ class RefuelViewModel @Inject constructor(
     private fun RefuelFormState.triangleEdit(field: Field, text: String): RefuelFormState {
         val edited = when (field) {
             Field.Quantity -> copy(quantity = text)
-            Field.UnitPrice -> copy(unitPrice = text, priceSource = PriceSource.Typed)
+            Field.UnitPrice -> copy(unitPrice = text, priceSource = PriceSource.Typed, homeTariffPrice = false)
             Field.Total -> copy(total = text)
         }
         return edited.copy(recentEdits = PriceTriangle.recordEdit(recentEdits, field)).recomputed()

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -97,7 +98,16 @@ internal fun GarageContent(
     links: GarageLinks = GarageLinks(),
 ) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
-        FwLargeTitle(stringResource(R.string.garage_title))
+        FwLargeTitle(stringResource(R.string.garage_title)) {
+            // Settings lives behind the gear (design.md: Garage → gear).
+            IconButton(onClick = links.onSettings) {
+                Icon(
+                    painterResource(FwIcons.Settings),
+                    contentDescription = stringResource(R.string.garage_settings),
+                    tint = FwTheme.colors.ink,
+                )
+            }
+        }
         when (state) {
             GarageUiState.Loading -> Unit
 
@@ -263,6 +273,7 @@ data class GarageLinks(
     val onTrips: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
+    val onSettings: () -> Unit = {},
 )
 
 /** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Trips (design.md screen 21). */
@@ -315,6 +326,7 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
             links.onBackup,
         )
         UtilityRow(FwIcons.UploadFile, stringResource(R.string.garage_import), null, links.onImport)
+        UtilityRow(FwIcons.Settings, stringResource(R.string.garage_settings), null, links.onSettings)
     }
 }
 

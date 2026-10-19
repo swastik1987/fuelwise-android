@@ -67,6 +67,10 @@ import app.fuelwise.feature.reminders.ReminderEditorRoute
 import app.fuelwise.feature.reminders.RemindersRoute
 import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
+import app.fuelwise.feature.settings.SettingsLinks
+import app.fuelwise.feature.settings.SettingsRoute
+import app.fuelwise.feature.settings.UnitsRoute
+import app.fuelwise.feature.settings.settingsScreens
 import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
@@ -192,6 +196,7 @@ fun FuelwiseApp(
                     onTrips = { navController.navigate(TripsRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onSettings = { navController.navigate(SettingsRoute) },
                 ),
             )
             remindersScreen(
@@ -216,6 +221,21 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            settingsScreens(
+                SettingsLinks(
+                    onBack = navController::popBackStack,
+                    onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
+                    // TODO(F-09): open the Prices screen once the Prices session's route is on main, e.g.
+                    //  onHomeCity = { navController.navigate(PricesRoute) }. Null hides the row until then.
+                    onHomeCity = null,
+                    // TODO(F-13): open Export & reports once the Export session's route is on main.
+                    onExport = null,
+                    onBackup = { navController.navigate(BackupRoute) },
+                    onImport = { navController.navigate(ImportRoute) },
+                    // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
+                    onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
+                ),
+            )
             tripsScreens(
                 TripsLinks(
                     onBack = navController::popBackStack,

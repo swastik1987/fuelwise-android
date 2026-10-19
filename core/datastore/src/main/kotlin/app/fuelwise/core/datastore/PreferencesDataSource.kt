@@ -24,4 +24,9 @@ class PreferencesDataSource @Inject constructor(
     suspend fun update(transform: UserPreferencesKt.Dsl.() -> Unit) {
         store.updateData { it.copy(transform) }
     }
+
+    /** "Delete all data" (PRD F-18): back to first-run defaults, onboarding included. */
+    suspend fun reset() {
+        store.updateData { UserPreferencesSerializer().defaultValue }
+    }
 }

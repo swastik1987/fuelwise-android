@@ -152,6 +152,20 @@ class BackupManager @Inject constructor(
         settings.update { it.copy(encrypted = true, lastError = null) }
     }
 
+    /**
+     * "Delete all data" with "also delete Drive backups" (PRD F-18): removes every file in the app folder, snapshots
+     * and encrypted photos alike. Returns null on success, or what stopped it.
+     */
+    suspend fun deleteDriveBackups(): BackupError? = mutex.withLock {
+        when (val r = runCatchingDrive { token -> drive.list(token).forEach { drive.delete(token, it.id) } }) {
+            is DriveResult.Ok -> null
+            is DriveResult.Error -> r.error
+        }
+    }
+
+    /** Full reset: forgets the backup key on this device. The settings themselves reset with the preferences. */
+    suspend fun forgetKey() = mutex.withLock { keys.clear() }
+
     suspend fun disableEncryption() {
         keys.clear()
         settings.update { it.copy(encrypted = false) }

@@ -49,12 +49,13 @@ class RefuelViewModelTest {
         vehicleId: String = "safari",
         refuelId: String? = null,
         trips: FakeTripRepository = FakeTripRepository(),
+        userData: FakeUserDataRepository = FakeUserDataRepository(),
     ) = RefuelViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId)),
         vehicles = vehicles,
         entries = entries,
         trips = trips,
-        userData = FakeUserDataRepository(),
+        userData = userData,
         checkFillUp = CheckFillUp(),
         computeReward = ComputeFillReward(ComputeConsumption()),
         predictions = ComputePredictions(clock),
@@ -164,6 +165,26 @@ class RefuelViewModelTest {
         assertThat(saved.total).isEqualTo(Money(18_450))
         assertThat(saved.socStartPct).isEqualTo(22.0)
         assertThat(saved.isFull).isTrue() // 100% counts as a full charge
+    }
+
+    @Test
+    fun homeChargesStartFromTheSettingsTariff() = runTest {
+        // PRD F-02.5: the home tariff from Settings (₹8.20/kWh) fills Home AC charges; public chargers keep their own.
+        val userData = FakeUserDataRepository().apply { setHomeTariff(Money(820)) }
+        val vm = viewModel(vehicleId = "nexon", userData = userData)
+        val home = vm.state.first { it.unitPrice.isNotEmpty() }
+        assertThat(home.charger).isEqualTo(ChargerType.HomeAc)
+        assertThat(home.unitPrice).isEqualTo("8.20")
+        assertThat(home.homeTariffPrice).isTrue()
+
+        vm.onCharger(ChargerType.DcFast)
+        assertThat(vm.state.value.homeTariffPrice).isFalse()
+        vm.onCharger(ChargerType.HomeAc)
+        assertThat(vm.state.value.unitPrice).isEqualTo("8.20")
+        assertThat(vm.state.value.homeTariffPrice).isTrue()
+
+        vm.type(NumericField.UnitPrice, "9")
+        assertThat(vm.state.value.homeTariffPrice).isFalse()
     }
 
     private fun fill(id: String, odo: Double, price: Long = 10_292, time: Long = now.toEpochMilli() - 10 * DAY) =

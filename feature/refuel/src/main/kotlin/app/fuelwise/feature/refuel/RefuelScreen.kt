@@ -44,6 +44,7 @@ import app.fuelwise.core.designsystem.component.FwOdometerField
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
 import app.fuelwise.core.designsystem.component.FwSegmentedControl
+import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.component.FwTriangleRow
 import app.fuelwise.core.designsystem.component.KeypadKey
@@ -66,9 +67,13 @@ import java.time.ZoneId
 import kotlin.math.roundToInt
 
 @Composable
-internal fun RefuelScreen(onClose: () -> Unit, viewModel: RefuelViewModel = hiltViewModel()) {
+internal fun RefuelScreen(
+    onClose: () -> Unit,
+    onScan: (vehicleId: String?) -> Unit = {},
+    viewModel: RefuelViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    RefuelContent(state, viewModel.actions(), onClose)
+    RefuelContent(state, viewModel.actions().copy(onScan = { onScan(state.vehicle?.id) }), onClose)
 }
 
 /** Callbacks for [RefuelContent]; defaults make previews and screenshot tests easy. */
@@ -91,6 +96,8 @@ internal data class RefuelActions(
     val onTank: (Int) -> Unit = {},
     val onVehicle: (String?) -> Unit = {},
     val onSave: () -> Unit = {},
+    val onScan: () -> Unit = {},
+    val onRemoveScanPhoto: () -> Unit = {},
 )
 
 private fun RefuelViewModel.actions() = RefuelActions(
@@ -112,6 +119,7 @@ private fun RefuelViewModel.actions() = RefuelActions(
     onTank = ::onTank,
     onVehicle = ::onVehicle,
     onSave = ::save,
+    onRemoveScanPhoto = ::onRemoveScanPhoto,
 )
 
 @Composable
@@ -161,8 +169,10 @@ internal fun RefuelContent(
                     onSelect = actions.onTank,
                 )
             }
+            if (!state.isEdit && !state.isCharge && state.vehicle != null) ScanBanner(actions.onScan)
             OdometerSection(state, actions)
             TriangleSection(state, actions)
+            if (state.scanPhotoToken != null) ScanPhotoRow(actions.onRemoveScanPhoto)
             state.warnings.forEach { warning ->
                 if (warning is CheckFillUp.Warning.MoreThanTank) {
                     Banner(
@@ -516,3 +526,53 @@ internal fun localDate(utcMs: Long) = java.time.Instant.ofEpochMilli(utcMs).atZo
 
 private const val EXPANDED_ROTATION = 180f
 private const val BANNER_ALPHA = 0.16f
+
+/** Slim "Scan pump meter" banner at the top of Add fuel (design.md screen 6 → screen 9, PRD F-15). */
+@Composable
+private fun ScanBanner(onScan: () -> Unit) {
+    Surface(
+        onClick = onScan,
+        shape = FwTheme.radius.input,
+        color = FwTheme.colors.surface2,
+        modifier = Modifier.fillMaxWidth().heightIn(min = FwTheme.size.minTouchTarget),
+    ) {
+        Row(
+            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(painterResource(FwIcons.Camera), null, tint = FwTheme.colors.ink, modifier = Modifier.size(20.dp))
+            Text(
+                stringResource(R.string.refuel_scan_banner),
+                style = FwTheme.type.label,
+                color = FwTheme.colors.ink,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                painterResource(FwIcons.ChevronRight),
+                null,
+                tint = FwTheme.colors.ink2,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+/** The scan photo that will be attached on save, with a way to leave it off. */
+@Composable
+private fun ScanPhotoRow(onRemove: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = FwTheme.size.minTouchTarget),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(FwIcons.Camera), null, tint = FwTheme.colors.ink2, modifier = Modifier.size(20.dp))
+        Text(
+            stringResource(R.string.refuel_scan_photo),
+            style = FwTheme.type.bodyS,
+            color = FwTheme.colors.ink2,
+            modifier = Modifier.weight(1f),
+        )
+        FwTextButton(stringResource(R.string.refuel_scan_photo_remove), onRemove)
+    }
+}

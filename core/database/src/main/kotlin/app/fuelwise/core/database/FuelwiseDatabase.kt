@@ -26,6 +26,7 @@ import app.fuelwise.core.database.model.ReminderCompletionEntity
 import app.fuelwise.core.database.model.ReminderEntity
 import app.fuelwise.core.database.model.TankEntity
 import app.fuelwise.core.database.model.TripEntity
+import app.fuelwise.core.database.model.TripPointBatchEntity
 import app.fuelwise.core.database.model.VehicleEntity
 
 /**
@@ -48,8 +49,9 @@ import app.fuelwise.core.database.model.VehicleEntity
         FastagRechargeEntity::class,
         ImportBatchEntity::class,
         TripEntity::class,
+        TripPointBatchEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class FuelwiseDatabase : RoomDatabase() {

@@ -4,6 +4,8 @@
     <string name="channel_reminders_description">Renewals, service and FASTag balance.</string>
     <string name="channel_insights">Monthly recap</string>
     <string name="channel_insights_description">Your month in numbers, on the 1st.</string>
+    <string name="channel_trip_recording">Trip recording</string>
+    <string name="channel_trip_recording_description">Shows distance and time while a GPS trip records.</string>
     <string name="notif_due_today">%1$s · due today</string>
     <plurals name="notif_due_in_days">
         <item quantity="one">%1$s · in %2$d day</item>

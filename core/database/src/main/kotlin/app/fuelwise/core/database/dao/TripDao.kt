@@ -1,9 +1,11 @@
 package app.fuelwise.core.database.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import app.fuelwise.core.database.model.TripEntity
+import app.fuelwise.core.database.model.TripPointBatchEntity
 import kotlinx.coroutines.flow.Flow
 
 /** Trips (PRD F-07). Deletes are tombstones (CLAUDE.md rule 3). */
@@ -37,4 +39,21 @@ interface TripDao {
         """,
     )
     suspend fun restore(id: String, deletedAt: Long, at: Long, deviceId: String)
+
+    /** Trips still marked recording or paused: the one in progress, or ones a crash or reboot cut short. */
+    @Query("SELECT * FROM trip WHERE status IN ('Recording', 'Paused', 'Interrupted') AND deletedAt IS NULL")
+    fun observeUnfinished(): Flow<List<TripEntity>>
+
+    @Insert
+    suspend fun insertBatch(batch: TripPointBatchEntity)
+
+    @Query("SELECT * FROM trip_point_batch WHERE tripId = :tripId ORDER BY seq")
+    suspend fun batches(tripId: String): List<TripPointBatchEntity>
+
+    @Query("SELECT MAX(seq) FROM trip_point_batch WHERE tripId = :tripId")
+    suspend fun lastSeq(tripId: String): Int?
+
+    /** Raw points are transient (never synced): removed once the route is saved or the trip discarded. */
+    @Query("DELETE FROM trip_point_batch WHERE tripId = :tripId")
+    suspend fun deleteBatches(tripId: String)
 }

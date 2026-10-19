@@ -25,15 +25,17 @@ interface AttachmentStore {
     suspend fun delete(storedName: String)
 }
 
-/**
- * Tink AES-256-GCM with the keyset wrapped by an Android Keystore key (CLAUDE.md stack). The attachment id is the
- * associated data, so a file can't be swapped under another row.
- */
+/** Authenticated encryption for data at rest: documents, receipts and raw trip points (CLAUDE.md rule 5). */
+interface VaultCipher {
+    fun encrypt(plaintext: ByteArray, associatedData: ByteArray): ByteArray
+
+    fun decrypt(ciphertext: ByteArray, associatedData: ByteArray): ByteArray
+}
+
+/** Tink AES-256-GCM with the keyset wrapped by an Android Keystore key (CLAUDE.md stack). */
 @Singleton
-internal class TinkAttachmentStore @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-    @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
-) : AttachmentStore {
+internal class TinkVaultCipher @Inject constructor(@param:ApplicationContext private val context: Context) :
+    VaultCipher {
     private val aead: Aead by lazy {
         AeadConfig.register()
         AndroidKeysetManager.Builder()
@@ -45,16 +47,39 @@ internal class TinkAttachmentStore @Inject constructor(
             .getPrimitive(RegistryConfiguration.get(), Aead::class.java)
     }
 
+    override fun encrypt(plaintext: ByteArray, associatedData: ByteArray): ByteArray =
+        aead.encrypt(plaintext, associatedData)
+
+    override fun decrypt(ciphertext: ByteArray, associatedData: ByteArray): ByteArray =
+        aead.decrypt(ciphertext, associatedData)
+
+    private companion object {
+        const val KEYSET_NAME = "fw_vault_keyset"
+        const val KEYSET_PREFS = "fw_vault_keyset_prefs"
+        const val MASTER_KEY_URI = "android-keystore://fw_vault_master_key"
+    }
+}
+
+/**
+ * Encrypted files in app-private storage. The attachment id is the associated data, so a file can't be swapped under
+ * another row.
+ */
+@Singleton
+internal class TinkAttachmentStore @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
+    private val cipher: VaultCipher,
+) : AttachmentStore {
     private val dir: File get() = File(context.filesDir, VAULT_DIR).apply { mkdirs() }
 
     override suspend fun write(attachmentId: String, plaintext: ByteArray): String = withContext(io) {
         val name = "$attachmentId.bin"
-        File(dir, name).writeBytes(aead.encrypt(plaintext, attachmentId.toByteArray()))
+        File(dir, name).writeBytes(cipher.encrypt(plaintext, attachmentId.toByteArray()))
         name
     }
 
     override suspend fun read(attachmentId: String, storedName: String): ByteArray = withContext(io) {
-        aead.decrypt(File(dir, storedName).readBytes(), attachmentId.toByteArray())
+        cipher.decrypt(File(dir, storedName).readBytes(), attachmentId.toByteArray())
     }
 
     override suspend fun delete(storedName: String) {
@@ -63,8 +88,5 @@ internal class TinkAttachmentStore @Inject constructor(
 
     private companion object {
         const val VAULT_DIR = "vault"
-        const val KEYSET_NAME = "fw_vault_keyset"
-        const val KEYSET_PREFS = "fw_vault_keyset_prefs"
-        const val MASTER_KEY_URI = "android-keystore://fw_vault_master_key"
     }
 }

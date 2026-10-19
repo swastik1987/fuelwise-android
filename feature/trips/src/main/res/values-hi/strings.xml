@@ -85,4 +85,29 @@
     <string name="trips_upi_invalid">यह UPI ID जैसी नहीं लगती (name@bank)।</string>
     <string name="trips_upi_name">आपका नाम (दोस्तों को दिखेगा)</string>
     <string name="trips_upi_save">सेव करें और शेयर करें</string>
+
+    <string name="trips_start">यात्रा शुरू करें</string>
+    <string name="trips_recording_banner">रिकॉर्डिंग · %1$s किमी</string>
+    <string name="trips_paused_banner">रुकी है · %1$s किमी</string>
+    <string name="trips_location_needed">यात्रा रिकॉर्ड करने के लिए ऐप इस्तेमाल करते समय सटीक लोकेशन चाहिए।</string>
+    <string name="trips_too_short">यात्रा बहुत छोटी थी, इसलिए सेव नहीं की गई।</string>
+    <string name="trips_interrupted_title">एक यात्रा की रिकॉर्डिंग रुक गई</string>
+    <string name="trips_interrupted_body">%1$s को %2$s बजे शुरू हुई। फ़ोन या ऐप दोबारा शुरू हुआ। इसे फिर शुरू करें, या आख़िरी रिकॉर्ड हुए पॉइंट पर ख़त्म करें।</string>
+    <string name="trips_resume">फिर शुरू करें</string>
+    <string name="trips_finish">ख़त्म करें</string>
+    <string name="trips_live_title">यात्रा</string>
+    <string name="trips_live_recording">रिकॉर्ड हो रही है</string>
+    <string name="trips_live_paused">रुकी है</string>
+    <string name="trips_live_none">कोई यात्रा रिकॉर्ड नहीं हो रही</string>
+    <string name="trips_live_none_body">GPS से रिकॉर्ड करने के लिए यात्राएँ में जाकर यात्रा शुरू करें।</string>
+    <string name="trips_live_waiting">GPS का इंतज़ार…</string>
+    <string name="trips_live_elapsed">बीता समय</string>
+    <string name="trips_live_avg_speed">औसत रफ़्तार</string>
+    <string name="trips_live_pause">रोकें</string>
+    <string name="trips_live_resume">फिर शुरू करें</string>
+    <string name="trips_live_stop">ख़त्म करें</string>
+    <string name="trips_kmh">किमी/घं</string>
+    <string name="trips_stat_avg_speed">औसत रफ़्तार</string>
+    <string name="trips_stat_max_speed">सबसे तेज़</string>
+    <string name="trips_stat_idle">रुका रहा</string>
 </resources>

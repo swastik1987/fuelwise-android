@@ -88,4 +88,30 @@
     <string name="trips_upi_invalid">That doesn\'t look like a UPI ID (name@bank).</string>
     <string name="trips_upi_name">Your name (shown to friends)</string>
     <string name="trips_upi_save">Save and share</string>
+
+    <!-- GPS trips (PRD F-07.2, F-07.3) -->
+    <string name="trips_start">Start trip</string>
+    <string name="trips_recording_banner">Recording · %1$s km</string>
+    <string name="trips_paused_banner">Paused · %1$s km</string>
+    <string name="trips_location_needed">Recording a trip needs precise location while you use the app.</string>
+    <string name="trips_too_short">Trip too short to keep, so it wasn\'t saved.</string>
+    <string name="trips_interrupted_title">A trip stopped recording</string>
+    <string name="trips_interrupted_body">Started %1$s at %2$s. The phone or the app restarted. Resume it, or finish it at the last point recorded.</string>
+    <string name="trips_resume">Resume</string>
+    <string name="trips_finish">Finish</string>
+    <string name="trips_live_title">Trip</string>
+    <string name="trips_live_recording">Recording</string>
+    <string name="trips_live_paused">Paused</string>
+    <string name="trips_live_none">No trip recording</string>
+    <string name="trips_live_none_body">Start a trip from Trips to record it with GPS.</string>
+    <string name="trips_live_waiting">Waiting for GPS…</string>
+    <string name="trips_live_elapsed">Elapsed</string>
+    <string name="trips_live_avg_speed">Avg speed</string>
+    <string name="trips_live_pause">Pause</string>
+    <string name="trips_live_resume">Resume</string>
+    <string name="trips_live_stop">Stop</string>
+    <string name="trips_kmh">km/h</string>
+    <string name="trips_stat_avg_speed">Avg speed</string>
+    <string name="trips_stat_max_speed">Top speed</string>
+    <string name="trips_stat_idle">Idle</string>
 </resources>

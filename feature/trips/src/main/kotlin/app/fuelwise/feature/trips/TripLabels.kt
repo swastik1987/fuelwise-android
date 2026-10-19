@@ -44,11 +44,17 @@ internal fun tripTitle(trip: Trip): String {
     }
 }
 
-/** "52 min", "2 h 48 min". Null for trips without an end time. */
+/** "52 min", "2 h 48 min". GPS trips count recorded time (pauses left out); null without an end time. */
 @Composable
 internal fun tripDuration(trip: Trip): String? {
-    val end = trip.endUtcMs ?: return null
-    val minutes = Duration.ofMillis(end - trip.startUtcMs).toMinutes().coerceAtLeast(0)
+    val minutes = trip.recordedSeconds?.let { it / SECONDS_PER_MINUTE }
+        ?: trip.endUtcMs?.let { Duration.ofMillis(it - trip.startUtcMs).toMinutes().coerceAtLeast(0) }
+        ?: return null
+    return durationText(minutes)
+}
+
+@Composable
+internal fun durationText(minutes: Long): String {
     val hours = minutes / MINUTES_PER_HOUR
     val rest = minutes % MINUTES_PER_HOUR
     return when {
@@ -63,4 +69,5 @@ internal fun formatKm(km: Double): String =
     if (km < WHOLE_KM_FROM) IndianNumberFormat.decimal(km, 1) else IndianNumberFormat.decimal(km, 0)
 
 private const val MINUTES_PER_HOUR = 60L
+private const val SECONDS_PER_MINUTE = 60L
 private const val WHOLE_KM_FROM = 100.0

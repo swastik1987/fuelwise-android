@@ -8,15 +8,23 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
+import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
 import app.fuelwise.core.domain.trip.TripSplit
+import app.fuelwise.core.location.RecordingHost
+import app.fuelwise.core.location.RecordingState
+import app.fuelwise.core.location.TripLocationSource
+import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
+import app.fuelwise.core.model.TripSource
+import app.fuelwise.core.model.TripStatus
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeTripRepository
@@ -31,7 +39,12 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -39,6 +52,8 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
+// runCurrent drives the recorder's background work on the test scheduler.
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "w412dp-h915dp-xxhdpi")
@@ -158,10 +173,13 @@ class TripsTest {
             toPlace = "HSR Layout",
             estimatedFuelCost = Money(15_300),
         )
+        val repo = FakeTripRepository(listOf(mysuru, commute))
         val vm = TripsViewModel(
-            FakeTripRepository(listOf(mysuru, commute)),
+            repo,
             vehicles,
             FakeEntryRepository(expenses = listOf(toll)),
+            userData,
+            recorder(repo),
             zone,
             SavedStateHandle(),
         )
@@ -201,9 +219,102 @@ class TripsTest {
         assertThat((vm.events.first() as TripDetailEvent.Share).link).isNull()
     }
 
-    @Test fun listLight() = capture("trips_list_light", false) { TripsContent(listState(), TripsLinks(), zone) }
+    @Test
+    fun gpsTripStartsRecordsAndStopsIntoTheList() = runTest {
+        val repo = FakeTripRepository()
+        val recorder = recorder(repo)
+        val list = TripsViewModel(
+            repo,
+            vehicles,
+            FakeEntryRepository(),
+            userData,
+            recorder,
+            zone,
+            SavedStateHandle(),
+        )
+        list.startTrip()
+        assertThat(list.events.first()).isEqualTo(TripsEvent.OpenLive)
+        runCurrent()
+        assertThat(list.state.first { it.recording != null }.recording?.km).isEqualTo(0.0)
 
-    @Test fun listDark() = capture("trips_list_dark", true) { TripsContent(listState(), TripsLinks(), zone) }
+        val refuels = FakeEntryRepository(refuels = SampleEntries.safariRefuels)
+        val live = LiveTripViewModel(recorder, vehicles, refuels, estimate)
+        source.emit((0..10).map { TrackPoint(it * 5_000L, 12.900 + it * 0.001, 77.6, 8f, 20f, 0) })
+        runCurrent()
+        val recording = live.state.first { (it.recording?.summary?.distanceKm ?: 0.0) > 1.0 }
+        assertThat(recording.vehicleName).isEqualTo("Safari")
+        assertThat(recording.estimate).isNotNull()
+
+        live.stop()
+        val finished = live.events.first() as LiveTripEvent.Finished
+        val trip = repo.trips.single()
+        assertThat(finished.tripId).isEqualTo(trip.id)
+        assertThat(trip.status).isEqualTo(TripStatus.Done)
+        assertThat(trip.distanceKm).isWithin(0.01).of(1.11)
+        val after = list.state.first { it.recording == null }
+        assertThat(after.weeks.single().rows.single().trip.id).isEqualTo(trip.id)
+        assertThat(after.interrupted).isEmpty()
+    }
+
+    @Test
+    fun aTripCutShortOffersFinish() = runTest {
+        val cut = mysuru.copy(
+            id = "cut",
+            source = TripSource.Gps,
+            status = TripStatus.Recording,
+            endUtcMs = null,
+            estimatedFuelCost = null,
+        )
+        val repo = FakeTripRepository(listOf(cut))
+        repo.appendPoints("cut", (0..10).map { TrackPoint(it * 5_000L, 12.900 + it * 0.001, 77.6, 8f, null, 0) })
+        val list =
+            TripsViewModel(repo, vehicles, FakeEntryRepository(), userData, recorder(repo), zone, SavedStateHandle())
+        val state = list.state.first { !it.loading }
+        assertThat(state.interrupted.map { it.id }).containsExactly("cut")
+        // Unfinished trips stay out of the weekly list until finished.
+        assertThat(state.weeks).isEmpty()
+        list.finishInterrupted("cut")
+        assertThat(list.events.first()).isEqualTo(TripsEvent.OpenTrip("cut"))
+        assertThat(repo.trips.single().status).isEqualTo(TripStatus.Done)
+    }
+
+    @Test fun liveLight() = capture("trip_live_light", false) {
+        LiveTripContent(liveState(), clock.millis(), TripsLinks(), LiveTripActions())
+    }
+
+    @Test fun liveDark() = capture("trip_live_dark", true) {
+        LiveTripContent(liveState(), clock.millis(), TripsLinks(), LiveTripActions())
+    }
+
+    @Test fun listRecordingLight() = capture("trips_list_recording_light", false) {
+        TripsContent(
+            listState().copy(
+                recording = RecordingBanner("live", 12.4, paused = false),
+                interrupted = listOf(mysuru.copy(id = "cut", status = TripStatus.Recording)),
+            ),
+            TripsLinks(),
+            zone = zone,
+        )
+    }
+
+    @Test fun detailGpsLight() = capture("trip_detail_gps_light", false) {
+        TripDetailContent(
+            detailState().copy(
+                trip = mysuru.copy(
+                    source = TripSource.Gps,
+                    recordedSeconds = 9_840,
+                    idleSeconds = 720,
+                    maxSpeedKmh = 96.0,
+                ),
+            ),
+            TripsLinks(),
+            TripDetailActions(),
+        )
+    }
+
+    @Test fun listLight() = capture("trips_list_light", false) { TripsContent(listState(), TripsLinks(), zone = zone) }
+
+    @Test fun listDark() = capture("trips_list_dark", true) { TripsContent(listState(), TripsLinks(), zone = zone) }
 
     @Test fun detailLight() = capture("trip_detail_light", false) {
         TripDetailContent(detailState(), TripsLinks(), TripDetailActions())
@@ -274,6 +385,58 @@ class TripsTest {
         fuelBasis = TripCostBasis.Efficiency(EnergyType.DIESEL, 10.0, 14.6, Money(8_960), isManual = false),
         split = TripSplit(3, Money(112_600), Money(37_500)),
     )
+
+    private fun liveState(): LiveTripUiState {
+        // A bend through Koramangala, with a pause in the middle.
+        val route = listOf(
+            TrackPoint(0, 12.9352, 77.6245, 8f, null, 0),
+            TrackPoint(60_000, 12.9300, 77.6290, 8f, null, 0),
+            TrackPoint(120_000, 12.9280, 77.6380, 8f, null, 0),
+            TrackPoint(400_000, 12.9220, 77.6420, 8f, null, 1),
+            TrackPoint(460_000, 12.9150, 77.6440, 8f, null, 1),
+        )
+        return LiveTripUiState(
+            loading = false,
+            recording = RecordingState.Active(
+                tripId = "live",
+                vehicleId = "safari",
+                startUtcMs = clock.millis() - 2_292_000,
+                paused = false,
+                summary = TrackSummary(23.4, 2_292, 300, 62.0),
+                route = route,
+                activeMsBefore = 0,
+                activeSinceUtcMs = clock.millis() - 2_292_000,
+            ),
+            vehicleName = "Safari",
+            estimate = Money(15_900),
+        )
+    }
+
+    private fun TestScope.recorder(repo: FakeTripRepository) = TripRecorder(
+        repo,
+        vehicles,
+        FakeEntryRepository(refuels = SampleEntries.safariRefuels),
+        estimate,
+        source,
+        object : RecordingHost {
+            override fun startForegroundRecording() = Unit
+        },
+        clock,
+        zone,
+        backgroundScope,
+    )
+
+    private val source = object : TripLocationSource {
+        private val batches = MutableSharedFlow<List<TrackPoint>>()
+
+        override val hasPermission = true
+
+        override fun fixes(lifetimeMs: Long): Flow<List<TrackPoint>> = batches
+
+        override fun flush() = Unit
+
+        suspend fun emit(batch: List<TrackPoint>) = batches.emit(batch)
+    }
 
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
         compose.setContent { FuelwiseTheme(darkTheme = dark) { content() } }

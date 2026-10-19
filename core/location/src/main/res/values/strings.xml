@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trip_notif_recording">Recording trip</string>
+    <string name="trip_notif_paused">Trip paused</string>
+    <string name="trip_notif_distance">%1$s km</string>
+    <string name="trip_notif_pause">Pause</string>
+    <string name="trip_notif_resume">Resume</string>
+    <string name="trip_notif_stop">Stop</string>
+</resources>

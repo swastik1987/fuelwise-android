@@ -25,6 +25,9 @@ internal fun TripEntity.toModel() = Trip(
     estimatedFuelCost = estCostPaise?.let(::Money),
     source = enumValueOrNull<TripSource>(source) ?: TripSource.Manual,
     status = enumValueOrNull<TripStatus>(status) ?: TripStatus.Done,
+    recordedSeconds = recordedSeconds,
+    idleSeconds = idleSeconds,
+    maxSpeedKmh = maxSpeedKmh,
 )
 
 internal fun Trip.toEntity(sync: SyncMeta, polylineAttachmentId: String? = null) = TripEntity(
@@ -45,5 +48,8 @@ internal fun Trip.toEntity(sync: SyncMeta, polylineAttachmentId: String? = null)
     estCostPaise = estimatedFuelCost?.paise,
     source = source.name,
     status = status.name,
+    recordedSeconds = recordedSeconds,
+    idleSeconds = idleSeconds,
+    maxSpeedKmh = maxSpeedKmh,
     sync = sync,
 )

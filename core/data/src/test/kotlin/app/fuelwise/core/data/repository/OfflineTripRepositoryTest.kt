@@ -4,17 +4,23 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.data.mapper.toEntity
+import app.fuelwise.core.data.vault.AttachmentStore
+import app.fuelwise.core.data.vault.VaultCipher
 import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.domain.id.UuidV7Generator
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
+import app.fuelwise.core.model.TripSource
+import app.fuelwise.core.model.TripStatus
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -33,7 +39,38 @@ class OfflineTripRepositoryTest {
         .allowMainThreadQueries()
         .build()
     private val ids = UuidV7Generator(clock)
-    private val trips = OfflineTripRepository(db.tripDao(), ids, SyncStamper(clock) { "device-a" })
+    private val files = mutableMapOf<String, ByteArray>()
+    private val store = object : AttachmentStore {
+        override suspend fun write(attachmentId: String, plaintext: ByteArray): String =
+            "$attachmentId.bin".also { files[it] = plaintext.reversedArray() }
+
+        override suspend fun read(attachmentId: String, storedName: String) =
+            files[storedName]?.reversedArray() ?: throw java.io.FileNotFoundException(storedName)
+
+        override suspend fun delete(storedName: String) {
+            files.remove(storedName)
+        }
+    }
+
+    // Reverses and tags the bytes: enough to prove what's stored isn't the plain encoding, and that AD is checked.
+    private val cipher = object : VaultCipher {
+        override fun encrypt(plaintext: ByteArray, associatedData: ByteArray) =
+            associatedData + byteArrayOf(0) + plaintext.reversedArray()
+
+        override fun decrypt(ciphertext: ByteArray, associatedData: ByteArray): ByteArray {
+            check(ciphertext.take(associatedData.size) == associatedData.toList()) { "Wrong associated data" }
+            return ciphertext.drop(associatedData.size + 1).toByteArray().reversedArray()
+        }
+    }
+    private val trips = OfflineTripRepository(
+        db.tripDao(),
+        db.documentDao(),
+        store,
+        cipher,
+        ids,
+        SyncStamper(clock) { "device-a" },
+        Dispatchers.Unconfined,
+    )
     private val entries = OfflineEntryRepository(db.entryDao(), ids, clock) { "device-a" }
 
     @After
@@ -79,6 +116,44 @@ class OfflineTripRepositoryTest {
         )
         assertThat(entries.observeExpense(expenseId).first()?.tripId).isEqualTo("trip-1")
     }
+
+    @Test
+    fun recordingKeepsRawPointsEncryptedThenOnlyTheRoute() = runTest {
+        val id = trips.save(trip().copy(source = TripSource.Gps, status = TripStatus.Recording))
+        assertThat(trips.observeUnfinished().first().map { it.id }).containsExactly(id)
+
+        val first = listOf(point(0, 12.900), point(5, 12.901))
+        val second = listOf(point(10, 12.902, segment = 1))
+        trips.appendPoints(id, first)
+        trips.appendPoints(id, second)
+        trips.appendPoints(id, emptyList())
+        assertThat(trips.points(id)).isEqualTo(first + second)
+        // Stored as ciphertext bound to (trip, seq), never as the plain encoding.
+        val stored = db.tripDao().batches(id)
+        assertThat(stored.map { it.seq }).containsExactly(0, 1).inOrder()
+        assertThat(stored.first().payload.decodeToString()).startsWith("$id:0")
+
+        val done = trips.observeTrip(id).first()!!
+            .copy(status = TripStatus.Done, distanceKm = 0.2, recordedSeconds = 10)
+        trips.finishRecording(done, listOf(first.first(), second.last()))
+        assertThat(db.tripDao().batches(id)).isEmpty()
+        assertThat(trips.route(id)).containsExactly(first.first(), second.last()).inOrder()
+        assertThat(trips.observeUnfinished().first()).isEmpty()
+        assertThat(trips.observeTrip(id).first()?.recordedSeconds).isEqualTo(10)
+    }
+
+    @Test
+    fun discardDropsTheTripAndItsPoints() = runTest {
+        val id = trips.save(trip().copy(source = TripSource.Gps, status = TripStatus.Recording))
+        trips.appendPoints(id, listOf(point(0, 12.9)))
+        trips.discardRecording(id)
+        assertThat(db.tripDao().batches(id)).isEmpty()
+        assertThat(trips.observeTrips().first()).isEmpty()
+        assertThat(trips.route(id)).isEmpty()
+    }
+
+    private fun point(seconds: Long, lat: Double, segment: Int = 0) =
+        TrackPoint(seconds * 1_000, lat, 77.6, 8f, 12f, segment)
 
     private fun trip() = Trip(
         id = "",

@@ -54,6 +54,8 @@ data class RefuelFormState(
     val warnings: List<CheckFillUp.Warning> = emptyList(),
     val saving: Boolean = false,
     val reward: FillReward? = null,
+    /** A scan photo waiting to be attached on save (PRD F-15); null when none or removed. */
+    val scanPhotoToken: String? = null,
 ) {
     val tank: Tank? get() = vehicle?.tanks?.getOrNull(tankIndex)
     val isCharge: Boolean get() = tank?.energyType == EnergyType.ELECTRIC

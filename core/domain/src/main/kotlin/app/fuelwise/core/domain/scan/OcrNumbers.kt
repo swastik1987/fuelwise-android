@@ -43,7 +43,9 @@ internal object OcrNumbers {
         Regex("""(?<!\d)\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}(?!\d)"""),
         Regex("""(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)"""),
         Regex("""(?<!\d)\d{1,2}:\d{2}(:\d{2})?(?!\d)"""),
-        Regex("""(?i)(?<!\d)\d{1,2}[\s-]*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[\s,-]*\d{2,4}(?!\d)"""),
+        Regex(
+            """(?i)(?<!\d)\d{1,2}[\s-]*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[\s,-]*\d{2,4}(?!\d)""",
+        ),
     )
     private const val MAX_DIGITS = 9
     private const val GROUP_DIGITS = 3

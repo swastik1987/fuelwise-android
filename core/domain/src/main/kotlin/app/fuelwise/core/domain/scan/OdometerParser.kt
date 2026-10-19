@@ -29,7 +29,8 @@ object OdometerParser {
         // Odometers show whole km or tenths; two or more decimals is a price or a quantity.
         val runs = tokens.filter { !it.joined && (it.decimals ?: 0) <= 1 }.map { it.integerDigits to it.repairs } +
             thousandsJoined(row, tokens)
-        return runs.filter { (digits, _) -> digits.length >= tuning.minOdometerDigits }.mapNotNull { (digits, repairs) ->
+        val long = runs.filter { (digits, _) -> digits.length >= tuning.minOdometerDigits }
+        return long.mapNotNull { (digits, repairs) ->
             val km = digits.toLongOrNull()?.takeIf { it > 0 } ?: return@mapNotNull null
             var score = digits.length * tuning.odometerDigitWeight - repairs * tuning.repairPenalty
             score += when {

@@ -11,7 +11,7 @@ package app.fuelwise.core.domain.scan
 internal object ScanFixtures {
     fun lines(vararg text: String) = text.map { OcrLine(it) }
 
-    /** A line at row [row] and column [col] of a 100 px grid, for layouts where labels and digits are separate lines. */
+    /** A line at row [row] and column [col] of a 100 px grid, for layouts with labels and digits as separate lines. */
     fun at(text: String, row: Int, col: Int, width: Int = 90) =
         OcrLine(text, OcrBox(left = col * 100, top = row * 100, right = col * 100 + width, bottom = row * 100 + 60))
 

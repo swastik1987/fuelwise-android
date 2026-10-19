@@ -537,7 +537,7 @@ FREE users can generate a text/CSV version of each.
 
 ---
 
-### F-15 Scanning (on-device OCR) — FREE · R1
+### F-15 Scanning (on-device OCR) — FREE · R1 ✅ built (pump meter, receipt and odometer scan with confirm step; photo attach. Open: the ≥85% AC on 50 real photos (D9) — parser tuned on text fixtures only, see docs/scan-tuning.md; ML Kit telemetry dependency to decide, PR notes)
 
 - **Pump meter scan:**
   - Camera frame on the dispenser display.

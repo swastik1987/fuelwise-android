@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prices_title">ईंधन की कीमतें</string>
+    <string name="prices_back">वापस</string>
+    <string name="prices_home_city">होम शहर</string>
+    <string name="prices_change_city">बदलें</string>
+    <string name="prices_change_city_cd">होम शहर बदलें, अभी %1$s</string>
+    <string name="prices_no_city_title">अपना शहर चुनें</string>
+    <string name="prices_no_city_body">राज्यों के बीच ईंधन की कीमतें काफ़ी अलग होती हैं। ट्रैक करने के लिए अपना शहर चुनें।</string>
+    <string name="prices_no_city_action">शहर चुनें</string>
+    <string name="prices_per_unit">%1$s/%2$s</string>
+    <string name="prices_no_price">अभी कोई कीमत नहीं — आज की कीमत जोड़ें</string>
+    <string name="prices_add">जोड़ें</string>
+    <string name="prices_row_cd">%1$s, %2$s प्रति %3$s</string>
+    <string name="prices_row_empty_cd">%1$s, अभी कोई कीमत नहीं। आज की कीमत जोड़ें</string>
+    <string name="prices_change_since">%2$s से %1$s</string>
+    <string name="prices_no_change_since">%1$s से कोई बदलाव नहीं</string>
+    <string name="prices_source_manual">आपकी डाली कीमतें · %1$s को अपडेट</string>
+    <string name="prices_source_feed">06:30 IST पर अपडेट · %1$s</string>
+    <string name="prices_find_pump">पास का पेट्रोल पंप खोजें</string>
+    <string name="prices_find_cng">पास का CNG स्टेशन खोजें</string>
+    <string name="prices_find_charger">पास का चार्जिंग स्टेशन खोजें</string>
+    <string name="prices_find_note">Google Maps खुलता है। Fuelwise आपकी लोकेशन नहीं भेजता।</string>
+    <string name="prices_no_maps">कोई मैप ऐप या ब्राउज़र नहीं मिला।</string>
+    <string name="prices_compare">शहरों की तुलना</string>
+    <string name="prices_compare_body">यात्रा या राज्यों की तुलना के लिए 3 शहर तक पिन करें।</string>
+    <string name="prices_compare_add">शहर जोड़ें</string>
+    <string name="prices_unpin_cd">%1$s को तुलना से हटाएँ</string>
+    <string name="prices_alerts_title">कीमत अलर्ट</string>
+    <string name="prices_alerts_body">जब मेरे होम शहर में कोई कीमत ₹1 या ज़्यादा बदले, तो बताएँ।</string>
+    <string name="prices_alerts_no_feed">अलर्ट के लिए रोज़ाना प्राइस फ़ीड चाहिए, जो अभी उपलब्ध नहीं है। आपकी पसंद सेव है।</string>
+    <string name="prices_sheet_title">%1$s · %2$s</string>
+    <string name="prices_sheet_amount">कीमत प्रति %1$s</string>
+    <string name="prices_sheet_date">तारीख़: %1$s</string>
+    <string name="prices_sheet_date_cd">कीमत की तारीख़ %1$s। तारीख़ बदलें</string>
+    <string name="prices_sheet_hint">पंप के बोर्ड की कीमत (RSP), छूट के बाद आपने जो दिया वह नहीं।</string>
+    <string name="prices_sheet_save">कीमत सेव करें</string>
+    <string name="prices_sheet_delete">यह कीमत हटाएँ</string>
+    <string name="prices_picker_title">शहर चुनें</string>
+    <string name="prices_picker_search">शहर या राज्य खोजें</string>
+    <string name="prices_picker_popular">लोकप्रिय</string>
+    <string name="prices_picker_all">सभी शहर</string>
+    <string name="prices_picker_none">कोई शहर नहीं मिला। राज्य का नाम आज़माएँ।</string>
+</resources>

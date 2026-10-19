@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
@@ -15,8 +16,14 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.entry.PriceTriangle.Field
 import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.prices.PriceDefault
+import app.fuelwise.core.domain.prices.choosePriceDefault
+import app.fuelwise.core.domain.prices.priceFuelFor
 import app.fuelwise.core.model.ChargerType
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
+import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.PriceSource
@@ -26,6 +33,8 @@ import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +54,7 @@ class RefuelViewModel @Inject constructor(
     private val vehicles: VehicleRepository,
     private val entries: EntryRepository,
     private val trips: TripRepository,
+    private val cityPrices: FuelPriceRepository,
     private val userData: UserDataRepository,
     private val checkFillUp: CheckFillUp,
     private val computeReward: ComputeFillReward,
@@ -98,10 +108,11 @@ class RefuelViewModel @Inject constructor(
         // A finished trip's odometer counts too (PRD F-07.6), so the hint follows recent driving.
         val tripList = trips.observeTrips().first()
         val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses, tripList))
+        val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
+        val latestCity = if (applyDefaults) latestCityPrice(tank.energyType, last?.grade) else null
         _state.update { current ->
             var next = current.copy(predictedOdometer = predicted)
             if (applyDefaults) {
-                val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
                 next = next.copy(
                     isFull = last?.isFull ?: true,
                     grade = last?.grade,
@@ -110,23 +121,46 @@ class RefuelViewModel @Inject constructor(
                     socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
                     socEnd = last?.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
                 )
-                // Price defaults to the last price paid for this tank (PRD F-02.3) and counts as one locked edit.
-                val lastPrice = if (next.isCharge) {
+                // Price defaults to the last price paid for this tank, or the home-city price when that is at least
+                // as new (PRD F-02.3, F-09), and counts as one locked edit.
+                val default = if (next.isCharge) {
                     tankFills.filter { it.chargerType == next.charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+                        ?.let(PriceDefault::LastPaid)
                 } else {
-                    last?.unitPrice
+                    choosePriceDefault(last?.unitPrice, last?.let { localDate(it.dateTimeUtcMs) }, latestCity, today())
                 }
-                if (lastPrice != null && current.unitPrice.isEmpty()) {
+                if (default != null && current.unitPrice.isEmpty()) {
                     next = next.copy(
-                        unitPrice = MoneyInput.plain(lastPrice),
+                        unitPrice = MoneyInput.plain(default.price),
                         recentEdits = listOf(Field.UnitPrice),
-                        priceSource = PriceSource.LastPaid,
+                        priceSource = if (default is PriceDefault.City) PriceSource.CityPrice else PriceSource.LastPaid,
                     )
                 }
             }
             next.revalidated()
         }
     }
+
+    /** The newest home-city price for the tank's fuel, if a home city and a price exist (PRD F-09.1). */
+    private suspend fun latestCityPrice(energy: EnergyType, grade: FuelGrade?): FuelPrice? {
+        val city = userData.userData.first().homeCityId ?: return null
+        val fuel = priceFuelFor(energy, grade) ?: return null
+        return cityPrices.latestOnOrBefore(city, fuel, today())
+    }
+
+    /** "Did I pay fair?" (PRD F-09.3): the saved price against the home-city price in effect that day. */
+    private suspend fun fairPriceFor(refuel: Refuel): FairPrice? {
+        val tank = _state.value.vehicle?.tanks?.firstOrNull { it.id == refuel.tankId } ?: return null
+        val city = userData.userData.first().homeCityId ?: return null
+        val fuel = priceFuelFor(tank.energyType, refuel.grade) ?: return null
+        val day = localDate(refuel.dateTimeUtcMs)
+        val history = cityPrices.history(city, fuel, day.minusDays(FairPrice.MAX_AGE_DAYS), day)
+        return FairPrice.of(refuel.unitPrice, day, history)
+    }
+
+    private fun localDate(utcMs: Long): LocalDate = Instant.ofEpochMilli(utcMs).atZone(zoneId).toLocalDate()
+
+    private fun today(): LocalDate = LocalDate.now(clock.withZone(zoneId))
 
     fun onKey(key: KeypadKey) {
         val field = _state.value.focus ?: return
@@ -255,7 +289,8 @@ class RefuelViewModel @Inject constructor(
         viewModelScope.launch {
             val id = entries.saveRefuel(refuel)
             val fills = entries.observeRefuels(refuel.vehicleId).first().filter { it.tankId == refuel.tankId }
-            _state.update { it.copy(saving = false, reward = computeReward(fills, id)) }
+            val fair = fairPriceFor(refuel)
+            _state.update { it.copy(saving = false, reward = computeReward(fills, id), fairPrice = fair) }
         }
     }
 

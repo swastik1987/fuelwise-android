@@ -6,6 +6,11 @@
     <string name="channel_insights_description">Your month in numbers, on the 1st.</string>
     <string name="channel_trip_recording">Trip recording</string>
     <string name="channel_trip_recording_description">Shows distance and time while a GPS trip records.</string>
+    <string name="channel_price_alerts">Price alerts</string>
+    <string name="channel_price_alerts_description">When a fuel price in your home city moves by ₹1 or more.</string>
+    <string name="notif_price_up">%1$s in %2$s up %3$s/%4$s today</string>
+    <string name="notif_price_down">%1$s in %2$s down %3$s/%4$s today</string>
+    <string name="notif_price_body">Now %1$s/%2$s. Tap to see city prices.</string>
     <string name="notif_due_today">%1$s · due today</string>
     <plurals name="notif_due_in_days">
         <item quantity="one">%1$s · in %2$d day</item>

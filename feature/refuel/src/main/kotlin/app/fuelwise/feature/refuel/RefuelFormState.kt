@@ -3,6 +3,7 @@ package app.fuelwise.feature.refuel
 import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
+import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -54,6 +55,8 @@ data class RefuelFormState(
     val warnings: List<CheckFillUp.Warning> = emptyList(),
     val saving: Boolean = false,
     val reward: FillReward? = null,
+    /** "Did I pay fair?" for the saved fill (PRD F-09.3); null without a home-city price for that day. */
+    val fairPrice: FairPrice? = null,
 ) {
     val tank: Tank? get() = vehicle?.tanks?.getOrNull(tankIndex)
     val isCharge: Boolean get() = tank?.energyType == EnergyType.ELECTRIC

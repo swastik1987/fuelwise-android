@@ -12,9 +12,12 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import app.fuelwise.core.designsystem.icon.FwIcons
+import app.fuelwise.core.domain.prices.PriceChange
 import app.fuelwise.core.domain.reminder.ReminderStatus
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.price.PriceLabels
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,6 +37,9 @@ object NotificationRoutes {
 
     /** A trip's detail with the odometer sheet open (PRD F-07.6); [EXTRA_ARG] is the trip id. */
     const val OPEN_TRIP_ODOMETER = "trip_odometer"
+
+    /** City fuel prices (PRD F-09), from a price alert. */
+    const val OPEN_PRICES = "prices"
 }
 
 /** Channel ids other modules post to (the trip recorder in core:location). */
@@ -76,6 +82,35 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
             )
                 .apply { description = context.getString(R.string.channel_trip_recording_description) },
         )
+        // Opt-in in the app (PRD F-09.5); low importance, a price move is never urgent.
+        system.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_PRICE_ALERTS,
+                context.getString(R.string.channel_price_alerts),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+                .apply { description = context.getString(R.string.channel_price_alerts_description) },
+        )
+    }
+
+    /**
+     * "Petrol in Bengaluru up ₹1.20/L today." (design.md screen 31).
+     * Amounts use the same ₹ formatting as the prices screen.
+     */
+    fun priceChange(change: PriceChange, cityName: String) {
+        val fuel = context.getString(PriceLabels.fuel(change.fuel))
+        val unit = context.getString(PriceLabels.unit(change.fuel))
+        val delta = IndianNumberFormat.rupees(Money(abs(change.delta.paise)))
+        val title = context.getString(
+            if (change.delta.isNegative) R.string.notif_price_down else R.string.notif_price_up,
+            fuel,
+            cityName,
+            delta,
+            unit,
+        )
+        val body = context.getString(R.string.notif_price_body, IndianNumberFormat.rupees(change.after), unit)
+        val id = notificationId("price:${change.fuel}")
+        post(id, base(CHANNEL_PRICE_ALERTS, title, body, open(NotificationRoutes.OPEN_PRICES, id)))
     }
 
     val canPost: Boolean
@@ -222,6 +257,7 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
     private companion object {
         const val CHANNEL_REMINDERS = "reminders"
         const val CHANNEL_INSIGHTS = "insights"
+        const val CHANNEL_PRICE_ALERTS = "price_alerts"
         const val RECAP_ID = 1
     }
 }

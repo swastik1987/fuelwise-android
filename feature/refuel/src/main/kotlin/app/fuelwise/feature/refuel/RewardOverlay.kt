@@ -50,7 +50,14 @@ import kotlinx.coroutines.delay
  * haptic; the sheet dismisses itself after 3 seconds, on tap, or on a downward swipe.
  */
 @Composable
-internal fun RewardOverlay(reward: FillReward, vehicleName: String, unit: String, onDismiss: () -> Unit) {
+internal fun RewardOverlay(
+    reward: FillReward,
+    vehicleName: String,
+    unit: String,
+    onDismiss: () -> Unit,
+    // "You paid ₹0.42/L above the city price" (PRD F-09.3); null without a city price for that day.
+    fairPriceLine: String? = null,
+) {
     val view = LocalView.current
     val scale = remember { Animatable(LAND_FROM) }
     LaunchedEffect(reward) {
@@ -108,6 +115,7 @@ internal fun RewardOverlay(reward: FillReward, vehicleName: String, unit: String
                     R.string.reward_not_measured_body,
                 )
             }
+            fairPriceLine?.let { Text(it, style = FwTheme.type.body, color = FwTheme.colors.ink2) }
             Text(
                 stringResource(R.string.reward_dismiss),
                 style = FwTheme.type.caption,

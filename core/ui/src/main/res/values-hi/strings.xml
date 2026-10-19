@@ -14,6 +14,10 @@
     <string name="energy_lpg">LPG</string>
     <string name="energy_electric">इलेक्ट्रिक</string>
     <string name="energy_ethanol">इथेनॉल / फ़्लेक्स</string>
+    <string name="price_fuel_premium">प्रीमियम पेट्रोल</string>
+    <string name="fair_price_above">आपने शहर की कीमत से %1$s/%2$s ज़्यादा दिए</string>
+    <string name="fair_price_below">आपने शहर की कीमत से %1$s/%2$s कम दिए</string>
+    <string name="fair_price_same">आपने शहर की कीमत ही दी</string>
     <string name="fuel_setup_cng_petrol">CNG + पेट्रोल</string>
     <string name="fuel_setup_lpg_petrol">LPG + पेट्रोल</string>
     <string name="fuel_setup_other">अन्य</string>

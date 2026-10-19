@@ -14,6 +14,10 @@
     <string name="energy_lpg">LPG</string>
     <string name="energy_electric">Electric</string>
     <string name="energy_ethanol">Ethanol / flex</string>
+    <string name="price_fuel_premium">Premium petrol</string>
+    <string name="fair_price_above">You paid %1$s/%2$s above the city price</string>
+    <string name="fair_price_below">You paid %1$s/%2$s below the city price</string>
+    <string name="fair_price_same">You paid the city price</string>
     <string name="fuel_setup_cng_petrol">CNG + Petrol</string>
     <string name="fuel_setup_lpg_petrol">LPG + Petrol</string>
     <string name="fuel_setup_other">Other</string>

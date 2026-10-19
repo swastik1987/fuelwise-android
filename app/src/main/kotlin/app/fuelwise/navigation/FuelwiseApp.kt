@@ -61,6 +61,8 @@ import app.fuelwise.feature.onboarding.WelcomeRoute
 import app.fuelwise.feature.onboarding.historyScreen
 import app.fuelwise.feature.onboarding.privacyScreen
 import app.fuelwise.feature.onboarding.welcomeScreen
+import app.fuelwise.feature.prices.PricesRoute
+import app.fuelwise.feature.prices.pricesScreen
 import app.fuelwise.feature.refuel.RefuelRoute
 import app.fuelwise.feature.refuel.refuelSheet
 import app.fuelwise.feature.reminders.ReminderEditorRoute
@@ -93,6 +95,8 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_FASTAG -> FastagRoute
 
             NotificationRoutes.OPEN_LIVE_TRIP -> LiveTripRoute
+
+            NotificationRoutes.OPEN_PRICES -> PricesRoute()
 
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
@@ -162,6 +166,7 @@ fun FuelwiseApp(
                     onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
                     onOpenTrips = { navController.navigate(TripsRoute()) },
                     onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
+                    onOpenPrices = { navController.navigate(PricesRoute()) },
                 ),
             )
             refuelSheet(onClose = navController::popBackStack)
@@ -190,6 +195,7 @@ fun FuelwiseApp(
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
                     onTrips = { navController.navigate(TripsRoute()) },
+                    onPrices = { navController.navigate(PricesRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                 ),
@@ -216,6 +222,7 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            pricesScreen(onBack = navController::popBackStack)
             tripsScreens(
                 TripsLinks(
                     onBack = navController::popBackStack,

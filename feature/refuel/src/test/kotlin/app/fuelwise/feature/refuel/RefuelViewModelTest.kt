@@ -9,14 +9,18 @@ import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
+import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.model.ChargerType
+import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.PriceFuel
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.testing.FakeEntryRepository
+import app.fuelwise.core.testing.FakeFuelPriceRepository
 import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
@@ -25,6 +29,7 @@ import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
@@ -49,12 +54,15 @@ class RefuelViewModelTest {
         vehicleId: String = "safari",
         refuelId: String? = null,
         trips: FakeTripRepository = FakeTripRepository(),
+        cityPrices: FakeFuelPriceRepository = FakeFuelPriceRepository(),
+        userData: FakeUserDataRepository = FakeUserDataRepository(),
     ) = RefuelViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId)),
         vehicles = vehicles,
         entries = entries,
         trips = trips,
-        userData = FakeUserDataRepository(),
+        cityPrices = cityPrices,
+        userData = userData,
         checkFillUp = CheckFillUp(),
         computeReward = ComputeFillReward(ComputeConsumption()),
         predictions = ComputePredictions(clock),
@@ -88,6 +96,42 @@ class RefuelViewModelTest {
         assertThat(vm.state.value.priceSource).isEqualTo(PriceSource.LastPaid)
         vm.type(NumericField.Total, "3558")
         assertThat(vm.state.value.quantity).isEqualTo("40.00")
+    }
+
+    @Test
+    fun aNewerHomeCityPriceIsPrefilledAndTheSaveSaysIfItWasFair() = runTest {
+        entries.saveRefuel(fill("a", odo = 41_900.0, price = 8_850))
+        val today = LocalDate.of(2026, 10, 16)
+        val cityPrices = FakeFuelPriceRepository(
+            listOf(FuelPrice("p1", "bengaluru", PriceFuel.Diesel, today.minusDays(2), Money(8_895))),
+        )
+        val userData = FakeUserDataRepository(FakeUserDataRepository.DEFAULT.copy(homeCityId = "bengaluru"))
+        val vm = viewModel(cityPrices = cityPrices, userData = userData)
+        val ready = vm.state.first { it.unitPrice.isNotEmpty() }
+        assertThat(ready.unitPrice).isEqualTo("88.95")
+        assertThat(ready.priceSource).isEqualTo(PriceSource.CityPrice)
+
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "40")
+        vm.type(NumericField.Total, "3574.80")
+        vm.save()
+        val fair = vm.state.first { it.reward != null }.fairPrice!!
+        assertThat(fair.delta).isEqualTo(Money(42))
+        assertThat(fair.verdict).isEqualTo(FairPrice.Verdict.Above)
+    }
+
+    @Test
+    fun withoutAHomeCityThereIsNoFairPriceLine() = runTest {
+        val vm = viewModel(
+            cityPrices = FakeFuelPriceRepository(
+                listOf(FuelPrice("p1", "bengaluru", PriceFuel.Diesel, LocalDate.of(2026, 10, 16), Money(8_895))),
+            ),
+        )
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "40")
+        vm.type(NumericField.Total, "3558")
+        vm.save()
+        assertThat(vm.state.first { it.reward != null }.fairPrice).isNull()
     }
 
     @Test

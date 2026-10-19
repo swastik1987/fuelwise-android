@@ -7,13 +7,17 @@ import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.domain.insights.ComputeMilestones
 import app.fuelwise.core.domain.insights.Milestone
+import app.fuelwise.core.domain.prices.SummarizeCityPrices
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.testing.FakeCategoryRepository
+import app.fuelwise.core.testing.FakeCityRepository
 import app.fuelwise.core.testing.FakeEntryRepository
+import app.fuelwise.core.testing.FakeFuelPriceRepository
 import app.fuelwise.core.testing.FakeLogbookRepository
+import app.fuelwise.core.testing.FakePriceSettingsRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeReminderRepository
 import app.fuelwise.core.testing.FakeTripRepository
@@ -64,6 +68,14 @@ class HomeViewModelTest {
             care = HomeCareSource(
                 reminderStatuses(FakeReminderRepository(), vehicleRepo, entries, clock),
                 FakeRecurrenceRepository(),
+            ),
+            homePrices = HomePricesSource(
+                FakePriceSettingsRepository(),
+                FakeFuelPriceRepository(),
+                FakeCityRepository(),
+                SummarizeCityPrices(),
+                clock,
+                zone,
             ),
             zoneId = zone,
             clock = clock,

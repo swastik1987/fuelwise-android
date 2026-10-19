@@ -43,6 +43,7 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.price.fairPriceText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.Instant
 import java.time.ZoneId
@@ -196,6 +197,14 @@ private fun FillUpFacts(state: EntryDetailUiState.FillUp, onFormula: () -> Unit)
     FwCard(contentPadding = PaddingValues(horizontal = 16.dp)) {
         Fact(stringResource(R.string.detail_quantity), "${IndianNumberFormat.decimal(r.quantity, 2)} $unit")
         Fact(stringResource(R.string.detail_price, unit), IndianNumberFormat.rupees(r.unitPrice))
+        state.fairPrice?.let { fair ->
+            Text(
+                fairPriceText(fair),
+                style = FwTheme.type.caption,
+                color = FwTheme.colors.ink2,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
         if (r.discount.paise >
             0
         ) {

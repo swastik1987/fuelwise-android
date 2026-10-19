@@ -71,6 +71,7 @@ dependencies {
     implementation(projects.feature.backup)
     implementation(projects.feature.dataimport)
     implementation(projects.feature.trips)
+    implementation(projects.feature.prices)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

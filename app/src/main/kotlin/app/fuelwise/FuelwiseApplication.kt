@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import app.fuelwise.core.notifications.Notifier
 import app.fuelwise.di.ApplicationScope
+import app.fuelwise.feature.prices.feed.PriceFeedScheduler
 import app.fuelwise.sync.drive.BackupScheduler
 import app.fuelwise.work.WorkScheduler
 import dagger.hilt.android.HiltAndroidApp
@@ -23,6 +24,8 @@ class FuelwiseApplication :
 
     @Inject lateinit var backupScheduler: BackupScheduler
 
+    @Inject lateinit var priceFeedScheduler: PriceFeedScheduler
+
     @Inject
     @ApplicationScope
     lateinit var appScope: CoroutineScope
@@ -36,5 +39,6 @@ class FuelwiseApplication :
         notifier.createChannels()
         workScheduler.schedule()
         backupScheduler.start(appScope)
+        priceFeedScheduler.start(appScope)
     }
 }

@@ -39,6 +39,9 @@ data class PriceSettings(
 interface PriceSettingsRepository {
     val settings: Flow<PriceSettings>
 
+    /** The same home city onboarding and Settings set; it leaves the pinned list if it was there. */
+    suspend fun setHomeCity(cityId: String)
+
     /** Keeps at most [PriceSettings.MAX_PINNED], without duplicates or the home city. */
     suspend fun setPinned(cityIds: List<String>)
 
@@ -57,6 +60,13 @@ internal class DataStorePriceSettingsRepository @Inject constructor(private val 
             feedEnabled = p.featureFlags.priceFeed,
             lastFeedFetchUtcMs = p.priceFeedLastFetchAt.takeIf { it > 0 },
         )
+    }
+
+    override suspend fun setHomeCity(cityId: String) = source.update {
+        homeCityId = cityId
+        val rest = pinnedCityIds.filter { it != cityId }
+        pinnedCityIds.clear()
+        pinnedCityIds.addAll(rest)
     }
 
     override suspend fun setPinned(cityIds: List<String>) = source.update {

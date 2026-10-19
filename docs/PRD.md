@@ -345,13 +345,13 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.5 Automatic trips (FREE, R2).** Superseded by F-21.3. Trips start and stop on their own when the user drives.
 
-**F-07.6 Post-trip odometer prompt.** A notification action "Update odometer" opens a single-field sheet. **No floating overlay window.**
+**F-07.6 Post-trip odometer prompt.** ✅ built (M8 slice 4: after Stop, a notification "Trip saved · 23.4 km" with "Update odometer"; tapping either opens the trip with a single-field sheet whose prediction is a placeholder only. Without notifications, trip detail offers the same sheet. A reading below the last one known before the trip is refused. Finished trips' odometer readings now feed the predicted odometer on Home, the fill-up hint and odometer reminders) A notification action "Update odometer" opens a single-field sheet. **No floating overlay window.**
 
 **F-07.7 Weekly view and combined map:** (weekly list ✅ built in M8 slice 1; the combined map is Pro and R2, §6)
 - Week-by-week list with totals.
 - "Show all trips on map" for any date range (a top Fuelio review request).
 
-**F-07.8 GPX export** per trip or range.
+**F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Trimming route ends near private places waits for the F-21.6 setting, R2)
 
 **F-07.9 Business mileage report** (PDF, PRO; CSV free):
 - Business trips in a period × reimbursement rate (₹/km, user-set).

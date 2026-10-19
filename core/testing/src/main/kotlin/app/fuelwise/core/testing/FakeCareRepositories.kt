@@ -8,6 +8,7 @@ import app.fuelwise.core.data.repository.ObserveReminderStatuses
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.RulesRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.reminder.EvaluateReminders
@@ -195,10 +196,12 @@ fun reminderStatuses(
     entries: EntryRepository,
     clock: Clock,
     zone: ZoneId = ZoneId.of("Asia/Kolkata"),
+    trips: TripRepository = FakeTripRepository(),
 ) = ObserveReminderStatuses(
     reminders,
     vehicles,
     entries,
+    trips,
     FakeRulesRepository(),
     ComputePredictions(clock),
     EvaluateReminders(clock),

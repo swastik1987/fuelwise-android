@@ -41,6 +41,12 @@ class TripRecorderTest {
             starts++
         }
     }
+    private val prompted = mutableListOf<String>()
+    private val prompts = object : TripPrompts {
+        override fun odometerAfterTrip(tripId: String, distanceKm: Double) {
+            prompted += tripId
+        }
+    }
 
     private fun TestScope.recorder(repo: FakeTripRepository = trips) = TripRecorder(
         repo,
@@ -49,6 +55,7 @@ class TripRecorderTest {
         EstimateTripCost(ComputeConsumption()),
         source,
         host,
+        prompts,
         clock,
         zone,
         backgroundScope,
@@ -84,6 +91,8 @@ class TripRecorderTest {
 
         val saved = recorder.stop()
         assertThat(saved).isEqualTo(id)
+        // The odometer prompt follows a saved trip (PRD F-07.6).
+        assertThat(prompted).containsExactly(id)
         assertThat(source.listening).isEqualTo(0)
         assertThat(source.flushes).isEqualTo(2)
         assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
@@ -106,6 +115,7 @@ class TripRecorderTest {
         send(listOf(fix(0, 12.900), fix(5, 12.90001)))
         assertThat(recorder.stop()).isNull()
         assertThat(trips.trips).isEmpty()
+        assertThat(prompted).isEmpty()
     }
 
     @Test

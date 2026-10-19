@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,13 +14,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,7 +40,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -50,10 +60,12 @@ import app.fuelwise.core.designsystem.component.FwSnackbarHost
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.trip.ExportRange
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.entry.shortDate
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -64,6 +76,7 @@ internal data class TripsActions(
     val onStart: () -> Unit = {},
     val onResume: (tripId: String) -> Unit = {},
     val onFinish: (tripId: String) -> Unit = {},
+    val onExport: () -> Unit = {},
 )
 
 @Composable
@@ -99,9 +112,22 @@ internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltView
             permission.launch(locationPermissions())
         }
     }
+    var choosingRange by rememberSaveable { mutableStateOf(false) }
+    var exportRange by rememberSaveable { mutableStateOf(ExportRange.ThisMonth) }
+    val saveGpx = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(GPX_MIME)) { uri ->
+        uri?.let { viewModel.exportRange(it, exportRange) }
+    }
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
+                is TripsEvent.GpxExported -> snackbar.showSnackbar(
+                    when {
+                        event.failed -> resources.getString(R.string.trips_gpx_failed)
+                        event.saved == 0 -> resources.getString(R.string.trips_gpx_none)
+                        else -> resources.getQuantityString(R.plurals.trips_gpx_saved_many, event.saved, event.saved)
+                    },
+                )
+
                 is TripsEvent.Deleted -> {
                     // Deletes offer undo for 10 seconds (PRD F-02 AC).
                     val result = withTimeoutOrNull(UNDO_WINDOW_MS) {
@@ -131,10 +157,61 @@ internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltView
                 onStart = { withLocation(START) },
                 onResume = withLocation,
                 onFinish = viewModel::finishInterrupted,
+                onExport = { choosingRange = true },
             ),
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
+    if (choosingRange) {
+        RangeSheet(onDismiss = { choosingRange = false }) { range ->
+            choosingRange = false
+            exportRange = range
+            saveGpx.launch(gpxRangeFileName(LocalDate.now()))
+        }
+    }
+}
+
+/** Which trips go into one GPX file (PRD F-07.8: per trip or range). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RangeSheet(onDismiss: () -> Unit, onPick: (ExportRange) -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = FwTheme.colors.surface,
+        shape = FwTheme.radius.sheet,
+    ) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = FwTheme.spacing.m)) {
+            Text(
+                stringResource(R.string.trips_export_title),
+                style = FwTheme.type.h3,
+                color = FwTheme.colors.ink,
+                modifier = Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 8.dp),
+            )
+            ExportRange.entries.forEach { range ->
+                Text(
+                    stringResource(rangeLabel(range)),
+                    style = FwTheme.type.body,
+                    color = FwTheme.colors.ink,
+                    modifier = Modifier.fillMaxWidth().clickable(role = Role.Button) { onPick(range) }
+                        .heightIn(min = 56.dp).padding(horizontal = FwTheme.spacing.gutter, vertical = 16.dp),
+                )
+            }
+            Text(
+                stringResource(R.string.trips_export_note),
+                style = FwTheme.type.caption,
+                color = FwTheme.colors.ink2,
+                modifier = Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 8.dp),
+            )
+        }
+    }
+}
+
+private fun rangeLabel(range: ExportRange) = when (range) {
+    ExportRange.ThisWeek -> R.string.trips_range_week
+    ExportRange.ThisMonth -> R.string.trips_range_month
+    ExportRange.LastThreeMonths -> R.string.trips_range_three_months
+    ExportRange.All -> R.string.trips_range_all
 }
 
 /**
@@ -153,6 +230,17 @@ internal fun TripsContent(
             title = stringResource(R.string.trips_title),
             onBack = links.onBack,
             backContentDescription = stringResource(R.string.trips_back),
+            actions = {
+                if (state.weeks.isNotEmpty()) {
+                    IconButton(onClick = actions.onExport) {
+                        Icon(
+                            painterResource(FwIcons.Download),
+                            stringResource(R.string.trips_export_gpx),
+                            tint = FwTheme.colors.ink,
+                        )
+                    }
+                }
+            },
         )
         if (state.loading) return@Column
         if (!state.hasVehicles) {
@@ -248,6 +336,7 @@ private fun locationPermissions(): Array<String> = buildList {
 }.toTypedArray()
 
 private const val START = "start"
+private const val GPX_MIME = "application/gpx+xml"
 
 @Composable
 private fun WeekHeader(week: TripWeekUi) {

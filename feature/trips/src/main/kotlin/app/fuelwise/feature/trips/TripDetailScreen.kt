@@ -2,9 +2,12 @@ package app.fuelwise.feature.trips
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,12 +23,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -49,6 +54,7 @@ import app.fuelwise.core.designsystem.component.FwMetricTile
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
 import app.fuelwise.core.designsystem.component.FwSecondaryButton
+import app.fuelwise.core.designsystem.component.FwSnackbarHost
 import app.fuelwise.core.designsystem.component.FwStepper
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.component.FwTopBar
@@ -68,7 +74,12 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-internal data class TripDetailActions(val onPeople: (Int) -> Unit = {}, val onShare: (note: String) -> Unit = {})
+internal data class TripDetailActions(
+    val onPeople: (Int) -> Unit = {},
+    val onShare: (note: String) -> Unit = {},
+    val onAddOdometer: () -> Unit = {},
+    val onExportGpx: () -> Unit = {},
+)
 
 @Composable
 internal fun TripDetailScreen(links: TripsLinks, viewModel: TripDetailViewModel = hiltViewModel()) {
@@ -79,10 +90,18 @@ internal fun TripDetailScreen(links: TripsLinks, viewModel: TripDetailViewModel 
     val trip = state.trip
     val title by rememberUpdatedState(trip?.let { tripTitle(it) }.orEmpty())
     val dateText by rememberUpdatedState(trip?.let { IndianNumberFormat.date(localDate(it)) }.orEmpty())
+    val snackbar = remember { SnackbarHostState() }
+    val saveGpx = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(GPX_MIME)) { uri ->
+        uri?.let(viewModel::exportGpx)
+    }
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 TripDetailEvent.NeedUpi -> askingUpi = true
+
+                is TripDetailEvent.GpxExported -> snackbar.showSnackbar(
+                    resources.getString(if (event.saved) R.string.trips_gpx_saved else R.string.trips_gpx_failed),
+                )
 
                 is TripDetailEvent.Share -> {
                     val t = viewModel.state.value.trip ?: return@collect
@@ -98,7 +117,36 @@ internal fun TripDetailScreen(links: TripsLinks, viewModel: TripDetailViewModel 
             }
         }
     }
-    TripDetailContent(state, links, TripDetailActions(viewModel::onPeople, viewModel::share))
+    var editingOdometer by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.askOdometer) {
+        if (state.askOdometer) {
+            editingOdometer = true
+            viewModel.onOdometerAsked()
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        TripDetailContent(
+            state,
+            links,
+            TripDetailActions(
+                viewModel::onPeople,
+                viewModel::share,
+                onAddOdometer = { editingOdometer = true },
+                onExportGpx = { trip?.let { saveGpx.launch(gpxFileName(localDate(it))) } },
+            ),
+        )
+        FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+    }
+    if (editingOdometer) {
+        OdometerSheet(
+            hint = state.odometerHint,
+            error = state.odometerError,
+            onDismiss = {
+                viewModel.clearOdometerError()
+                editingOdometer = false
+            },
+        ) { text -> if (viewModel.saveOdometer(text)) editingOdometer = false }
+    }
     if (askingUpi) {
         UpiSheet(
             state.upiVpa.orEmpty(),
@@ -166,6 +214,14 @@ internal fun TripDetailContent(state: TripDetailUiState, links: TripsLinks, acti
             }
             Stats(trip, state.split?.total)
             if (trip.recordedSeconds != null) GpsStats(trip)
+            if (state.needsOdometer) {
+                FwSecondaryButton(
+                    stringResource(R.string.trips_add_odometer),
+                    actions.onAddOdometer,
+                    Modifier.fillMaxWidth(),
+                    leadingIcon = FwIcons.Speed,
+                )
+            }
             CostsCard(state, trip, links)
             state.split?.let { SplitCard(it, title, trip, actions) }
             trip.notes?.let {
@@ -178,6 +234,14 @@ internal fun TripDetailContent(state: TripDetailUiState, links: TripsLinks, acti
                         modifier = Modifier.padding(top = 6.dp),
                     )
                 }
+            }
+            if (state.route.isNotEmpty()) {
+                FwSecondaryButton(
+                    stringResource(R.string.trips_export_gpx),
+                    actions.onExportGpx,
+                    Modifier.fillMaxWidth(),
+                    leadingIcon = FwIcons.Download,
+                )
             }
         }
     }
@@ -341,6 +405,38 @@ private fun SplitCard(split: TripSplit, title: String, trip: Trip, actions: Trip
     }
 }
 
+/** The single-field sheet after a GPS trip (PRD F-07.6). The prediction is a placeholder, never a value. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OdometerSheet(hint: Double?, error: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var text by rememberSaveable { mutableStateOf("") }
+    val placeholder = hint?.let { stringResource(R.string.trips_odometer_hint, IndianNumberFormat.decimal(it, 0)) }
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = FwTheme.colors.surface,
+        shape = FwTheme.radius.sheet,
+    ) {
+        Column(
+            Modifier.padding(horizontal = FwTheme.spacing.gutter).navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.m),
+        ) {
+            Text(stringResource(R.string.trips_odometer_title), style = FwTheme.type.h3, color = FwTheme.colors.ink)
+            Text(stringResource(R.string.trips_odometer_body), style = FwTheme.type.bodyS, color = FwTheme.colors.ink2)
+            FwTextField(
+                value = text,
+                onValueChange = { text = it.filter { c -> c.isDigit() || c == '.' }.take(MAX_ODOMETER) },
+                label = stringResource(R.string.trips_end_odometer),
+                placeholder = placeholder,
+                unit = stringResource(R.string.trips_km_unit),
+                keyboardType = KeyboardType.Decimal,
+                error = if (error) stringResource(R.string.trips_odometer_invalid) else null,
+            )
+            FwInkButton(stringResource(R.string.trips_save), { onSave(text) }, Modifier.fillMaxWidth())
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UpiSheet(
@@ -450,3 +546,5 @@ private const val ROUTE_MAP_HEIGHT = 220
 private const val SECONDS_PER_MINUTE = 60L
 private const val MAX_VPA = 80
 private const val MAX_NAME = 40
+private const val MAX_ODOMETER = 9
+private const val GPX_MIME = "application/gpx+xml"

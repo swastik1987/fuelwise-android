@@ -11,8 +11,9 @@ data object TripsRoute
 @Serializable
 data class TripEditorRoute(val tripId: String? = null)
 
+/** A trip; [editOdometer] opens the odometer sheet straight away (from the post-trip prompt, PRD F-07.6). */
 @Serializable
-data class TripDetailRoute(val tripId: String)
+data class TripDetailRoute(val tripId: String, val editOdometer: Boolean = false)
 
 /** The GPS trip recording now (design.md screen 18). */
 @Serializable

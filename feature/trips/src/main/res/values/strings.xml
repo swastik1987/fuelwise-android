@@ -116,4 +116,24 @@
     <string name="trips_stat_idle">Idle</string>
     <string name="trips_map_live">Map of the route so far</string>
     <string name="trips_map_route">Map of the route: %1$s</string>
+    <string name="trips_add_odometer">Add odometer reading</string>
+    <string name="trips_odometer_title">Odometer now</string>
+    <string name="trips_odometer_body">Type the reading at the end of this trip. It keeps predictions and service reminders right.</string>
+    <string name="trips_odometer_hint">About %1$s</string>
+    <!-- GPX export (PRD F-07.8) -->
+    <string name="trips_export_gpx">Export GPX</string>
+    <string name="trips_export_title">Export recorded trips as GPX</string>
+    <string name="trips_export_note">One file with a track per trip. It goes only where you save it.</string>
+    <string name="trips_range_week">This week</string>
+    <string name="trips_range_month">This month</string>
+    <string name="trips_range_three_months">Last 3 months</string>
+    <string name="trips_range_all">All time</string>
+    <string name="trips_gpx_saved">Saved as GPX</string>
+    <string name="trips_gpx_failed">Couldn\'t save the file. Try another place.</string>
+    <string name="trips_gpx_none">No recorded trips in that period.</string>
+    <plurals name="trips_gpx_saved_many">
+        <item quantity="one">%1$d trip saved as GPX</item>
+        <item quantity="other">%1$d trips saved as GPX</item>
+    </plurals>
+    <string name="trips_odometer_invalid">That\'s less than where the trip started.</string>
 </resources>

@@ -14,6 +14,7 @@ import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeLogbookRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeReminderRepository
+import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -48,6 +49,7 @@ class HomeViewModelTest {
             vehicles = vehicleRepo,
             userData = userData,
             entries = entries,
+            trips = FakeTripRepository(),
             logbook = FakeLogbookRepository(entries, zone),
             categories = FakeCategoryRepository(),
             summarize = ComputeVehicleSummary(consumption, ComputeCostMetrics(), ComputePredictions(clock), clock),

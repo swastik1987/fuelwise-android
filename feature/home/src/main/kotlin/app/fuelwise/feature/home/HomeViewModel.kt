@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.LogbookRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.entry.LookupIntervals
@@ -53,12 +54,16 @@ sealed interface HomeUiState {
     ) : HomeUiState
 }
 
+// Home reads every part of a vehicle's history (fills, costs, trips, reminders), so it lists more collaborators than
+// the detekt limit; a holder object would only hide them.
+@Suppress("LongParameterList")
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     vehicles: VehicleRepository,
     private val userData: UserDataRepository,
     entries: EntryRepository,
+    trips: TripRepository,
     logbook: LogbookRepository,
     categories: CategoryRepository,
     summarize: ComputeVehicleSummary,
@@ -76,16 +81,20 @@ class HomeViewModel @Inject constructor(
             flowOf(HomeUiState.NoVehicles)
         } else {
             combine(
-                entries.observeRefuels(selected.id),
-                entries.observeExpenses(selected.id),
+                combine(
+                    entries.observeRefuels(selected.id),
+                    entries.observeExpenses(selected.id),
+                    trips.observeTrips(),
+                    ::Triple,
+                ),
                 categories.observeCategories(),
                 logbook.recentEntries(selected.id, RECENT_COUNT),
                 care.observe(selected.id),
-            ) { refuels, expenses, cats, recent, homeCare ->
+            ) { (refuels, expenses, tripList), cats, recent, homeCare ->
                 HomeUiState.Ready(
                     vehicle = selected,
                     vehicles = list,
-                    summary = summarize(selected, refuels, expenses, cats, zoneId),
+                    summary = summarize(selected, refuels, expenses, cats, zoneId, tripList),
                     recent = recent,
                     categories = cats.associateBy { it.id },
                     kmPerUnit = lookupIntervals.kmPerUnit(refuels),

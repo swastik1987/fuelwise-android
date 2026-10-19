@@ -6,6 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +55,7 @@ import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.Urgency
 import app.fuelwise.core.domain.summary.VehicleSummary
+import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
@@ -76,6 +78,9 @@ data class HomeActions(
     val onOpenLogbook: () -> Unit,
     val onOpenReminders: () -> Unit = {},
     val onOpenReminder: (String) -> Unit = {},
+    val onOpenTrips: () -> Unit = {},
+    /** Starts a GPS trip, asking for location first if needed; opens the live trip if one is already recording. */
+    val onStartTrip: () -> Unit = {},
 )
 
 @Composable
@@ -144,6 +149,7 @@ internal fun HomeContent(
                         Dashboard(state, actions) { heroInfo = true }
                     } else {
                         BrandNewVehicle(state.summary.fullFillCount, actions.onLogFuel)
+                        TripTiles(state.trips, actions)
                     }
                     CareCards(state, actions, onConfirmAuto)
                     if (state.recent.isNotEmpty()) Recent(state, actions)
@@ -200,28 +206,9 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
         onInfoClick = onHeroInfo,
         infoContentDescription = stringResource(R.string.home_cost_per_km_title),
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        val latest = s.latestInterval
-        FwMetricTile(
-            overline = stringResource(if (s.isEstimate) R.string.home_mileage_est else R.string.home_mileage),
-            value = latest?.let { IndianNumberFormat.decimal(it.kmPerUnit, 1) } ?: "—",
-            unit = "km/$unit",
-            caption = s.averageInterval?.let {
-                stringResource(R.string.home_mileage_avg, IndianNumberFormat.decimal(it.kmPerUnit, 1))
-            },
-            modifier = Modifier.weight(1f),
-            extra = {
-                FwSparkline(s.recentIntervals.map { it.kmPerUnit }, Modifier.padding(top = 8.dp))
-            },
-        )
-        FwMetricTile(
-            overline = stringResource(R.string.home_spent),
-            value = money(s.month.totalSpend, hide, whole = true),
-            caption = s.month.distance?.let {
-                stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(it.km, 0))
-            },
-            modifier = Modifier.weight(1f),
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(TILE_GAP)) {
+        MetricTiles(s, hide, unit)
+        TripTiles(state.trips, actions)
     }
     s.lastRefuel?.let { last ->
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -265,6 +252,74 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
                 style = FwTheme.type.body,
                 color = FwTheme.colors.ink,
                 modifier = Modifier.padding(top = 6.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MetricTiles(s: VehicleSummary, hide: Boolean, unit: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(TILE_GAP)) {
+        FwMetricTile(
+            overline = stringResource(if (s.isEstimate) R.string.home_mileage_est else R.string.home_mileage),
+            value = s.latestInterval?.let { IndianNumberFormat.decimal(it.kmPerUnit, 1) } ?: "—",
+            unit = "km/$unit",
+            caption = s.averageInterval?.let {
+                stringResource(R.string.home_mileage_avg, IndianNumberFormat.decimal(it.kmPerUnit, 1))
+            },
+            modifier = Modifier.weight(1f),
+            extra = {
+                FwSparkline(s.recentIntervals.map { it.kmPerUnit }, Modifier.padding(top = 8.dp))
+            },
+        )
+        FwMetricTile(
+            overline = stringResource(R.string.home_spent),
+            value = money(s.month.totalSpend, hide, whole = true),
+            caption = s.month.distance?.let {
+                stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(it.km, 0))
+            },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+/** This month's trips (tap → Trips) beside a one-tap GPS trip start; design.md 5 says Trips is reachable from Home. */
+@Composable
+private fun TripTiles(trips: MonthTrips, actions: HomeActions) {
+    Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(TILE_GAP)) {
+        FwMetricTile(
+            overline = stringResource(R.string.home_trips),
+            value = IndianNumberFormat.decimal(trips.count.toDouble(), 0),
+            caption = stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(trips.distanceKm, 0)),
+            onClick = actions.onOpenTrips,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        )
+        FwCard(
+            onClick = actions.onStartTrip,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            contentPadding = PaddingValues(18.dp),
+        ) {
+            Box(
+                Modifier.size(40.dp).background(FwTheme.colors.accent, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(FwIcons.Route),
+                    contentDescription = null,
+                    tint = FwTheme.colors.onAccent,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+            Text(
+                stringResource(R.string.home_start_trip),
+                style = FwTheme.type.label,
+                color = FwTheme.colors.ink,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            Text(
+                stringResource(R.string.home_start_trip_caption),
+                style = FwTheme.type.caption,
+                color = FwTheme.colors.ink2,
             )
         }
     }
@@ -342,6 +397,7 @@ private fun shortDate(utcMs: Long, zoneId: String): String {
 }
 
 private const val PERCENT = 100
+private val TILE_GAP = 12.dp
 private const val HIDDEN_AMOUNT = "₹ •••"
 
 private val Milestone.title: Int

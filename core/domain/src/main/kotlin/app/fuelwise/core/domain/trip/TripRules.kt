@@ -3,6 +3,7 @@ package app.fuelwise.core.domain.trip
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripStatus
 import app.fuelwise.core.model.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -10,6 +11,7 @@ import java.net.URLEncoder
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
@@ -87,6 +89,26 @@ fun <T> groupByWeek(trips: List<T>, zone: ZoneId, startUtcMs: (T) -> Long): List
 private fun weekStart(date: LocalDate): LocalDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
 private const val DAYS_IN_WEEK = 7L
+
+/** How many trips a vehicle finished in a month, and how far they went (Home trips tile). */
+data class MonthTrips(val count: Int, val distanceKm: Double) {
+    companion object {
+        val NONE = MonthTrips(0, 0.0)
+    }
+}
+
+/**
+ * Finished trips of [vehicleId] that started in [month], local to [zone]. A trip still recording, paused or cut short
+ * isn't counted until it's finished: its distance isn't final yet.
+ */
+fun monthTrips(trips: List<Trip>, vehicleId: String, month: YearMonth, zone: ZoneId): MonthTrips {
+    val done = trips.filter {
+        it.vehicleId == vehicleId &&
+            it.status == TripStatus.Done &&
+            YearMonth.from(Instant.ofEpochMilli(it.startUtcMs).atZone(zone)) == month
+    }
+    return MonthTrips(done.size, done.sumOf { it.distanceKm })
+}
 
 /** A trip's cost: its fuel estimate plus the tolls and parking linked to it (PRD F-07.1). Null when neither exists. */
 fun tripCost(trip: Trip, expenses: List<Expense>): Money? {

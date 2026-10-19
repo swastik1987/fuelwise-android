@@ -8,6 +8,8 @@ import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.domain.insights.ComputeMilestones
 import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
+import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
@@ -42,14 +44,18 @@ class HomeViewModelTest {
     private val clock = Clock.fixed(Instant.ofEpochMilli(SampleEntries.at(2026, 10, 16, 10)), zone)
     private val userData = FakeUserDataRepository()
 
-    private fun viewModel(vehicles: List<Vehicle>, entries: FakeEntryRepository): HomeViewModel {
+    private fun viewModel(
+        vehicles: List<Vehicle>,
+        entries: FakeEntryRepository,
+        trips: FakeTripRepository = FakeTripRepository(),
+    ): HomeViewModel {
         val vehicleRepo = FakeVehicleRepository(vehicles)
         val consumption = ComputeConsumption()
         return HomeViewModel(
             vehicles = vehicleRepo,
             userData = userData,
             entries = entries,
-            trips = FakeTripRepository(),
+            trips = trips,
             logbook = FakeLogbookRepository(entries, zone),
             categories = FakeCategoryRepository(),
             summarize = ComputeVehicleSummary(consumption, ComputeCostMetrics(), ComputePredictions(clock), clock),
@@ -102,6 +108,18 @@ class HomeViewModelTest {
         vm.dismissMilestone(first.milestone!!.key)
         val next = vm.uiState.first { it is HomeUiState.Ready && it.milestone?.kind != Milestone.Kind.FirstThousandKm }
         assertThat((next as HomeUiState.Ready).milestone?.kind).isNotEqualTo(Milestone.Kind.FirstThousandKm)
+    }
+
+    @Test
+    fun tripsTileCountsThisMonthsFinishedTrips() = runTest {
+        fun trip(id: String, month: Int, km: Double) =
+            Trip(id, "safari", SampleEntries.at(2026, month, 10), zone.id, km, TripPurpose.Personal)
+        val trips = FakeTripRepository(listOf(trip("t1", 10, 23.4), trip("t2", 10, 146.0), trip("t3", 9, 40.0)))
+        val state = viewModel(listOf(SampleVehicles.safari), FakeEntryRepository(), trips).uiState.first {
+            it is HomeUiState.Ready
+        } as HomeUiState.Ready
+        assertThat(state.trips.count).isEqualTo(2)
+        assertThat(state.trips.distanceKm).isWithin(1e-9).of(169.4)
     }
 
     @Test

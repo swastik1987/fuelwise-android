@@ -9,10 +9,12 @@ import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Tank
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
+import app.fuelwise.core.model.TripStatus
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.VehicleType
 import com.google.common.truth.Truth.assertThat
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import org.junit.jupiter.api.Test
 
@@ -167,6 +169,26 @@ class TripTest {
         total = Money((quantity * pricePaise).toLong()),
         isFull = true,
     )
+
+    @Test
+    fun `month trips - finished trips of the vehicle in the local month`() {
+        fun trip(id: String, vehicle: String, startMs: Long, km: Double, status: TripStatus = TripStatus.Done) =
+            Trip(id, vehicle, startMs, zone.id, km, TripPurpose.Personal, status = status)
+        // 1 Oct 00:30 IST is still 30 Sep in UTC: it counts for October here.
+        val earlyOct1 = LocalDate.of(2026, 10, 1).atTime(0, 30).atZone(zone).toInstant().toEpochMilli()
+        val trips = listOf(
+            trip("a", "safari", day(10, 3), 23.4),
+            trip("b", "safari", earlyOct1, 146.0),
+            trip("c", "safari", day(9, 30), 40.0),
+            trip("d", "nexon", day(10, 5), 12.0),
+            trip("e", "safari", day(10, 18), 3.2, TripStatus.Recording),
+            trip("f", "safari", day(10, 12), 8.0, TripStatus.Interrupted),
+        )
+        val result = monthTrips(trips, "safari", YearMonth.of(2026, 10), zone)
+        assertThat(result.count).isEqualTo(2)
+        assertThat(result.distanceKm).isWithin(1e-9).of(169.4)
+        assertThat(monthTrips(emptyList(), "safari", YearMonth.of(2026, 10), zone)).isEqualTo(MonthTrips.NONE)
+    }
 
     private fun day(month: Int, day: Int) =
         LocalDate.of(2026, month, day).atTime(9, 0).atZone(zone).toInstant().toEpochMilli()

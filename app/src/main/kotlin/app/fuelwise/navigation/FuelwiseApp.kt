@@ -160,6 +160,8 @@ fun FuelwiseApp(
                     onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
                     onOpenReminders = { navController.navigate(RemindersRoute) },
                     onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
+                    onOpenTrips = { navController.navigate(TripsRoute()) },
+                    onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
                 ),
             )
             refuelSheet(onClose = navController::popBackStack)
@@ -187,7 +189,7 @@ fun FuelwiseApp(
                     onReminders = { navController.navigate(RemindersRoute) },
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
-                    onTrips = { navController.navigate(TripsRoute) },
+                    onTrips = { navController.navigate(TripsRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                 ),

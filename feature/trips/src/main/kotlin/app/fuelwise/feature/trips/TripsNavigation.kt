@@ -2,10 +2,12 @@ package app.fuelwise.feature.trips
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
+/** The trips list; [startTrip] starts a GPS trip on arrival (Home's "Start trip"), asking for location if needed. */
 @Serializable
-data object TripsRoute
+data class TripsRoute(val startTrip: Boolean = false)
 
 /** Add a manual trip (no id) or edit one. */
 @Serializable
@@ -41,7 +43,7 @@ data class TripsLinks(
 )
 
 fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
-    composable<TripsRoute> { TripsScreen(links) }
+    composable<TripsRoute> { entry -> TripsScreen(links, startTrip = entry.toRoute<TripsRoute>().startTrip) }
     composable<TripEditorRoute> { TripEditorScreen(onClose = onEditorClose) }
     composable<TripDetailRoute> { TripDetailScreen(links) }
     composable<LiveTripRoute> { LiveTripScreen(links) }

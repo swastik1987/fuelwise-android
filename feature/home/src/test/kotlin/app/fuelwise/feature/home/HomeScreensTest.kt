@@ -3,18 +3,23 @@ package app.fuelwise.feature.home
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
+import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -53,7 +58,18 @@ class HomeScreensTest {
             kmPerUnit = mapOf("r4" to 15.42, "r3" to 15.61),
             hideAmounts = hide,
             previousMonthLabel = "Sep",
+            trips = if (refuels.isEmpty()) MonthTrips.NONE else MonthTrips(6, 214.0),
         )
+    }
+
+    @Test
+    fun tripTilesOpenTripsAndStartATrip() {
+        val taps = mutableListOf<String>()
+        val withTrips = actions.copy(onOpenTrips = { taps += "trips" }, onStartTrip = { taps += "start" })
+        compose.setContent { FuelwiseTheme { HomeContent(ready(SampleEntries.safariRefuels), withTrips, {}, {}) } }
+        compose.onNodeWithText("Start trip").performScrollTo().performClick()
+        compose.onNodeWithText("6").performScrollTo().performClick()
+        assertThat(taps).containsExactly("start", "trips").inOrder()
     }
 
     @Test fun dashboardLight() = capture("home_light", false) {

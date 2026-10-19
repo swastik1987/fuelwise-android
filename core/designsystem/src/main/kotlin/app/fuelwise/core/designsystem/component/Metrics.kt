@@ -99,7 +99,10 @@ fun FwHeroMetric(
     }
 }
 
-/** 2-up grid tile: overline, `h2` number with unit, caption, optional extra content (e.g. a sparkline). */
+/**
+ * 2-up grid tile: overline, `h2` number with unit, caption, optional extra content (e.g. a sparkline). With
+ * [onClick] the whole tile is one tap target.
+ */
 @Composable
 fun FwMetricTile(
     overline: String,
@@ -107,10 +110,12 @@ fun FwMetricTile(
     modifier: Modifier = Modifier,
     unit: String? = null,
     caption: String? = null,
+    onClick: (() -> Unit)? = null,
     extra: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     FwCard(
         modifier = modifier.widthIn(min = 156.dp),
+        onClick = onClick,
         contentPadding = androidx.compose.foundation.layout.PaddingValues(18.dp),
     ) {
         FwOverline(overline)

@@ -332,12 +332,12 @@ Users can add custom categories (name, icon, colour).
 - Start/end odometer (or distance), date, purpose (Personal / Business / Commute / custom), note.
 - Cost auto-estimated from average efficiency × current price. Linked tolls/parking are added.
 
-**F-07.2 GPS trip:**
+**F-07.2 GPS trip:** ✅ built except widget and QS-tile starts (M11) and the map (slice 3) (M8 slice 2: `core:location` foreground service of type location, Fused Location at ~5 s / 25 m with 90 s batches, notification with distance, chronometer and Pause/Resume/Stop, live screen with a route trace; distance, recorded time, average and top speed and idle time from `core:domain` track maths; Douglas-Peucker at 5 m. Raw fixes are encrypted batches (Tink, the vault key) while recording, then only the simplified route is kept as an encrypted attachment. Trips under 50 m are discarded)
 - Start from the app, widget or quick-settings tile.
 - Runs a foreground service (`foregroundServiceType="location"`) with a persistent notification showing distance and elapsed time, plus Pause/Stop actions.
 - Records a polyline (Douglas-Peucker simplified, ~5 m tolerance), distance, duration, average/max speed and idle time.
 
-**F-07.3 Crash resilience.** Points are persisted every 15 s. On process death or reboot, the app offers to resume or finish the interrupted trip (Fuelio parity).
+**F-07.3 Crash resilience.** ✅ built (every delivered batch is written at once, so at most the up-to-90 s batch Play services still holds is lost; Pause and Stop flush it first. The Trips screen offers Resume or Finish for a trip a crash, reboot or revoked permission cut short; Finish ends it at its last fix) Points are persisted every 15 s. On process death or reboot, the app offers to resume or finish the interrupted trip (Fuelio parity).
 
 **F-07.4 Trip detail:** ✅ built except the map (M8 slice 1: stats, costs, split with a UPI link; the UPI ID and name are typed once on first share, and Settings shows them in M11. Shares round to the whole rupee. The map arrives with slice 3)
 - Map, stats, estimated cost, cost per person.
@@ -821,7 +821,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
 | Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. No coordinates go to any lookup API (no Places, no geocoding). |
 | New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added with M8 slices 2 and 3. |
-| Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added with M8 slice 2. |
+| Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added in M8 slice 2 (declared in `core:location`). |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |
 | Target audience | 18+ (driving); not designed for children |
 | Store listing | No competitor names in title or short description. "No ads. Your data stays with you." |

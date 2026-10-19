@@ -1,5 +1,10 @@
 package app.fuelwise.feature.trips
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,37 +23,82 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwEntryRow
 import app.fuelwise.core.designsystem.component.FwInkButton
 import app.fuelwise.core.designsystem.component.FwOverline
+import app.fuelwise.core.designsystem.component.FwPrimaryButton
+import app.fuelwise.core.designsystem.component.FwSecondaryButton
 import app.fuelwise.core.designsystem.component.FwSnackbarHost
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.entry.shortDate
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+
+internal data class TripsActions(
+    val onStart: () -> Unit = {},
+    val onResume: (tripId: String) -> Unit = {},
+    val onFinish: (tripId: String) -> Unit = {},
+)
 
 @Composable
 internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val resources = LocalResources.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    // What to do once location is granted: START, or the id of an interrupted trip to resume.
+    var pending by rememberSaveable { mutableStateOf<String?>(null) }
+    val run: (String) -> Unit = { action ->
+        if (action == START) viewModel.startTrip() else viewModel.resumeInterrupted(action)
+    }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        val action = pending
+        pending = null
+        if (result[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            action?.let(run)
+        } else {
+            scope.launch { snackbar.showSnackbar(resources.getString(R.string.trips_location_needed)) }
+        }
+    }
+    // While-in-use location only, asked when the user starts recording (PRD §9). Notifications ride along so the
+    // ongoing trip notification shows; recording works without them.
+    val withLocation: (String) -> Unit = { action ->
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            run(action)
+        } else {
+            pending = action
+            permission.launch(locationPermissions())
+        }
+    }
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -64,18 +114,40 @@ internal fun TripsScreen(links: TripsLinks, viewModel: TripsViewModel = hiltView
                     if (result == null) snackbar.currentSnackbarData?.dismiss()
                     if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete(event.token)
                 }
+
+                TripsEvent.OpenLive -> links.onOpenLive()
+
+                is TripsEvent.OpenTrip -> links.onOpenTrip(event.tripId)
+
+                TripsEvent.TooShort -> snackbar.showSnackbar(resources.getString(R.string.trips_too_short))
             }
         }
     }
     Box(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
-        TripsContent(state, links)
+        TripsContent(
+            state,
+            links,
+            TripsActions(
+                onStart = { withLocation(START) },
+                onResume = withLocation,
+                onFinish = viewModel::finishInterrupted,
+            ),
+        )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
 }
 
-/** Trips (design.md screen 17): weekly groups with totals, newest first. GPS recording joins in M8 slice 2. */
+/**
+ * Trips (design.md screen 17): start a GPS trip or add one by hand, the trip recording now, trips a crash cut short,
+ * then weekly groups with totals, newest first.
+ */
 @Composable
-internal fun TripsContent(state: TripsUiState, links: TripsLinks, zone: ZoneId = ZoneId.systemDefault()) {
+internal fun TripsContent(
+    state: TripsUiState,
+    links: TripsLinks,
+    actions: TripsActions = TripsActions(),
+    zone: ZoneId = ZoneId.systemDefault(),
+) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         FwTopBar(
             title = stringResource(R.string.trips_title),
@@ -83,37 +155,28 @@ internal fun TripsContent(state: TripsUiState, links: TripsLinks, zone: ZoneId =
             backContentDescription = stringResource(R.string.trips_back),
         )
         if (state.loading) return@Column
-        if (state.weeks.isEmpty()) {
+        if (!state.hasVehicles) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (state.hasVehicles) {
+                FwEmptyState(
+                    icon = FwIcons.Route,
+                    headline = stringResource(R.string.trips_no_vehicles),
+                    body = stringResource(R.string.trips_no_vehicles_body),
+                )
+            }
+            return@Column
+        }
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FwTheme.spacing.xl)) {
+            item { StartButtons(state.recording, links, actions) }
+            items(state.interrupted, key = { "cut-${it.id}" }) { trip -> InterruptedCard(trip, zone, actions) }
+            if (state.weeks.isEmpty()) {
+                item {
                     FwEmptyState(
                         icon = FwIcons.Route,
                         headline = stringResource(R.string.trips_empty),
                         body = stringResource(R.string.trips_empty_body),
-                        actionLabel = stringResource(R.string.trips_add_manual),
-                        onAction = links.onAddManual,
-                    )
-                } else {
-                    FwEmptyState(
-                        icon = FwIcons.Route,
-                        headline = stringResource(R.string.trips_no_vehicles),
-                        body = stringResource(R.string.trips_no_vehicles_body),
+                        modifier = Modifier.padding(top = FwTheme.spacing.xl),
                     )
                 }
-            }
-            return@Column
-        }
-        LazyColumn(
-            Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = FwTheme.spacing.xl),
-        ) {
-            item {
-                FwInkButton(
-                    stringResource(R.string.trips_add_manual),
-                    links.onAddManual,
-                    Modifier.fillMaxWidth().padding(horizontal = FwTheme.spacing.gutter, vertical = 8.dp),
-                    leadingIcon = FwIcons.ManualTrip,
-                )
             }
             state.weeks.forEach { week ->
                 item(key = "week-${week.start}") { WeekHeader(week) }
@@ -122,6 +185,69 @@ internal fun TripsContent(state: TripsUiState, links: TripsLinks, zone: ZoneId =
         }
     }
 }
+
+/** "Start trip" (accent) and "Add manual trip"; while recording, the accent button leads back to the live screen. */
+@Composable
+private fun StartButtons(recording: RecordingBanner?, links: TripsLinks, actions: TripsActions) {
+    Column(
+        Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (recording == null) {
+            FwPrimaryButton(
+                stringResource(R.string.trips_start),
+                actions.onStart,
+                Modifier.fillMaxWidth(),
+                leadingIcon = FwIcons.Route,
+            )
+        } else {
+            val label = if (recording.paused) R.string.trips_paused_banner else R.string.trips_recording_banner
+            FwPrimaryButton(
+                stringResource(label, formatKm(recording.km)),
+                links.onOpenLive,
+                Modifier.fillMaxWidth(),
+                leadingIcon = FwIcons.Route,
+            )
+        }
+        FwSecondaryButton(
+            stringResource(R.string.trips_add_manual),
+            links.onAddManual,
+            Modifier.fillMaxWidth(),
+            leadingIcon = FwIcons.ManualTrip,
+        )
+    }
+}
+
+/** A GPS trip cut short by a crash, reboot or revoked permission (PRD F-07.3): resume it or finish it. */
+@Composable
+private fun InterruptedCard(trip: Trip, zone: ZoneId, actions: TripsActions) {
+    val time = Instant.ofEpochMilli(trip.startUtcMs).atZone(zone)
+    FwCard(Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 6.dp)) {
+        Text(stringResource(R.string.trips_interrupted_title), style = FwTheme.type.label, color = FwTheme.colors.ink)
+        Text(
+            stringResource(R.string.trips_interrupted_body, shortDate(trip.startUtcMs, zone), time.format(TIME_FORMAT)),
+            style = FwTheme.type.bodyS,
+            color = FwTheme.colors.ink2,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 12.dp)) {
+            FwInkButton(stringResource(R.string.trips_resume), { actions.onResume(trip.id) }, Modifier.weight(1f))
+            FwSecondaryButton(
+                stringResource(R.string.trips_finish),
+                { actions.onFinish(trip.id) },
+                Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+private fun locationPermissions(): Array<String> = buildList {
+    add(Manifest.permission.ACCESS_FINE_LOCATION)
+    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+}.toTypedArray()
+
+private const val START = "start"
 
 @Composable
 private fun WeekHeader(week: TripWeekUi) {

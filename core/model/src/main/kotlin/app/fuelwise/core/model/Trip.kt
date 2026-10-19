@@ -31,4 +31,22 @@ data class Trip(
     val estimatedFuelCost: Money? = null,
     val source: TripSource = TripSource.Manual,
     val status: TripStatus = TripStatus.Done,
+    /** GPS trips: time recorded, pauses left out (PRD F-07.2). Null for manual trips. */
+    val recordedSeconds: Long? = null,
+    /** GPS trips: time spent standing still while recording. */
+    val idleSeconds: Long? = null,
+    val maxSpeedKmh: Double? = null,
+)
+
+/**
+ * One GPS fix on a recorded trip. [segment] goes up after each pause, so the gap is never counted as driven.
+ * Raw points are encrypted at rest and deleted once the trip is finished (CLAUDE.md rule 5).
+ */
+data class TrackPoint(
+    val atUtcMs: Long,
+    val lat: Double,
+    val lng: Double,
+    val accuracyM: Float,
+    val speedMps: Float?,
+    val segment: Int,
 )

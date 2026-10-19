@@ -28,5 +28,28 @@ data class TripEntity(
     val estCostPaise: Long?,
     val source: String,
     val status: String,
+    val recordedSeconds: Long? = null,
+    val idleSeconds: Long? = null,
+    val maxSpeedKmh: Double? = null,
     @Embedded val sync: SyncMeta,
 )
+
+/**
+ * Raw GPS points of a trip being recorded, in encrypted batches (CLAUDE.md rule 5). Device-local and transient: the
+ * rows are deleted once the trip is finished and its simplified route saved, so they carry no sync columns. Backed
+ * up only with encrypted backups, like the documents vault.
+ */
+@Entity(tableName = "trip_point_batch", indices = [Index(value = ["tripId", "seq"], unique = true)])
+data class TripPointBatchEntity(
+    @PrimaryKey val id: String,
+    val tripId: String,
+    val seq: Int,
+    /** AES-GCM ciphertext of the encoded points; the trip id and seq are its associated data. */
+    val payload: ByteArray,
+    val createdAt: Long,
+) {
+    // Room needs equals on entities with arrays; identity is the row id.
+    override fun equals(other: Any?): Boolean = other is TripPointBatchEntity && other.id == id
+
+    override fun hashCode(): Int = id.hashCode()
+}

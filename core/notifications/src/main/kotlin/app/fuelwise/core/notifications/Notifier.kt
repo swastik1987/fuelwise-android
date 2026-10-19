@@ -27,6 +27,12 @@ object NotificationRoutes {
     const val OPEN_REMINDERS = "reminders"
     const val OPEN_RECAP = "recap"
     const val OPEN_FASTAG = "fastag"
+    const val OPEN_LIVE_TRIP = "live_trip"
+}
+
+/** Channel ids other modules post to (the trip recorder in core:location). */
+object NotificationChannels {
+    const val TRIP_RECORDING = "trip_recording"
 }
 
 /**
@@ -54,6 +60,15 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
                 NotificationManager.IMPORTANCE_LOW,
             )
                 .apply { description = context.getString(R.string.channel_insights_description) },
+        )
+        // Low importance: an ongoing, silent status while a trip records (PRD F-07.2, F-16 channels).
+        system.createNotificationChannel(
+            NotificationChannel(
+                NotificationChannels.TRIP_RECORDING,
+                context.getString(R.string.channel_trip_recording),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+                .apply { description = context.getString(R.string.channel_trip_recording_description) },
         )
     }
 

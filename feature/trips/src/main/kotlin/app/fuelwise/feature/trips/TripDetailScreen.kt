@@ -54,6 +54,7 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripSplit
+import app.fuelwise.core.domain.trip.averageKmh
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.entry.categoryName
@@ -153,6 +154,7 @@ internal fun TripDetailContent(state: TripDetailUiState, links: TripsLinks, acti
                 )
             }
             Stats(trip, state.split?.total)
+            if (trip.recordedSeconds != null) GpsStats(trip)
             CostsCard(state, trip, links)
             state.split?.let { SplitCard(it, title, trip, actions) }
             trip.notes?.let {
@@ -191,6 +193,31 @@ private fun Stats(trip: Trip, total: Money?) {
             overline = stringResource(R.string.trips_stat_cost),
             value = total?.let(IndianNumberFormat::rupeesWhole) ?: "—",
             caption = stringResource(R.string.trips_est),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+/** Recorded GPS trips (PRD F-07.2): average and top speed, and time standing still. */
+@Composable
+private fun GpsStats(trip: Trip) {
+    val average = trip.averageKmh()
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        FwMetricTile(
+            overline = stringResource(R.string.trips_stat_avg_speed),
+            value = average?.let { IndianNumberFormat.decimal(it, 0) } ?: "—",
+            unit = stringResource(R.string.trips_kmh),
+            modifier = Modifier.weight(1f),
+        )
+        FwMetricTile(
+            overline = stringResource(R.string.trips_stat_max_speed),
+            value = trip.maxSpeedKmh?.let { IndianNumberFormat.decimal(it, 0) } ?: "—",
+            unit = stringResource(R.string.trips_kmh),
+            modifier = Modifier.weight(1f),
+        )
+        FwMetricTile(
+            overline = stringResource(R.string.trips_stat_idle),
+            value = durationText((trip.idleSeconds ?: 0) / SECONDS_PER_MINUTE),
             modifier = Modifier.weight(1f),
         )
     }
@@ -408,5 +435,6 @@ private fun shareMessage(resources: android.content.res.Resources, summary: Stri
 
 private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 private const val MAX_PEOPLE = 20
+private const val SECONDS_PER_MINUTE = 60L
 private const val MAX_VPA = 80
 private const val MAX_NAME = 40

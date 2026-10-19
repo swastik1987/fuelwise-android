@@ -14,6 +14,10 @@ data class TripEditorRoute(val tripId: String? = null)
 @Serializable
 data class TripDetailRoute(val tripId: String)
 
+/** The GPS trip recording now (design.md screen 18). */
+@Serializable
+data object LiveTripRoute
+
 /**
  * Key on the Trips back-stack entry's SavedStateHandle: the detail screen hands back a trip id to delete, and the
  * list performs the delete so it can offer the 10-second undo.
@@ -30,10 +34,14 @@ data class TripsLinks(
     /** Opens the expense sheet linked to the trip; [toll] opens the toll variant. */
     val onAddCost: (vehicleId: String, tripId: String, toll: Boolean) -> Unit = { _, _, _ -> },
     val onOpenCost: (expenseId: String) -> Unit = {},
+    val onOpenLive: () -> Unit = {},
+    /** After Stop: the saved trip to open, or null when it was too short to keep. */
+    val onLiveFinished: (tripId: String?) -> Unit = {},
 )
 
 fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
     composable<TripsRoute> { TripsScreen(links) }
     composable<TripEditorRoute> { TripEditorScreen(onClose = onEditorClose) }
     composable<TripDetailRoute> { TripDetailScreen(links) }
+    composable<LiveTripRoute> { LiveTripScreen(links) }
 }

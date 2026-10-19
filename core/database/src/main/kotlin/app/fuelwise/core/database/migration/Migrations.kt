@@ -65,11 +65,27 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+    /** v6 (F-07.2): GPS trip stats and encrypted raw point batches. */
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            V6_STATEMENTS.forEach { db.execSQL(it) }
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
 }
 
 private const val SYNC_COLUMNS =
     "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deviceId` TEXT NOT NULL, `deletedAt` INTEGER"
+
+private val V6_STATEMENTS = listOf(
+    "ALTER TABLE `trip` ADD COLUMN `recordedSeconds` INTEGER",
+    "ALTER TABLE `trip` ADD COLUMN `idleSeconds` INTEGER",
+    "ALTER TABLE `trip` ADD COLUMN `maxSpeedKmh` REAL",
+    "CREATE TABLE IF NOT EXISTS `trip_point_batch` (`id` TEXT NOT NULL, `tripId` TEXT NOT NULL, " +
+        "`seq` INTEGER NOT NULL, `payload` BLOB NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_trip_point_batch_tripId_seq` ON `trip_point_batch` (`tripId`, `seq`)",
+)
 
 private val V5_STATEMENTS = listOf(
     "CREATE TABLE IF NOT EXISTS `trip` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, `startTime` INTEGER NOT NULL, " +

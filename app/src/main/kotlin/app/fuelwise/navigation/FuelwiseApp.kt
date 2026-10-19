@@ -67,6 +67,7 @@ import app.fuelwise.feature.reminders.ReminderEditorRoute
 import app.fuelwise.feature.reminders.RemindersRoute
 import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
+import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
 import app.fuelwise.feature.trips.TripEditorRoute
@@ -88,6 +89,7 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_REMINDERS -> RemindersRoute
             NotificationRoutes.OPEN_RECAP -> RecapRoute()
             NotificationRoutes.OPEN_FASTAG -> FastagRoute
+            NotificationRoutes.OPEN_LIVE_TRIP -> LiveTripRoute
             else -> return@LaunchedEffect
         }
         if (!startWithOnboarding) navController.navigate(route)
@@ -220,6 +222,14 @@ fun FuelwiseApp(
                         navController.navigate(ExpenseRoute(vehicleId = vehicleId, toll = toll, tripId = tripId))
                     },
                     onOpenCost = { id -> navController.navigate(ExpenseRoute(expenseId = id)) },
+                    onOpenLive = { navController.navigate(LiveTripRoute) { launchSingleTop = true } },
+                    onLiveFinished = { id ->
+                        if (id == null) {
+                            navController.popBackStack()
+                        } else {
+                            navController.navigate(TripDetailRoute(id)) { popUpTo<LiveTripRoute> { inclusive = true } }
+                        }
+                    },
                 ),
                 onEditorClose = navController::popBackStack,
             )

@@ -148,6 +148,37 @@ class MigrationsTest {
         }
     }
 
+    @Test
+    fun migrate5To6KeepsTripsAndAddsPointBatches() {
+        helper.createDatabase(dbPath, 5).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO trip (id, vehicleId, startTime, zoneId, distanceKm, purpose, source, status,
+                    createdAt, updatedAt, deviceId)
+                VALUES ('trip1', 'safari', 9, 'Asia/Kolkata', 22.6, 'Business', 'Manual', 'Done', 9, 9, 'd1')
+                """.trimIndent(),
+            )
+        }
+
+        helper.runMigrationsAndValidate(dbPath, 6, true, Migrations.MIGRATION_5_6).use { db ->
+            db.query("SELECT distanceKm, recordedSeconds, maxSpeedKmh FROM trip WHERE id = 'trip1'").use { c ->
+                assertThat(c.moveToFirst()).isTrue()
+                assertThat(c.getDouble(0)).isEqualTo(22.6)
+                assertThat(c.isNull(1)).isTrue()
+                assertThat(c.isNull(2)).isTrue()
+            }
+            val insert =
+                "INSERT OR IGNORE INTO trip_point_batch (id, tripId, seq, payload, createdAt) VALUES (?, ?, ?, ?, ?)"
+            db.execSQL(insert, arrayOf<Any>("b1", "trip2", 0, byteArrayOf(1, 2, 3), 10))
+            // (tripId, seq) is unique: a batch is never written twice.
+            db.execSQL(insert, arrayOf<Any>("b2", "trip2", 0, byteArrayOf(4), 11))
+            db.query("SELECT COUNT(*) FROM trip_point_batch").use { c ->
+                c.moveToFirst()
+                assertThat(c.getInt(0)).isEqualTo(1)
+            }
+        }
+    }
+
     // An absolute path: on Windows the helper otherwise compares a bare name with the resolved path and refuses.
     private val dbPath: String =
         ApplicationProvider.getApplicationContext<android.content.Context>().getDatabasePath(DB).absolutePath

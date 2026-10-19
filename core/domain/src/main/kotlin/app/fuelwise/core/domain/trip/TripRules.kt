@@ -94,3 +94,11 @@ fun tripCost(trip: Trip, expenses: List<Expense>): Money? {
     if (trip.estimatedFuelCost == null && linked.isEmpty()) return null
     return (trip.estimatedFuelCost ?: Money.ZERO) + linked.map { it.amount }.sum()
 }
+
+/** Average speed of a recorded GPS trip over its recorded time (pauses left out). Null for manual trips. */
+fun Trip.averageKmh(): Double? {
+    val seconds = recordedSeconds?.takeIf { it > 0 } ?: return null
+    return distanceKm / (seconds / SECONDS_PER_HOUR)
+}
+
+private const val SECONDS_PER_HOUR = 3_600.0

@@ -32,6 +32,8 @@ import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.data.vault.AttachmentStore
 import app.fuelwise.core.data.vault.TinkAttachmentStore
+import app.fuelwise.core.data.vault.TinkVaultCipher
+import app.fuelwise.core.data.vault.VaultCipher
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -79,6 +81,9 @@ internal interface DataModule {
 
     @Binds
     fun attachmentStore(impl: TinkAttachmentStore): AttachmentStore
+
+    @Binds
+    fun vaultCipher(impl: TinkVaultCipher): VaultCipher
 
     @Binds
     fun backupSettingsRepository(impl: DataStoreBackupSettingsRepository): BackupSettingsRepository

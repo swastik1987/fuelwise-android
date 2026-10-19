@@ -4,6 +4,8 @@
     <string name="channel_reminders_description">रिन्यूअल, सर्विस और FASTag बैलेंस।</string>
     <string name="channel_insights">महीने का सार</string>
     <string name="channel_insights_description">हर महीने की 1 तारीख को आपका महीना आँकड़ों में।</string>
+    <string name="channel_trip_recording">यात्रा रिकॉर्डिंग</string>
+    <string name="channel_trip_recording_description">GPS यात्रा रिकॉर्ड होते समय दूरी और समय दिखाता है।</string>
     <string name="notif_due_today">%1$s · आज</string>
     <plurals name="notif_due_in_days">
         <item quantity="one">%1$s · %2$d दिन में</item>

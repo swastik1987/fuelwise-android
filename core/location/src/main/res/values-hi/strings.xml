@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trip_notif_recording">यात्रा रिकॉर्ड हो रही है</string>
+    <string name="trip_notif_paused">यात्रा रुकी है</string>
+    <string name="trip_notif_distance">%1$s किमी</string>
+    <string name="trip_notif_pause">रोकें</string>
+    <string name="trip_notif_resume">फिर शुरू करें</string>
+    <string name="trip_notif_stop">ख़त्म करें</string>
+</resources>

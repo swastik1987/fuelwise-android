@@ -159,8 +159,11 @@ class BackupManager @Inject constructor(
 
     private suspend fun snapshotBytes(key: BackupKey?, now: Long): ByteArray = withContext(io) {
         val dump = snapshotter.dump().let { d ->
-            // Without encryption the documents vault stays on the device (PRD F-12, F-14.5).
-            if (key == null) d.copy(tables = d.tables - VAULT_TABLES) else d
+            // Without encryption the documents vault and trip routes (attachments) stay on the device (PRD F-12,
+            // F-14.5, F-21.6). Raw trip points never leave: they are sealed with this device's Keystore key and only
+            // exist while a trip records.
+            val local = d.tables - DEVICE_ONLY_TABLES
+            d.copy(tables = if (key == null) local - VAULT_TABLES else local)
         }
         val gz = SnapshotCodec.encode(
             Snapshot(SnapshotCodec.FORMAT, now, deviceIds.deviceId(), dump, settings.exportPreferences()),
@@ -247,5 +250,6 @@ class BackupManager @Inject constructor(
 
     private companion object {
         val VAULT_TABLES = setOf("document", "attachment")
+        val DEVICE_ONLY_TABLES = setOf("trip_point_batch")
     }
 }

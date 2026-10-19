@@ -2,16 +2,20 @@ package app.fuelwise.core.testing
 
 import app.fuelwise.core.data.repository.DeletedTrip
 import app.fuelwise.core.data.repository.TripRepository
+import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-/** In-memory trips, newest first. */
+/** In-memory trips, newest first, with raw points and routes kept in plain memory. */
 class FakeTripRepository(initial: List<Trip> = emptyList()) : TripRepository {
     private val state = MutableStateFlow(initial)
     private val deleted = mutableMapOf<String, Trip>()
+    private val rawPoints = mutableMapOf<String, MutableList<TrackPoint>>()
+    private val routes = mutableMapOf<String, List<TrackPoint>>()
     private var nextId = 1
 
     val trips: List<Trip> get() = state.value
@@ -19,6 +23,9 @@ class FakeTripRepository(initial: List<Trip> = emptyList()) : TripRepository {
     override fun observeTrips(): Flow<List<Trip>> = state.map { all -> all.sortedByDescending { it.startUtcMs } }
 
     override fun observeTrip(id: String): Flow<Trip?> = state.map { all -> all.firstOrNull { it.id == id } }
+
+    override fun observeUnfinished(): Flow<List<Trip>> =
+        state.map { all -> all.filter { it.status != TripStatus.Done } }
 
     override suspend fun save(trip: Trip): String {
         val id = trip.id.ifBlank { "trip-${nextId++}" }
@@ -35,4 +42,23 @@ class FakeTripRepository(initial: List<Trip> = emptyList()) : TripRepository {
     override suspend fun undoDelete(token: DeletedTrip) {
         deleted.remove(token.id)?.let { trip -> state.update { it + trip } }
     }
+
+    override suspend fun appendPoints(tripId: String, points: List<TrackPoint>) {
+        rawPoints.getOrPut(tripId) { mutableListOf() } += points
+    }
+
+    override suspend fun points(tripId: String): List<TrackPoint> = rawPoints[tripId].orEmpty().toList()
+
+    override suspend fun finishRecording(trip: Trip, route: List<TrackPoint>) {
+        save(trip)
+        routes[trip.id] = route
+        rawPoints.remove(trip.id)
+    }
+
+    override suspend fun discardRecording(tripId: String) {
+        state.update { all -> all.filterNot { it.id == tripId } }
+        rawPoints.remove(tripId)
+    }
+
+    override suspend fun route(tripId: String): List<TrackPoint> = routes[tripId].orEmpty()
 }

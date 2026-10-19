@@ -46,4 +46,12 @@
     <string name="detail_delete_title">यह एंट्री हटाएँ?</string>
     <string name="detail_delete_body">माइलेज और खर्च इसके बिना फिर से गिने जाएँगे।</string>
     <string name="detail_cancel">रद्द करें</string>
+    <string name="logbook_show_map">नक्शे पर देखें</string>
+    <string name="logbook_show_list">सूची में देखें</string>
+    <string name="logbook_map_empty">अभी कोई जगह नहीं</string>
+    <string name="logbook_map_empty_body">स्टेशन पहचान चालू होने पर फ़्यूल और चार्जिंग की एंट्री नक्शे पर दिखेंगी (जल्द आ रहा है)। आपकी एंट्री इसी फ़ोन पर रहती हैं।</string>
+    <plurals name="logbook_map_desc">
+        <item quantity="one">%1$d एंट्री वाला नक्शा</item>
+        <item quantity="other">%1$d एंट्री वाला नक्शा</item>
+    </plurals>
 </resources>

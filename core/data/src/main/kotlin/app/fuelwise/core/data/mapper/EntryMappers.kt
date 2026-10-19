@@ -34,9 +34,11 @@ internal fun RefuelEntity.toModel() = Refuel(
     chargerType = chargerType?.let { enumValueOrNull<ChargerType>(it) },
     chargeDurationMin = chargeDurationMin,
     operator = operator,
+    lat = lat,
+    lng = lng,
 )
 
-/** Station brand and coordinates arrive with station detection (F-21.1, M9). */
+/** Station brand arrives with station detection (F-21.1, M9); coordinates are kept as they were. */
 internal fun Refuel.toEntity(sync: SyncMeta) = RefuelEntity(
     id = id,
     vehicleId = vehicleId,
@@ -54,8 +56,8 @@ internal fun Refuel.toEntity(sync: SyncMeta) = RefuelEntity(
     grade = grade?.name,
     stationName = stationName?.trim()?.ifEmpty { null },
     stationBrand = null,
-    lat = null,
-    lng = null,
+    lat = lat,
+    lng = lng,
     paymentMethod = paymentMethod?.name,
     priceSource = priceSource.name,
     notes = notes?.trim()?.ifEmpty { null },

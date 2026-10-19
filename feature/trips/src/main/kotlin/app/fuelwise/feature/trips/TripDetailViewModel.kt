@@ -17,6 +17,7 @@ import app.fuelwise.core.domain.trip.splitTripCost
 import app.fuelwise.core.domain.trip.tripCost
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
+import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -47,6 +49,8 @@ data class TripDetailUiState(
     val upiVpa: String? = null,
     val upiName: String? = null,
     val upiError: Boolean = false,
+    /** The recorded route of a GPS trip; empty for manual trips or a restore without encrypted backups. */
+    val route: List<TrackPoint> = emptyList(),
 )
 
 sealed interface TripDetailEvent {
@@ -61,7 +65,7 @@ sealed interface TripDetailEvent {
 @HiltViewModel
 class TripDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    trips: TripRepository,
+    private val trips: TripRepository,
     vehicles: VehicleRepository,
     private val entries: EntryRepository,
     categories: CategoryRepository,
@@ -77,8 +81,8 @@ class TripDetailViewModel @Inject constructor(
         entries.observeAllExpenses(),
         categories.observeCategories(),
         userData.userData,
-        combine(people, upiError, ::Pair),
-    ) { (trip, vehicleList, refuels), expenses, cats, user, (count, badUpi) ->
+        combine(people, upiError, flow { emit(trips.route(route.tripId)) }, ::Triple),
+    ) { (trip, vehicleList, refuels), expenses, cats, user, (count, badUpi, recorded) ->
         if (trip == null) return@combine TripDetailUiState(loading = false)
         val vehicle = vehicleList.firstOrNull { it.id == trip.vehicleId }
         val byId = cats.associateBy { it.id }
@@ -93,6 +97,7 @@ class TripDetailViewModel @Inject constructor(
             upiVpa = user.upiVpa,
             upiName = user.upiName,
             upiError = badUpi,
+            route = recorded,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), TripDetailUiState())
 

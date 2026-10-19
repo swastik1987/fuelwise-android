@@ -14,6 +14,8 @@ android {
         applicationId = "in.fuelwise.app"
         versionCode = 1
         versionName = "0.1.0"
+        // The Secrets plugin sets the real key per variant; unit-test manifests merge without it, so give a default.
+        manifestPlaceholders["MAPS_API_KEY"] = "not-configured"
     }
 
     buildTypes {

@@ -28,6 +28,9 @@ data class Refuel(
     val chargerType: ChargerType? = null,
     val chargeDurationMin: Int? = null,
     val operator: String? = null,
+    /** Where it was logged, for the Logbook map (PRD F-05). Set by station auto-detect (F-21.1); null until then. */
+    val lat: Double? = null,
+    val lng: Double? = null,
 ) {
     val paid: Money get() = total - discount
 }

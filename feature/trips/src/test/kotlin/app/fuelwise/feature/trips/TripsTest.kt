@@ -1,6 +1,7 @@
 package app.fuelwise.feature.trips
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.lifecycle.SavedStateHandle
@@ -33,6 +34,7 @@ import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.core.ui.map.LocalMapsEnabled
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
@@ -306,6 +308,7 @@ class TripsTest {
                     idleSeconds = 720,
                     maxSpeedKmh = 96.0,
                 ),
+                route = liveState().recording!!.route,
             ),
             TripsLinks(),
             TripDetailActions(),
@@ -439,7 +442,10 @@ class TripsTest {
     }
 
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
-        compose.setContent { FuelwiseTheme(darkTheme = dark) { content() } }
+        // Robolectric can't run the Maps SDK: maps draw their plain fallback.
+        compose.setContent {
+            CompositionLocalProvider(LocalMapsEnabled provides false) { FuelwiseTheme(darkTheme = dark) { content() } }
+        }
         compose.onNode(isRoot()).captureRoboImage("src/test/screenshots/$name.png")
     }
 }

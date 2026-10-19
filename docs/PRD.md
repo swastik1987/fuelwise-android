@@ -280,7 +280,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters, the map toggle and the 5,000-entry scroll benchmark are still open)
+### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters, the 5,000-entry scroll benchmark are still open); map mode ✅ M8 slice 3: list ⇄ map with energy-coloured pins under the same filters, tap for the entry. Entries get coordinates from station auto-detect, F-21.1, so the map stays empty until M9)
 
 - Unified reverse-chronological list of fill-ups, charges, expenses, trips and reminder completions, grouped by month with a month total.
 - Filters: vehicle, type, category, date range, payment method. Search on notes, station and plaza.
@@ -339,7 +339,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.3 Crash resilience.** ✅ built (every delivered batch is written at once, so at most the up-to-90 s batch Play services still holds is lost; Pause and Stop flush it first. The Trips screen offers Resume or Finish for a trip a crash, reboot or revoked permission cut short; Finish ends it at its last fix) Points are persisted every 15 s. On process death or reboot, the app offers to resume or finish the interrupted trip (Fuelio parity).
 
-**F-07.4 Trip detail:** ✅ built except the map (M8 slice 1: stats, costs, split with a UPI link; the UPI ID and name are typed once on first share, and Settings shows them in M11. Shares round to the whole rupee. The map arrives with slice 3)
+**F-07.4 Trip detail:** ✅ built (M8 slice 1: stats, costs, split with a UPI link; the UPI ID and name are typed once on first share, and Settings shows them in M11. Shares round to the whole rupee. M8 slice 3: map of the recorded route, none for manual trips)
 - Map, stats, estimated cost, cost per person.
 - **Split with friends:** N people → share text that includes a UPI "pay me" link (`upi://pay?pa=<user VPA>&pn=<name>&am=<share>&cu=INR&tn=<trip>`). The VPA is entered once in settings. The app never initiates payments.
 
@@ -819,8 +819,8 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. Brand verification only. |
 | Network endpoints (M7) | `www.googleapis.com` Drive v3 only (`/drive/v3/files`, `/upload/drive/v3/files`), with the user's own token, app folder only. No other user-data endpoint. |
 | New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
-| Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. No coordinates go to any lookup API (no Places, no geocoding). |
-| New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added with M8 slices 2 and 3. |
+| Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. Wired in M8 slice 3 (manifest meta-data from `local.properties`). The user's own location layer is never shown. No coordinates go to any lookup API (no Places, no geocoding). |
+| New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added in M8 slices 2 (`core:location`) and 3 (`core:ui`, maps-compose 8.6.0). |
 | Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added in M8 slice 2 (declared in `core:location`). |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |
 | Target audience | 18+ (driving); not designed for children |

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -59,6 +61,7 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.map.FwRouteMap
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.Instant
 import java.time.ZoneId
@@ -151,6 +154,14 @@ internal fun TripDetailContent(state: TripDetailUiState, links: TripsLinks, acti
                     listOfNotNull(dateLine(trip), purposeName(trip), state.vehicle?.name).joinToString(" · "),
                     style = FwTheme.type.bodyS,
                     color = FwTheme.colors.ink2,
+                )
+            }
+            if (state.route.size > 1) {
+                // design.md screen 19: the recorded route. Manual trips have none, so no empty map.
+                FwRouteMap(
+                    state.route,
+                    stringResource(R.string.trips_map_route, title),
+                    Modifier.fillMaxWidth().height(ROUTE_MAP_HEIGHT.dp).clip(FwTheme.radius.card),
                 )
             }
             Stats(trip, state.split?.total)
@@ -435,6 +446,7 @@ private fun shareMessage(resources: android.content.res.Resources, summary: Stri
 
 private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 private const val MAX_PEOPLE = 20
+private const val ROUTE_MAP_HEIGHT = 220
 private const val SECONDS_PER_MINUTE = 60L
 private const val MAX_VPA = 80
 private const val MAX_NAME = 40

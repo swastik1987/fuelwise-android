@@ -79,13 +79,15 @@ internal object OcrNumbers {
         var start = range.first
         var end = range.last + 1
         // A confusable letter touching a word belongs to the word: "Rs.2000" is not "R5.2000".
-        while (start < end && text[start] in CONFUSIONS && start > 0 && text[start - 1].isLetter()) start++
+        while (start < end && text[start] in CONFUSIONS && afterLetter(text, start)) start++
         while (end > start && text[end - 1] in CONFUSIONS && trailingLetter(text, start, end)) end--
         // Points and commas at the edges are punctuation ("Rs." or "2000.00,").
         while (start < end && text[start] in ".,") start++
         while (end > start && text[end - 1] in ".,") end--
         return start to end
     }
+
+    private fun afterLetter(text: String, index: Int): Boolean = index > 0 && text[index - 1].isLetter()
 
     /** Letters on both sides: part of a code such as a GSTIN, not a number. */
     private fun embedded(text: String, start: Int, end: Int): Boolean {

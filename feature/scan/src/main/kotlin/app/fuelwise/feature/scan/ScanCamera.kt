@@ -3,6 +3,7 @@ package app.fuelwise.feature.scan
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -31,6 +32,8 @@ import java.util.concurrent.Executors
  * frames and photos never leave the device. Each frame's lines go to [onFrame]; a frame's photo is only encoded
  * when the user keeps it. The camera is bound to the screen's lifecycle and released when it leaves.
  */
+// ImageProxy.image hands the frame to ML Kit without a copy; CameraX marks it experimental.
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 internal fun ScanCameraPreview(onFrame: (OcrFrame) -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current

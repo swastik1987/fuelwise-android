@@ -352,6 +352,9 @@ class RefuelViewModel @Inject constructor(
             paymentMethod = payment,
             notes = notes.ifBlank { null },
             priceSource = priceSource,
+            // An edit keeps where the entry was logged (Logbook map, PRD F-05).
+            lat = editing?.lat,
+            lng = editing?.lng,
         ).let { if (isCharge) it.withChargeFields(this) else it }
     }
 

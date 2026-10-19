@@ -147,4 +147,8 @@ object FwIcons {
     @DrawableRes val Commute = R.drawable.fw_ic_commute
 
     @DrawableRes val Person = R.drawable.fw_ic_person
+
+    @DrawableRes val Map = R.drawable.fw_ic_map
+
+    @DrawableRes val ListView = R.drawable.fw_ic_format_list_bulleted
 }

@@ -110,4 +110,6 @@
     <string name="trips_stat_avg_speed">औसत रफ़्तार</string>
     <string name="trips_stat_max_speed">सबसे तेज़</string>
     <string name="trips_stat_idle">रुका रहा</string>
+    <string name="trips_map_live">अब तक के रास्ते का नक्शा</string>
+    <string name="trips_map_route">रास्ते का नक्शा: %1$s</string>
 </resources>

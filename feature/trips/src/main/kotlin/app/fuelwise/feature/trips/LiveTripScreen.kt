@@ -1,6 +1,5 @@
 package app.fuelwise.feature.trips
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +18,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -47,8 +42,8 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.map.FwRouteMap
 import java.util.Locale
-import kotlin.math.cos
 import kotlinx.coroutines.delay
 
 internal data class LiveTripActions(
@@ -98,7 +93,7 @@ internal fun LiveTripScreen(links: TripsLinks, viewModel: LiveTripViewModel = hi
 
 /**
  * Live trip (design.md screen 18): the route so far, and big numbers readable at arm's length. The trace is drawn
- * from the recorded fixes on a plain surface; the map underneath arrives with Maps (M8 slice 3).
+ * on a map that follows the newest fix.
  */
 @Composable
 internal fun LiveTripContent(state: LiveTripUiState, nowUtcMs: Long, links: TripsLinks, actions: LiveTripActions) {
@@ -128,11 +123,7 @@ internal fun LiveTripContent(state: LiveTripUiState, nowUtcMs: Long, links: Trip
             }
             return@Column
         }
-        RouteTrace(
-            recording.route,
-            Modifier.weight(1f).fillMaxWidth().padding(horizontal = FwTheme.spacing.gutter)
-                .background(FwTheme.colors.surface2, FwTheme.radius.card),
-        )
+        LiveMap(recording.route, Modifier.weight(1f).fillMaxWidth().padding(horizontal = FwTheme.spacing.gutter))
         LivePanel(state, recording, nowUtcMs, actions)
     }
 }
@@ -205,39 +196,24 @@ private fun LivePanel(
     }
 }
 
-/** The recorded route scaled to fit, north up. A plain trace until the map arrives (M8 slice 3). */
+/** The route so far on a map that follows the newest fix (design.md screen 18: live polyline in accent). */
 @Composable
-private fun RouteTrace(route: List<TrackPoint>, modifier: Modifier) {
-    val accent = FwTheme.colors.accent
-    val waiting = stringResource(R.string.trips_live_waiting)
-    Box(modifier, contentAlignment = Alignment.Center) {
+private fun LiveMap(route: List<TrackPoint>, modifier: Modifier) {
+    Box(modifier.clip(FwTheme.radius.card), contentAlignment = Alignment.Center) {
+        FwRouteMap(
+            route,
+            stringResource(R.string.trips_map_live),
+            Modifier.fillMaxSize(),
+            follow = true,
+        )
         if (route.size < 2) {
-            Text(waiting, style = FwTheme.type.bodyS, color = FwTheme.colors.ink2)
-            return@Box
-        }
-        Canvas(Modifier.fillMaxSize().padding(24.dp)) {
-            val lat0 = Math.toRadians(route.first().lat)
-            val xs = route.map { it.lng * cos(lat0) }
-            val ys = route.map { it.lat }
-            val spanX = (xs.max() - xs.min()).coerceAtLeast(MIN_SPAN)
-            val spanY = (ys.max() - ys.min()).coerceAtLeast(MIN_SPAN)
-            val scale = minOf(size.width / spanX, size.height / spanY).toFloat()
-            val offsetX = (size.width - spanX * scale).toFloat() / 2
-            val offsetY = (size.height - spanY * scale).toFloat() / 2
-            fun at(i: Int) = Offset(
-                offsetX + ((xs[i] - xs.min()) * scale).toFloat(),
-                offsetY + ((ys.max() - ys[i]) * scale).toFloat(),
+            Text(
+                stringResource(R.string.trips_live_waiting),
+                style = FwTheme.type.bodyS,
+                color = FwTheme.colors.ink,
+                modifier = Modifier.background(FwTheme.colors.surface, FwTheme.radius.pill)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
             )
-            var segment = route.first().segment
-            val path = Path().apply { at(0).let { moveTo(it.x, it.y) } }
-            for (i in 1 until route.size) {
-                val p = at(i)
-                // A pause breaks the line: what happened in between wasn't recorded.
-                if (route[i].segment != segment) path.moveTo(p.x, p.y) else path.lineTo(p.x, p.y)
-                segment = route[i].segment
-            }
-            drawPath(path, accent, style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawCircle(accent, radius = 7.dp.toPx(), center = at(route.lastIndex))
         }
     }
 }
@@ -260,6 +236,3 @@ private const val TICK_MS = 1_000L
 private const val MS_PER_S = 1_000L
 private const val SECONDS_PER_HOUR = 3_600L
 private const val SECONDS_PER_MINUTE = 60L
-
-// About 10 m: keeps a near-stationary start from being blown up to full screen.
-private const val MIN_SPAN = 0.0001

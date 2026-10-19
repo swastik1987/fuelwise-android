@@ -15,10 +15,12 @@ import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.model.Category
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -61,9 +63,16 @@ data class LogbookChrome(
     val monthTotals: Map<String, Money> = emptyMap(),
     /** Month headers show the year only for other years. */
     val currentYear: Int = 0,
+    /** Map mode (PRD F-05; design.md 12b): geotagged fill-ups and charges under the same filters. */
+    val mapMode: Boolean = false,
+    val pins: List<LogbookPin> = emptyList(),
+    val selectedPinId: String? = null,
 ) {
     val filtering: Boolean get() = kinds.isNotEmpty() || query.isNotBlank()
 }
+
+/** A geotagged fill-up or charge on the Logbook map. */
+data class LogbookPin(val entry: LogbookEntry, val lat: Double, val lng: Double, val energy: EnergyType?)
 
 sealed interface LogbookEvent {
     data class Deleted(val token: DeletedEntry) : LogbookEvent
@@ -86,6 +95,8 @@ class LogbookViewModel @Inject constructor(
         val kinds: Set<LogbookKind> = emptySet(),
         val query: String = "",
         val searchOpen: Boolean = false,
+        val mapMode: Boolean = false,
+        val selectedPinId: String? = null,
     )
 
     private val controls = MutableStateFlow(Controls())
@@ -112,6 +123,7 @@ class LogbookViewModel @Inject constructor(
         entries.observeAllRefuels(),
         filter.flatMapLatest { logbook.monthTotals(it) },
     ) { (all, selected), c, cats, refuels, totals ->
+        val vehicleId = if (c.allVehicles) null else selected?.id
         LogbookChrome(
             vehicles = all,
             selectedVehicle = selected,
@@ -123,6 +135,9 @@ class LogbookViewModel @Inject constructor(
             kmPerUnit = lookupIntervals.kmPerUnit(refuels),
             monthTotals = totals,
             currentYear = Year.now(clock.withZone(zoneId)).value,
+            mapMode = c.mapMode,
+            pins = if (c.mapMode) pins(refuels, all, vehicleId, c) else emptyList(),
+            selectedPinId = c.selectedPinId,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), LogbookChrome())
 
@@ -144,6 +159,10 @@ class LogbookViewModel @Inject constructor(
     fun clearKinds() = controls.update { it.copy(kinds = emptySet()) }
 
     fun setQuery(query: String) = controls.update { it.copy(query = query.take(MAX_QUERY)) }
+
+    fun toggleMap() = controls.update { it.copy(mapMode = !it.mapMode, selectedPinId = null) }
+
+    fun selectPin(id: String?) = controls.update { it.copy(selectedPinId = id) }
 
     fun toggleSearch() = controls.update {
         it.copy(searchOpen = !it.searchOpen, query = if (it.searchOpen) "" else it.query)
@@ -167,6 +186,26 @@ class LogbookViewModel @Inject constructor(
 
     fun undo(token: DeletedEntry) {
         viewModelScope.launch { entries.undoDelete(token) }
+    }
+
+    // The same vehicle, kind and text filters as the list, for entries that carry a location.
+    private fun pins(
+        refuels: List<Refuel>,
+        vehicles: List<Vehicle>,
+        vehicleId: String?,
+        c: Controls,
+    ): List<LogbookPin> {
+        val tanks = vehicles.flatMap { it.tanks }.associateBy { it.id }
+        val query = c.query.trim()
+        return refuels.mapNotNull { refuel ->
+            val lat = refuel.lat ?: return@mapNotNull null
+            val lng = refuel.lng ?: return@mapNotNull null
+            val entry = LogbookEntry.of(refuel)
+            val matches = (vehicleId == null || refuel.vehicleId == vehicleId) &&
+                (c.kinds.isEmpty() || entry.kind in c.kinds) &&
+                (query.isEmpty() || listOfNotNull(refuel.stationName, refuel.notes).any { it.contains(query, true) })
+            if (matches) LogbookPin(entry, lat, lng, tanks[refuel.tankId]?.energyType) else null
+        }
     }
 
     private companion object {

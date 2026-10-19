@@ -114,4 +114,6 @@
     <string name="trips_stat_avg_speed">Avg speed</string>
     <string name="trips_stat_max_speed">Top speed</string>
     <string name="trips_stat_idle">Idle</string>
+    <string name="trips_map_live">Map of the route so far</string>
+    <string name="trips_map_route">Map of the route: %1$s</string>
 </resources>

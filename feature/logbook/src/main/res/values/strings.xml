@@ -46,4 +46,12 @@
     <string name="detail_delete_title">Delete this entry?</string>
     <string name="detail_delete_body">Mileage and costs will be recalculated without it.</string>
     <string name="detail_cancel">Cancel</string>
+    <string name="logbook_show_map">Show on map</string>
+    <string name="logbook_show_list">Show as list</string>
+    <string name="logbook_map_empty">No places yet</string>
+    <string name="logbook_map_empty_body">Fill-ups and charges get a place on the map once station detection is on (coming soon). Your entries stay on this phone.</string>
+    <plurals name="logbook_map_desc">
+        <item quantity="one">Map with %1$d entry</item>
+        <item quantity="other">Map with %1$d entries</item>
+    </plurals>
 </resources>

@@ -5,6 +5,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,10 +36,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -50,6 +53,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwFilterChip
 import app.fuelwise.core.designsystem.component.FwSnackbarHost
@@ -61,7 +65,10 @@ import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.ui.entry.LogbookEntryRow
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.map.FwPinMap
+import app.fuelwise.core.ui.map.MapPin
 import app.fuelwise.core.ui.vehicle.AllVehiclesPill
+import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.format.TextStyle
@@ -110,6 +117,8 @@ internal fun LogbookScreen(
                 onQuery = viewModel::setQuery,
                 onToggleSearch = viewModel::toggleSearch,
                 onSelectVehicle = viewModel::selectVehicle,
+                onToggleMap = viewModel::toggleMap,
+                onSelectPin = viewModel::selectPin,
             ),
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
@@ -126,6 +135,8 @@ internal data class LogbookActions(
     val onQuery: (String) -> Unit = {},
     val onToggleSearch: () -> Unit = {},
     val onSelectVehicle: (String?) -> Unit = {},
+    val onToggleMap: () -> Unit = {},
+    val onSelectPin: (String?) -> Unit = {},
 )
 
 @Composable
@@ -145,6 +156,16 @@ internal fun LogbookContent(chrome: LogbookChrome, items: LazyPagingItems<Logboo
                 VehicleSwitcherPill(vehicle, onClick = { switcherOpen = true })
             }
             Box(Modifier.weight(1f))
+            // List ⇄ map (design.md screen 12).
+            IconButton(onClick = actions.onToggleMap) {
+                Icon(
+                    painterResource(if (chrome.mapMode) FwIcons.ListView else FwIcons.Map),
+                    contentDescription = stringResource(
+                        if (chrome.mapMode) R.string.logbook_show_list else R.string.logbook_show_map,
+                    ),
+                    tint = FwTheme.colors.ink,
+                )
+            }
             IconButton(onClick = actions.onToggleSearch) {
                 Icon(
                     painterResource(if (chrome.searchOpen) FwIcons.Close else FwIcons.Search),
@@ -164,7 +185,9 @@ internal fun LogbookContent(chrome: LogbookChrome, items: LazyPagingItems<Logboo
             )
         }
         FilterRow(chrome, actions)
-        if (items.itemCount == 0) {
+        if (chrome.mapMode) {
+            LogbookMap(chrome, actions)
+        } else if (items.itemCount == 0) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (chrome.filtering) {
                     Text(
@@ -198,6 +221,55 @@ internal fun LogbookContent(chrome: LogbookChrome, items: LazyPagingItems<Logboo
             onDismiss = { switcherOpen = false },
             showAllVehicles = true,
         )
+    }
+}
+
+/**
+ * Map mode (PRD F-05; design.md 12b): geotagged fill-ups and charges as energy-coloured pins, under the same filters
+ * as the list. Tapping a pin shows its entry in a card. Entries get a location from station auto-detect (F-21.1).
+ */
+@Composable
+private fun LogbookMap(chrome: LogbookChrome, actions: LogbookActions) {
+    val vehicles = chrome.vehicles.associateBy { it.id }
+    val selected = chrome.pins.firstOrNull { it.entry.id == chrome.selectedPinId }
+    Box(
+        Modifier.fillMaxSize().padding(start = FwTheme.spacing.gutter, end = FwTheme.spacing.gutter, top = 8.dp),
+    ) {
+        FwPinMap(
+            pins = chrome.pins.map { pin ->
+                val color = pin.energy?.let { VehicleLabels.energyColor(it) } ?: FwTheme.colors.ink
+                MapPin(pin.entry.id, pin.lat, pin.lng, color)
+            },
+            contentDescription = pluralStringResource(R.plurals.logbook_map_desc, chrome.pins.size, chrome.pins.size),
+            onSelect = actions.onSelectPin,
+            modifier = Modifier.fillMaxSize().clip(FwTheme.radius.card),
+        )
+        if (chrome.pins.isEmpty()) {
+            FwCard(Modifier.align(Alignment.Center).padding(FwTheme.spacing.l)) {
+                Text(stringResource(R.string.logbook_map_empty), style = FwTheme.type.label, color = FwTheme.colors.ink)
+                Text(
+                    stringResource(R.string.logbook_map_empty_body),
+                    style = FwTheme.type.bodyS,
+                    color = FwTheme.colors.ink2,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+        selected?.let { pin ->
+            FwCard(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = FwTheme.spacing.m),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                LogbookEntryRow(
+                    entry = pin.entry,
+                    vehicle = vehicles[pin.entry.vehicleId],
+                    categories = chrome.categories,
+                    kmPerUnit = chrome.kmPerUnit[pin.entry.id],
+                    onClick = { actions.onOpen(pin.entry) },
+                    showVehicleName = chrome.allVehicles,
+                )
+            }
+        }
     }
 }
 

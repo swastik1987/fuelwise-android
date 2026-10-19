@@ -36,6 +36,7 @@ credentials = "1.6.0"
 googleId = "1.2.1"
 playServicesAuth = "22.0.0"
 playServicesLocation = "21.3.0"
+mapsCompose = "8.6.0"
 okhttp = "5.5.0"
 bouncycastle = "1.86"
 secrets = "2.0.1"
@@ -84,6 +85,7 @@ androidx-credentials-play-services = { module = "androidx.credentials:credential
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleId" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }

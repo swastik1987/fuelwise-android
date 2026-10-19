@@ -1,6 +1,7 @@
 package app.fuelwise.feature.logbook
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.paging.PagingData
@@ -10,12 +11,14 @@ import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.model.Category
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.core.ui.map.LocalMapsEnabled
 import com.github.takahirom.roborazzi.captureRoboImage
 import java.time.YearMonth
 import kotlinx.coroutines.flow.flowOf
@@ -64,6 +67,12 @@ class LogbookScreensTest {
 
     @Test fun logbookDark() = capture("logbook_dark", true) { Logbook() }
 
+    @Test fun logbookMapLight() = capture("logbook_map_light", false) { Logbook(mapChrome()) }
+
+    @Test fun logbookMapDark() = capture("logbook_map_dark", true) { Logbook(mapChrome()) }
+
+    @Test fun logbookMapEmpty() = capture("logbook_map_empty_light", false) { Logbook(chrome.copy(mapMode = true)) }
+
     @Test fun fillUpDetailLight() = capture("entry_detail_light", false) { EntryDetailContent(fillUp, {}, {}, {}) }
 
     @Test fun fillUpDetailDark() = capture("entry_detail_dark", true) { EntryDetailContent(fillUp, {}, {}, {}) }
@@ -82,13 +91,29 @@ class LogbookScreensTest {
     }
 
     @Composable
-    private fun Logbook() {
+    private fun Logbook(chrome: LogbookChrome = this.chrome) {
         val paged = flowOf(PagingData.from(items)).collectAsLazyPagingItems()
         LogbookContent(chrome, paged, LogbookActions())
     }
 
+    private fun mapChrome(): LogbookChrome {
+        val koramangala = SampleEntries.safariRefuels[2]
+        val indiranagar = SampleEntries.safariRefuels[3]
+        return chrome.copy(
+            mapMode = true,
+            pins = listOf(
+                LogbookPin(LogbookEntry.of(koramangala), 12.9352, 77.6245, EnergyType.DIESEL),
+                LogbookPin(LogbookEntry.of(indiranagar), 12.9719, 77.6412, EnergyType.DIESEL),
+            ),
+            selectedPinId = indiranagar.id,
+        )
+    }
+
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
-        compose.setContent { FuelwiseTheme(darkTheme = dark) { content() } }
+        // Robolectric can't run the Maps SDK: maps draw their plain fallback.
+        compose.setContent {
+            CompositionLocalProvider(LocalMapsEnabled provides false) { FuelwiseTheme(darkTheme = dark) { content() } }
+        }
         compose.onNode(isRoot()).captureRoboImage("src/test/screenshots/$name.png")
     }
 }

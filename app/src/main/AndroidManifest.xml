@@ -23,6 +23,12 @@
         android:theme="@style/Theme.Fuelwise"
         tools:targetApi="33">
 
+        <!-- Maps SDK for Android, display only (PRD D8 and section 9). The key comes from local.properties via the Secrets
+             Gradle Plugin and is restricted to this app's package + SHA-1 in Google Cloud. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

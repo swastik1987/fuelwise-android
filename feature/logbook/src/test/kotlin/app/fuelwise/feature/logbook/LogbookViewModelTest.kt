@@ -5,6 +5,7 @@ import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.testing.FakeCategoryRepository
@@ -38,7 +39,7 @@ class LogbookViewModelTest {
     private val zone = ZoneId.of("Asia/Kolkata")
     private val entries = FakeEntryRepository(SampleEntries.safariRefuels, listOf(SampleEntries.safariService))
 
-    private fun viewModel() = LogbookViewModel(
+    private fun viewModel(entries: FakeEntryRepository = this.entries) = LogbookViewModel(
         logbook = FakeLogbookRepository(entries, zone),
         entries = entries,
         vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari)),
@@ -88,5 +89,33 @@ class LogbookViewModelTest {
         assertThat(entries.expenses).isEmpty()
         vm.undo(event.token)
         assertThat(entries.expenses.map { it.id }).containsExactly("e1")
+    }
+
+    @Test
+    fun mapShowsGeotaggedFillUpsUnderTheSameFilters() = runTest {
+        // Two fill-ups with a location (Koramangala, Indiranagar); the others have none yet.
+        val refuels = SampleEntries.safariRefuels.mapIndexed { i, r ->
+            when (i) {
+                2 -> r.copy(lat = 12.9352, lng = 77.6245)
+                3 -> r.copy(lat = 12.9719, lng = 77.6412)
+                else -> r
+            }
+        }
+        val vm = viewModel(FakeEntryRepository(refuels, listOf(SampleEntries.safariService)))
+        assertThat(vm.chrome.first { it.selectedVehicle != null }.pins).isEmpty()
+
+        vm.toggleMap()
+        val pins = vm.chrome.first { it.mapMode && it.pins.isNotEmpty() }.pins
+        assertThat(pins.map { it.entry.id }).containsExactly("r3", "r4")
+        assertThat(pins.first().energy).isEqualTo(EnergyType.DIESEL)
+
+        vm.selectPin("r4")
+        assertThat(vm.chrome.first { it.selectedPinId != null }.selectedPinId).isEqualTo("r4")
+        vm.toggleKind(LogbookKind.Expense)
+        assertThat(vm.chrome.first { LogbookKind.Expense in it.kinds }.pins).isEmpty()
+        vm.setQuery("Indiranagar")
+        vm.clearKinds()
+        assertThat(vm.chrome.first { it.kinds.isEmpty() && it.query.isNotEmpty() }.pins.map { it.entry.id })
+            .containsExactly("r4")
     }
 }

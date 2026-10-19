@@ -72,11 +72,27 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+    /** v7 (F-09): city fuel prices, typed or from the price feed. */
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            V7_STATEMENTS.forEach { db.execSQL(it) }
+        }
+    }
+
+    val ALL: Array<Migration> =
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
 }
 
 private const val SYNC_COLUMNS =
     "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deviceId` TEXT NOT NULL, `deletedAt` INTEGER"
+
+private val V7_STATEMENTS = listOf(
+    "CREATE TABLE IF NOT EXISTS `fuel_price` (`id` TEXT NOT NULL, `cityId` TEXT NOT NULL, `fuel` TEXT NOT NULL, " +
+        "`epochDay` INTEGER NOT NULL, `pricePaise` INTEGER NOT NULL, `origin` TEXT NOT NULL, " +
+        "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_fuel_price_cityId_fuel_epochDay` " +
+        "ON `fuel_price` (`cityId`, `fuel`, `epochDay`)",
+)
 
 private val V6_STATEMENTS = listOf(
     "ALTER TABLE `trip` ADD COLUMN `recordedSeconds` INTEGER",

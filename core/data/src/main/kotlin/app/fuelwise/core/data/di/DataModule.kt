@@ -2,28 +2,34 @@ package app.fuelwise.core.data.di
 
 import app.fuelwise.core.data.DataStoreDeviceIdProvider
 import app.fuelwise.core.data.DeviceIdProvider
+import app.fuelwise.core.data.repository.AssetCityRepository
 import app.fuelwise.core.data.repository.AssetRulesRepository
 import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.CategoryRepository
+import app.fuelwise.core.data.repository.CityRepository
 import app.fuelwise.core.data.repository.DataStoreBackupSettingsRepository
+import app.fuelwise.core.data.repository.DataStorePriceSettingsRepository
 import app.fuelwise.core.data.repository.DataStoreUserDataRepository
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntitlementRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FastagRepository
 import app.fuelwise.core.data.repository.FreeTierEntitlementRepository
+import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.ImportRepository
 import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.OfflineCategoryRepository
 import app.fuelwise.core.data.repository.OfflineDocumentRepository
 import app.fuelwise.core.data.repository.OfflineEntryRepository
 import app.fuelwise.core.data.repository.OfflineFastagRepository
+import app.fuelwise.core.data.repository.OfflineFuelPriceRepository
 import app.fuelwise.core.data.repository.OfflineImportRepository
 import app.fuelwise.core.data.repository.OfflineLogbookRepository
 import app.fuelwise.core.data.repository.OfflineRecurrenceRepository
 import app.fuelwise.core.data.repository.OfflineReminderRepository
 import app.fuelwise.core.data.repository.OfflineTripRepository
 import app.fuelwise.core.data.repository.OfflineVehicleRepository
+import app.fuelwise.core.data.repository.PriceSettingsRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.RulesRepository
@@ -93,6 +99,15 @@ internal interface DataModule {
 
     @Binds
     fun tripRepository(impl: OfflineTripRepository): TripRepository
+
+    @Binds
+    fun fuelPriceRepository(impl: OfflineFuelPriceRepository): FuelPriceRepository
+
+    @Binds
+    fun priceSettingsRepository(impl: DataStorePriceSettingsRepository): PriceSettingsRepository
+
+    @Binds
+    fun cityRepository(impl: AssetCityRepository): CityRepository
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider

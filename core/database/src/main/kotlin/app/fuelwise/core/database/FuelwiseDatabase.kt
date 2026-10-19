@@ -7,6 +7,7 @@ import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.DocumentDao
 import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.FuelPriceDao
 import app.fuelwise.core.database.dao.ImportDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
@@ -19,6 +20,7 @@ import app.fuelwise.core.database.model.DocumentEntity
 import app.fuelwise.core.database.model.ExpenseEntity
 import app.fuelwise.core.database.model.FastagAccountEntity
 import app.fuelwise.core.database.model.FastagRechargeEntity
+import app.fuelwise.core.database.model.FuelPriceEntity
 import app.fuelwise.core.database.model.ImportBatchEntity
 import app.fuelwise.core.database.model.RecurrenceEntity
 import app.fuelwise.core.database.model.RefuelEntity
@@ -50,8 +52,9 @@ import app.fuelwise.core.database.model.VehicleEntity
         ImportBatchEntity::class,
         TripEntity::class,
         TripPointBatchEntity::class,
+        FuelPriceEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class FuelwiseDatabase : RoomDatabase() {
@@ -74,6 +77,8 @@ abstract class FuelwiseDatabase : RoomDatabase() {
     abstract fun importDao(): ImportDao
 
     abstract fun tripDao(): TripDao
+
+    abstract fun fuelPriceDao(): FuelPriceDao
 
     companion object {
         const val NAME = "fuelwise.db"

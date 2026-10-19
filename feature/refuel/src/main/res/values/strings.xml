@@ -59,4 +59,7 @@
     <string name="reward_not_measured_title">Saved.</string>
     <string name="reward_not_measured_body">Mileage starts again from this full tank.</string>
     <string name="reward_dismiss">Swipe down to dismiss</string>
+    <string name="refuel_scan_banner">Scan pump meter</string>
+    <string name="refuel_scan_photo">Scan photo will be attached</string>
+    <string name="refuel_scan_photo_remove">Remove</string>
 </resources>

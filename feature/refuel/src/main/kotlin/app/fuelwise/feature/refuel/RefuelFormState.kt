@@ -57,6 +57,8 @@ data class RefuelFormState(
     val reward: FillReward? = null,
     /** "Did I pay fair?" for the saved fill (PRD F-09.3); null without a home-city price for that day. */
     val fairPrice: FairPrice? = null,
+    /** A scan photo waiting to be attached on save (PRD F-15); null when none or removed. */
+    val scanPhotoToken: String? = null,
 ) {
     val tank: Tank? get() = vehicle?.tanks?.getOrNull(tankIndex)
     val isCharge: Boolean get() = tank?.energyType == EnergyType.ELECTRIC

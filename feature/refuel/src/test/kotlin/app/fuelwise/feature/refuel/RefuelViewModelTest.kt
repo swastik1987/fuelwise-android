@@ -2,6 +2,7 @@ package app.fuelwise.feature.refuel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.vault.ScanPhotoStash
 import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputePredictions
@@ -10,15 +11,18 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceFuel
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.ScanPrefill
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.TripSource
+import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFuelPriceRepository
 import app.fuelwise.core.testing.FakeTripRepository
@@ -49,6 +53,9 @@ class RefuelViewModelTest {
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.nexonEv))
     private val entries = FakeEntryRepository()
+    private val documents = FakeDocumentRepository()
+    private val stash = ScanPhotoStash({ "photo-1" }, documents)
+    private lateinit var handle: SavedStateHandle
 
     private fun viewModel(
         vehicleId: String = "safari",
@@ -56,8 +63,10 @@ class RefuelViewModelTest {
         trips: FakeTripRepository = FakeTripRepository(),
         cityPrices: FakeFuelPriceRepository = FakeFuelPriceRepository(),
         userData: FakeUserDataRepository = FakeUserDataRepository(),
+        scan: String? = null,
     ) = RefuelViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId)),
+        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId, "scan" to scan))
+            .also { handle = it },
         vehicles = vehicles,
         entries = entries,
         trips = trips,
@@ -68,6 +77,7 @@ class RefuelViewModelTest {
         predictions = ComputePredictions(clock),
         clock = clock,
         zoneId = ZoneId.of("Asia/Kolkata"),
+        scanPhotos = stash,
     )
 
     private fun RefuelViewModel.type(field: NumericField, text: String) {
@@ -223,6 +233,58 @@ class RefuelViewModelTest {
             total = Money(price * 40),
             isFull = true,
         )
+
+    @Test
+    fun aValidatedScanFillsTheTriangleAsReadAndAttachesThePhotoOnSave() = runTest {
+        val token = stash.put(byteArrayOf(7, 7))
+        val scan = ScanPrefill(
+            total = Money(200_000),
+            quantity = 19.43,
+            unitPrice = Money(10_292),
+            odometerKm = 42_318,
+            photoToken = token,
+        )
+        val vm = viewModel(scan = scan.encode())
+        val s = vm.state.value
+        assertThat(s.quantity).isEqualTo("19.43")
+        assertThat(s.unitPrice).isEqualTo("102.92")
+        assertThat(s.total).isEqualTo("2000")
+        assertThat(s.odometer).isEqualTo("42318")
+        assertThat(s.priceSource).isEqualTo(PriceSource.Scanned)
+        assertThat(s.scanPhotoToken).isEqualTo(token)
+
+        vm.save()
+        val saved = entries.observeRefuels("safari").first().single()
+        val photos = documents.observeAttachments(saved.id).first()
+        assertThat(photos.single().ownerType).isEqualTo(Attachment.OwnerType.Refuel)
+        assertThat(stash.peek(token)).isNull()
+    }
+
+    @Test
+    fun aPartialScanKeepsTypedFieldsAndComputesTheThird() = runTest {
+        val vm = viewModel()
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "19.43")
+        // A scan handed back to the open sheet (banner flow) after the user typed.
+        applyScanForTest(ScanPrefill(unitPrice = Money(10_292)))
+        val s = vm.state.value
+        assertThat(s.odometer).isEqualTo("42318")
+        assertThat(s.total).isEqualTo("1999.74")
+        assertThat(s.priceSource).isEqualTo(PriceSource.Scanned)
+    }
+
+    @Test
+    fun removingTheScanPhotoSavesWithoutIt() = runTest {
+        val token = stash.put(byteArrayOf(1))
+        val vm = viewModel(scan = ScanPrefill(total = Money(200_000), quantity = 19.43, photoToken = token).encode())
+        vm.type(NumericField.Odometer, "42318")
+        vm.onRemoveScanPhoto()
+        vm.save()
+        val saved = entries.observeRefuels("safari").first().single()
+        assertThat(documents.observeAttachments(saved.id).first()).isEmpty()
+    }
+
+    private fun applyScanForTest(scan: ScanPrefill) = handle.set("scan", scan.encode())
 
     private companion object {
         const val DAY = 86_400_000L

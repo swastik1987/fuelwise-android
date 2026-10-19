@@ -9,6 +9,7 @@ import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.data.vault.ScanPhotoStash
 import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.entry.CheckFillUp
@@ -28,6 +29,7 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.ScanPrefill
 import app.fuelwise.core.ui.format.KeypadInput
 import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
@@ -40,6 +42,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +53,7 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 class RefuelViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleRepository,
     private val entries: EntryRepository,
     private val trips: TripRepository,
@@ -61,6 +64,7 @@ class RefuelViewModel @Inject constructor(
     private val predictions: ComputePredictions,
     private val clock: Clock,
     private val zoneId: ZoneId,
+    private val scanPhotos: ScanPhotoStash,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<RefuelRoute>()
     private var editing: Refuel? = null
@@ -77,7 +81,60 @@ class RefuelViewModel @Inject constructor(
     val state: StateFlow<RefuelFormState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch { load() }
+        viewModelScope.launch {
+            load()
+            // Scan results arrive in the route (opened from the scan screen) or later on this entry's saved state
+            // (scanned from the sheet's banner). Each is applied once.
+            savedStateHandle.getStateFlow<String?>(SCAN_RESULT_KEY, null).filterNotNull().collect { text ->
+                savedStateHandle[SCAN_RESULT_KEY] = null
+                applyScan(ScanPrefill.decode(text))
+            }
+        }
+    }
+
+    /** Fills what the user confirmed on the scan screen (PRD F-15); other fields keep what was typed. */
+    private fun applyScan(scan: ScanPrefill) {
+        // A newer scan's photo replaces an earlier one.
+        _state.value.scanPhotoToken?.takeIf { it != scan.photoToken && scan.photoToken != null }?.let(scanPhotos::take)
+        _state.update { s ->
+            var next = s.withScannedTriangle(scan)
+            scan.odometerKm?.let { next = next.copy(odometer = it.toString()) }
+            scan.dateTimeUtcMs?.let { next = next.copy(dateTimeUtcMs = it) }
+            scan.stationName?.let { next = next.copy(station = it.take(MAX_TEXT), moreExpanded = true) }
+            next.copy(scanPhotoToken = scan.photoToken ?: s.scanPhotoToken, focus = null).revalidated()
+        }
+    }
+
+    private fun RefuelFormState.withScannedTriangle(scan: ScanPrefill): RefuelFormState {
+        val qty = scan.quantity?.let { "%.2f".format(java.util.Locale.ROOT, it) }
+        val price = scan.unitPrice?.let(MoneyInput::plain)
+        val total = scan.total?.let(MoneyInput::plain)
+        // All three passed the triangle check on the scan screen: keep them as read, with no recompute rounding.
+        if (qty != null && price != null && total != null) {
+            return copy(
+                quantity = qty,
+                unitPrice = price,
+                total = total,
+                recentEdits = listOf(Field.Total, Field.UnitPrice),
+                priceSource = PriceSource.Scanned,
+            )
+        }
+        var next = this
+        qty?.let { next = next.triangleEdit(Field.Quantity, it) }
+        price?.let { next = next.triangleEdit(Field.UnitPrice, it).copy(priceSource = PriceSource.Scanned) }
+        total?.let { next = next.triangleEdit(Field.Total, it) }
+        return next
+    }
+
+    /** The scan photo stays off this entry. */
+    fun onRemoveScanPhoto() {
+        _state.value.scanPhotoToken?.let(scanPhotos::take)
+        _state.update { it.copy(scanPhotoToken = null) }
+    }
+
+    override fun onCleared() {
+        // A sheet closed without saving drops its photo from memory.
+        _state.value.scanPhotoToken?.let(scanPhotos::take)
     }
 
     private suspend fun load() {
@@ -288,6 +345,9 @@ class RefuelViewModel @Inject constructor(
         _state.update { it.copy(saving = true, focus = null) }
         viewModelScope.launch {
             val id = entries.saveRefuel(refuel)
+            // Encrypted in the vault only now that the entry exists (PRD F-15, CLAUDE.md rule 5).
+            checked.scanPhotoToken?.let { scanPhotos.attachToRefuel(it, id) }
+            _state.update { it.copy(scanPhotoToken = null) }
             val fills = entries.observeRefuels(refuel.vehicleId).first().filter { it.tankId == refuel.tankId }
             val fair = fairPriceFor(refuel)
             _state.update { it.copy(saving = false, reward = computeReward(fills, id), fairPrice = fair) }

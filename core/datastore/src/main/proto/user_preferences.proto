@@ -34,6 +34,8 @@ message UserPreferences {
   bool price_alerts = 21;
   // UTC ms of the last successful price feed fetch (F-09.2): at most one a day. 0 = never.
   int64 price_feed_last_fetch_at = 22;
+  // Scanning (PRD F-15) uses field numbers 60–69. The pump/receipt photo is attached to the entry unless turned off.
+  bool scan_photo_opt_out = 60;
 }
 
 message BackupSettings {

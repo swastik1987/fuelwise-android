@@ -3,8 +3,13 @@ package app.fuelwise.feature.trips
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
@@ -355,6 +360,29 @@ class TripsTest {
         list.exportRange(Uri.parse("content://test/all.gpx"), ExportRange.All)
         assertThat(list.events.first()).isEqualTo(TripsEvent.GpxExported(saved = 1))
         assertThat(written.getValue("content://test/all.gpx")).contains("<name>Trip 2026-10-12 07:00</name>")
+    }
+
+    @Test
+    fun waitingForGpsClearsOnTheFirstFixEvenStandingStill() {
+        val live = liveState()
+        val active = live.recording!!
+        var route by mutableStateOf(emptyList<TrackPoint>())
+        compose.setContent {
+            CompositionLocalProvider(LocalMapsEnabled provides false) {
+                FuelwiseTheme {
+                    LiveTripContent(
+                        live.copy(recording = active.copy(route = route)),
+                        clock.millis(),
+                        TripsLinks(),
+                        LiveTripActions(),
+                    )
+                }
+            }
+        }
+        compose.onNodeWithText("Waiting for GPS…").assertIsDisplayed()
+        // A phone that isn't moving gets one fix and no second (25 m between fixes).
+        route = active.route.take(1)
+        compose.onNodeWithText("Waiting for GPS…").assertDoesNotExist()
     }
 
     @Test fun liveLight() = capture("trip_live_light", false) {

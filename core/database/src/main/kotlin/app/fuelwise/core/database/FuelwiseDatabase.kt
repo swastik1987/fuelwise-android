@@ -11,6 +11,7 @@ import app.fuelwise.core.database.dao.ImportDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
 import app.fuelwise.core.database.dao.ReminderDao
+import app.fuelwise.core.database.dao.TripDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.model.AttachmentEntity
 import app.fuelwise.core.database.model.CategoryEntity
@@ -24,6 +25,7 @@ import app.fuelwise.core.database.model.RefuelEntity
 import app.fuelwise.core.database.model.ReminderCompletionEntity
 import app.fuelwise.core.database.model.ReminderEntity
 import app.fuelwise.core.database.model.TankEntity
+import app.fuelwise.core.database.model.TripEntity
 import app.fuelwise.core.database.model.VehicleEntity
 
 /**
@@ -45,8 +47,9 @@ import app.fuelwise.core.database.model.VehicleEntity
         FastagAccountEntity::class,
         FastagRechargeEntity::class,
         ImportBatchEntity::class,
+        TripEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class FuelwiseDatabase : RoomDatabase() {
@@ -67,6 +70,8 @@ abstract class FuelwiseDatabase : RoomDatabase() {
     abstract fun fastagDao(): FastagDao
 
     abstract fun importDao(): ImportDao
+
+    abstract fun tripDao(): TripDao
 
     companion object {
         const val NAME = "fuelwise.db"

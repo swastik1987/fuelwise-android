@@ -37,6 +37,10 @@ class FakeUserDataRepository(initial: UserData = DEFAULT) : UserDataRepository {
         )
     }
 
+    override suspend fun setUpiPayee(vpa: String, name: String) = state.update {
+        it.copy(upiVpa = vpa.trim(), upiName = name.trim())
+    }
+
     companion object {
         val DEFAULT = UserData(
             onboardingCompleted = false,

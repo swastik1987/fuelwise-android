@@ -58,11 +58,29 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+    /** v5 (F-07.1): trips. */
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            V5_STATEMENTS.forEach { db.execSQL(it) }
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 }
 
 private const val SYNC_COLUMNS =
     "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deviceId` TEXT NOT NULL, `deletedAt` INTEGER"
+
+private val V5_STATEMENTS = listOf(
+    "CREATE TABLE IF NOT EXISTS `trip` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, `startTime` INTEGER NOT NULL, " +
+        "`endTime` INTEGER, `zoneId` TEXT NOT NULL, `startOdo` REAL, `endOdo` REAL, `distanceKm` REAL NOT NULL, " +
+        "`purpose` TEXT NOT NULL, `customPurpose` TEXT, `fromPlace` TEXT, `toPlace` TEXT, `notes` TEXT, " +
+        "`polylineAttachmentId` TEXT, `estCostPaise` INTEGER, `source` TEXT NOT NULL, `status` TEXT NOT NULL, " +
+        "$SYNC_COLUMNS, PRIMARY KEY(`id`))",
+    "CREATE INDEX IF NOT EXISTS `index_trip_vehicleId_startTime` ON `trip` (`vehicleId`, `startTime`)",
+    // Tolls and parking on a trip are looked up by trip.
+    "CREATE INDEX IF NOT EXISTS `index_expense_tripId` ON `expense` (`tripId`)",
+)
 
 private val V4_STATEMENTS = listOf(
     "ALTER TABLE `refuel` ADD COLUMN `importBatchId` TEXT",

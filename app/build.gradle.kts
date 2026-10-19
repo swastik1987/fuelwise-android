@@ -68,6 +68,7 @@ dependencies {
     implementation(projects.feature.fastag)
     implementation(projects.feature.backup)
     implementation(projects.feature.dataimport)
+    implementation(projects.feature.trips)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

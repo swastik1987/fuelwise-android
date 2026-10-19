@@ -11,4 +11,5 @@
     <string name="quick_fuel">Fuel or charge</string>
     <string name="quick_expense">Expense</string>
     <string name="quick_toll">Toll</string>
+    <string name="quick_trip">Trip</string>
 </resources>

@@ -25,6 +25,9 @@ message UserPreferences {
   BackupSettings backup = 12;
   // Column mappings the user confirmed on import (PRD F-13.2), keyed by the file's normalized header row.
   map<string, string> import_mappings = 13;
+  // The user's own UPI ID and name for trip-split "pay me" links (PRD F-07.4, F-18). Empty until typed once.
+  string upi_vpa = 14;
+  string upi_name = 15;
 }
 
 message BackupSettings {

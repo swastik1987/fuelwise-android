@@ -11,6 +11,7 @@ import app.fuelwise.core.database.dao.ImportDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
 import app.fuelwise.core.database.dao.ReminderDao
+import app.fuelwise.core.database.dao.TripDao
 import app.fuelwise.core.database.dao.VehicleDao
 import app.fuelwise.core.database.migration.Migrations
 import dagger.Module
@@ -20,8 +21,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+// One provider per DAO; the count grows with the schema, not with complexity.
 @Module
 @InstallIn(SingletonComponent::class)
+@Suppress("TooManyFunctions")
 object DatabaseModule {
     @Provides
     @Singleton
@@ -58,4 +61,7 @@ object DatabaseModule {
 
     @Provides
     fun importDao(db: FuelwiseDatabase): ImportDao = db.importDao()
+
+    @Provides
+    fun tripDao(db: FuelwiseDatabase): TripDao = db.tripDao()
 }

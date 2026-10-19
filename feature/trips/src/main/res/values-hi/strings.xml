@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trips_title">यात्राएँ</string>
+    <string name="trips_back">वापस</string>
+    <string name="trips_deleted">यात्रा हटाई गई</string>
+    <string name="trips_undo">वापस लें</string>
+    <string name="trips_empty">अभी कोई यात्रा नहीं</string>
+    <string name="trips_empty_body">यात्रा दर्ज करें: खर्च देखें, दोस्तों में बाँटें और दफ़्तर के क्लेम के लिए बिज़नेस किमी रखें।</string>
+    <string name="trips_add_manual">यात्रा खुद जोड़ें</string>
+    <string name="trips_no_vehicles">अभी कोई वाहन नहीं</string>
+    <string name="trips_no_vehicles_body">यात्राएँ दर्ज करने के लिए गैराज में वाहन जोड़ें।</string>
+    <string name="trips_week">सप्ताह · %1$s</string>
+    <string name="trips_week_totals">%1$s किमी · %2$s अनु.</string>
+    <string name="trips_km">%1$s किमी</string>
+    <string name="trips_km_unit">किमी</string>
+    <string name="trips_cost_est">%1$s अनु.</string>
+    <string name="trips_est">अनु.</string>
+    <string name="trips_route">%1$s → %2$s</string>
+    <string name="trips_minutes">%1$d मिनट</string>
+    <string name="trips_hours">%1$d घं</string>
+    <string name="trips_hours_minutes">%1$d घं %2$d मिनट</string>
+
+    <string name="trips_purpose_personal">निजी</string>
+    <string name="trips_purpose_business">बिज़नेस</string>
+    <string name="trips_purpose_commute">आना-जाना</string>
+    <string name="trips_purpose_other">अन्य</string>
+
+    <string name="trips_add_title">यात्रा जोड़ें</string>
+    <string name="trips_edit_title">यात्रा बदलें</string>
+    <string name="trips_close">बंद करें</string>
+    <string name="trips_save">यात्रा सेव करें</string>
+    <string name="trips_start_odometer">शुरुआती ओडोमीटर</string>
+    <string name="trips_end_odometer">आख़िरी ओडोमीटर</string>
+    <string name="trips_distance">दूरी</string>
+    <string name="trips_distance_hint">या किमी लिखें</string>
+    <string name="trips_distance_from_odometer">= ओडोमीटर से %1$s किमी</string>
+    <string name="trips_error_distance">दोनों ओडोमीटर रीडिंग या दूरी लिखें।</string>
+    <string name="trips_error_end_before_start">शुरुआती रीडिंग से ज़्यादा होनी चाहिए।</string>
+    <string name="trips_purpose">मकसद</string>
+    <string name="trips_custom_purpose">मकसद का नाम</string>
+    <string name="trips_from">कहाँ से</string>
+    <string name="trips_to">कहाँ तक</string>
+    <string name="trips_notes">नोट</string>
+    <string name="trips_estimate_none">ईंधन खर्च का अनुमान लगाने के लिए दो फ़ुल टैंक दर्ज करें।</string>
+    <string name="trips_estimate_efficiency">ईंधन ≈ %1$s अनु. · %2$s %3$s, %4$s किमी/%3$s पर</string>
+    <string name="trips_estimate_per_km">ईंधन ≈ %1$s अनु. · आपके रिकॉर्ड से %2$s/किमी</string>
+
+    <string name="trips_detail_title">यात्रा</string>
+    <string name="trips_edit">यात्रा बदलें</string>
+    <string name="trips_delete">यात्रा हटाएँ</string>
+    <string name="trips_stat_distance">दूरी</string>
+    <string name="trips_stat_duration">समय</string>
+    <string name="trips_stat_cost">खर्च</string>
+    <string name="trips_odometer_range">%1$s → %2$s</string>
+    <string name="trips_costs">कितना खर्च हुआ</string>
+    <string name="trips_fuel">ईंधन (अनु.)</string>
+    <string name="trips_fuel_efficiency">ईंधन · %1$s %2$s, %3$s किमी/%2$s पर</string>
+    <string name="trips_fuel_per_km">ईंधन · %1$s/किमी</string>
+    <string name="trips_add_toll">टोल जोड़ें</string>
+    <string name="trips_add_cost">खर्च जोड़ें</string>
+    <string name="trips_split">खर्च बाँटें</string>
+    <string name="trips_people_fewer">कम लोग</string>
+    <string name="trips_people_more">ज़्यादा लोग</string>
+    <plurals name="trips_people">
+        <item quantity="one">%1$d व्यक्ति</item>
+        <item quantity="other">%1$d लोग</item>
+    </plurals>
+    <string name="trips_each">हर व्यक्ति</string>
+    <plurals name="trips_people_total">
+        <item quantity="one">%1$d व्यक्ति · कुल %2$s</item>
+        <item quantity="other">%1$d लोग · कुल %2$s</item>
+    </plurals>
+    <string name="trips_preview">मैसेज की झलक</string>
+    <string name="trips_share_upi">UPI लिंक के साथ शेयर करें</string>
+    <string name="trips_share">शेयर करें</string>
+    <string name="trips_never_pays">Fuelwise कभी पेमेंट नहीं करता। दोस्त अपने UPI ऐप से आपको भुगतान करते हैं।</string>
+    <string name="trips_share_message">%1$s, %2$s। %3$s किमी, टोल सहित %4$s। आपका हिस्सा %5$s है।</string>
+    <string name="trips_share_message_solo">%1$s, %2$s। %3$s किमी, टोल सहित %4$s।</string>
+    <string name="trips_share_pay">UPI से भुगतान करें: %1$s</string>
+
+    <string name="trips_upi_title">आपकी UPI ID</string>
+    <string name="trips_upi_body">दोस्त अपने UPI ऐप से इसी ID पर भुगतान करेंगे। इसे एक बार लिखें; यह इसी फ़ोन और आपके बैकअप में रहती है।</string>
+    <string name="trips_upi_id">UPI ID</string>
+    <string name="trips_upi_id_hint">name@bank</string>
+    <string name="trips_upi_invalid">यह UPI ID जैसी नहीं लगती (name@bank)।</string>
+    <string name="trips_upi_name">आपका नाम (दोस्तों को दिखेगा)</string>
+    <string name="trips_upi_save">सेव करें और शेयर करें</string>
+</resources>

@@ -51,6 +51,7 @@ data class RefuelEntity(
         // A recurring expense is created at most once per due date, even after a restore (PRD F-04.3 AC).
         Index(value = ["recurrenceId", "dateTime"], unique = true),
         Index("importBatchId"),
+        Index("tripId"),
     ],
 )
 data class ExpenseEntity(

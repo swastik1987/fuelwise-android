@@ -96,6 +96,8 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             KEY_THEME to p.themeMode.name,
             KEY_HIDE_AMOUNTS to p.hideAmounts,
             KEY_MILESTONES to p.shownMilestonesList.toList(),
+            KEY_UPI_VPA to p.upiVpa,
+            KEY_UPI_NAME to p.upiName,
         )
     }
 
@@ -117,6 +119,8 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             shownMilestones.clear()
             shownMilestones.addAll(it)
         }
+        (values[KEY_UPI_VPA] as? String)?.let { upiVpa = it }
+        (values[KEY_UPI_NAME] as? String)?.let { upiName = it }
     }
 
     private companion object {
@@ -127,5 +131,7 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         const val KEY_THEME = "themeMode"
         const val KEY_HIDE_AMOUNTS = "hideAmounts"
         const val KEY_MILESTONES = "shownMilestones"
+        const val KEY_UPI_VPA = "upiVpa"
+        const val KEY_UPI_NAME = "upiName"
     }
 }

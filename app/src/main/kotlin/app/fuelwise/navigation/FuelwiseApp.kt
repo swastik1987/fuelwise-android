@@ -67,6 +67,12 @@ import app.fuelwise.feature.reminders.ReminderEditorRoute
 import app.fuelwise.feature.reminders.RemindersRoute
 import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
+import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
+import app.fuelwise.feature.trips.TripDetailRoute
+import app.fuelwise.feature.trips.TripEditorRoute
+import app.fuelwise.feature.trips.TripsLinks
+import app.fuelwise.feature.trips.TripsRoute
+import app.fuelwise.feature.trips.tripsScreens
 
 /** App shell: bottom nav + FAB around a single NavHost. Feature modules only see callbacks, never each other. */
 @Composable
@@ -172,6 +178,7 @@ fun FuelwiseApp(
                     onReminders = { navController.navigate(RemindersRoute) },
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
+                    onTrips = { navController.navigate(TripsRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                 ),
@@ -198,6 +205,24 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            tripsScreens(
+                TripsLinks(
+                    onBack = navController::popBackStack,
+                    onAddManual = { navController.navigate(TripEditorRoute()) },
+                    onOpenTrip = { id -> navController.navigate(TripDetailRoute(id)) },
+                    onEditTrip = { id -> navController.navigate(TripEditorRoute(tripId = id)) },
+                    onDeleteTrip = { id ->
+                        // The list performs the delete so it can show the undo snackbar.
+                        navController.popBackStack()
+                        navController.currentBackStackEntry?.savedStateHandle?.set(PENDING_DELETE_TRIP_ID, id)
+                    },
+                    onAddCost = { vehicleId, tripId, toll ->
+                        navController.navigate(ExpenseRoute(vehicleId = vehicleId, toll = toll, tripId = tripId))
+                    },
+                    onOpenCost = { id -> navController.navigate(ExpenseRoute(expenseId = id)) },
+                ),
+                onEditorClose = navController::popBackStack,
+            )
             fastagScreen(
                 onBack = navController::popBackStack,
                 onAddToll = { vehicleId -> navController.navigate(ExpenseRoute(vehicleId = vehicleId, toll = true)) },
@@ -227,6 +252,7 @@ fun FuelwiseApp(
                     QuickAdd.Fuel -> navController.navigate(RefuelRoute())
                     QuickAdd.Expense -> navController.navigate(ExpenseRoute())
                     QuickAdd.Toll -> navController.navigate(ExpenseRoute(toll = true))
+                    QuickAdd.Trip -> navController.navigate(TripEditorRoute())
                 }
             },
             onDismiss = { quickAddOpen = false },

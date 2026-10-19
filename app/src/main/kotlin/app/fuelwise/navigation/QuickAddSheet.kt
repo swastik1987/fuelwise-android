@@ -24,11 +24,11 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 
-enum class QuickAdd { Fuel, Expense, Toll }
+enum class QuickAdd { Fuel, Expense, Toll, Trip }
 
 /**
- * Long-press menu on "+" (docs/design.md §5). Fuel opens Add charge for an EV automatically. Trip and Scan join
- * this menu with their features (M8, M10).
+ * Long-press menu on "+" (docs/design.md §5). Fuel opens Add charge for an EV automatically. Scan joins this menu with
+ * its feature (M10).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +43,7 @@ fun QuickAddSheet(onPick: (QuickAdd) -> Unit, onDismiss: () -> Unit) {
             Option(FwIcons.Fuel, stringResource(R.string.quick_fuel)) { onPick(QuickAdd.Fuel) }
             Option(FwIcons.Service, stringResource(R.string.quick_expense)) { onPick(QuickAdd.Expense) }
             Option(FwIcons.Toll, stringResource(R.string.quick_toll)) { onPick(QuickAdd.Toll) }
+            Option(FwIcons.ManualTrip, stringResource(R.string.quick_trip)) { onPick(QuickAdd.Trip) }
         }
     }
 }

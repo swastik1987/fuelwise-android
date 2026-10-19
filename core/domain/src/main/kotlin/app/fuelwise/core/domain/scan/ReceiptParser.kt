@@ -67,6 +67,9 @@ object ReceiptParser {
     private const val CENTURY = 2000
     private const val HOURS_HALF_DAY = 12
     private const val MONTHS_IN_YEAR = 12
+    private const val YEAR_GROUP = 3
+    private const val SECOND_GROUP = 3
+    private const val MERIDIEM_GROUP = 4
 
     fun parse(lines: List<OcrLine>, rateHint: Money? = null, tuning: ScanTuning = ScanTuning()): ReceiptReading {
         val rows = OcrRows.of(lines)
@@ -94,9 +97,9 @@ object ReceiptParser {
             val (a, b, y) = m.destructured.toList().map { it.toInt() }
             // India writes day first; a month above 12 means the receipt printer is set to month first.
             if (b > MONTHS_IN_YEAR && a <= MONTHS_IN_YEAR) {
-                safeDate(fullYear(m.groupValues[3]), a, b)
+                safeDate(fullYear(m.groupValues[YEAR_GROUP]), a, b)
             } else {
-                safeDate(fullYear(m.groupValues[3]), b, a)
+                safeDate(fullYear(m.groupValues[YEAR_GROUP]), b, a)
             }
         }
     }
@@ -105,8 +108,8 @@ object ReceiptParser {
         val m = TIME.find(text) ?: return null
         var hour = m.groupValues[1].toInt()
         val minute = m.groupValues[2].toInt()
-        val second = m.groupValues[3].toIntOrNull() ?: 0
-        when (m.groupValues[4]) {
+        val second = m.groupValues[SECOND_GROUP].toIntOrNull() ?: 0
+        when (m.groupValues[MERIDIEM_GROUP]) {
             "PM" -> if (hour < HOURS_HALF_DAY) hour += HOURS_HALF_DAY
             "AM" -> if (hour == HOURS_HALF_DAY) hour = 0
         }

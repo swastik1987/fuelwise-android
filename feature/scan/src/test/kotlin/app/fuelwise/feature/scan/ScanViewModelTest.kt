@@ -6,6 +6,7 @@ import app.fuelwise.core.data.vault.ScanPhotoStash
 import app.fuelwise.core.domain.scan.OcrLine
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.ScanPrefill
+import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeScanSettingsRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
@@ -30,7 +31,7 @@ class ScanViewModelTest {
     @get:Rule
     val main = MainDispatcherRule()
 
-    private val stash = ScanPhotoStash { "photo-1" }
+    private val stash = ScanPhotoStash({ "photo-1" }, FakeDocumentRepository())
     private val photo = byteArrayOf(1, 2, 3)
 
     private fun viewModel(mode: ScanMode = ScanMode.PumpMeter) = ScanViewModel(

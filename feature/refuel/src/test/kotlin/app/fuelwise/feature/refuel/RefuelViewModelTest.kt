@@ -49,7 +49,7 @@ class RefuelViewModelTest {
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.nexonEv))
     private val entries = FakeEntryRepository()
     private val documents = FakeDocumentRepository()
-    private val stash = ScanPhotoStash { "photo-1" }
+    private val stash = ScanPhotoStash({ "photo-1" }, documents)
     private lateinit var handle: SavedStateHandle
 
     private fun viewModel(
@@ -69,7 +69,6 @@ class RefuelViewModelTest {
         predictions = ComputePredictions(clock),
         clock = clock,
         zoneId = ZoneId.of("Asia/Kolkata"),
-        documents = documents,
         scanPhotos = stash,
     )
 

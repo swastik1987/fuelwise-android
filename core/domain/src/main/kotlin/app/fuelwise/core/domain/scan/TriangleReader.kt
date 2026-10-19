@@ -50,24 +50,19 @@ internal class TriangleReader(private val tuning: ScanTuning, private val layout
         val quantities = candidates.filter { it.value.toDouble() in tuning.minQuantity..tuning.maxQuantity }
             .top(Role.Quantity)
         val rates = candidates.filter { it.paise in tuning.minRate.paise..tuning.maxRate.paise }.top(Role.Rate)
-        var best: Triple? = null
-        var bestScore = Double.NEGATIVE_INFINITY
-        for (t in totals) {
-            for (q in quantities) {
-                if (q.token == t.token) continue
-                for (r in rates) {
-                    if (r.token == t.token || r.token == q.token) continue
-                    val triple = Triple(t, q, r, fits(t, q, r))
-                    val score = score(triple, rateHint)
-                    if (score > bestScore) {
-                        best = triple
-                        bestScore = score
-                    }
-                }
-            }
-        }
+        val best = triples(totals, quantities, rates).maxByOrNull { score(it, rateHint) }
         best?.takeIf { it.fits }?.let { return it.reading() }
         return labelledOnly(totals, quantities, rates)
+    }
+
+    /** Every triple of three distinct numbers. */
+    private fun triples(totals: List<Candidate>, quantities: List<Candidate>, rates: List<Candidate>) = sequence {
+        for (t in totals) {
+            for (q in quantities.filter { it.token != t.token }) {
+                rates.filter { it.token != t.token && it.token != q.token }
+                    .forEach { r -> yield(Triple(t, q, r, fits(t, q, r))) }
+            }
+        }
     }
 
     private fun candidates(rows: List<OcrRow>): List<Candidate> {
@@ -94,6 +89,7 @@ internal class TriangleReader(private val tuning: ScanTuning, private val layout
         }
         val neighbours = when (layout) {
             Layout.PumpDisplay -> listOf(row - 1, row + 1)
+
             // A receipt prints the value under its label when the label is long ("Sale Amount (Rs)").
             Layout.Receipt -> listOf(row - 1)
         }
@@ -113,9 +109,9 @@ internal class TriangleReader(private val tuning: ScanTuning, private val layout
 
             else -> listOf(
                 token.valueWith(0) to base + tuning.wholeNumberPenalty,
-                token.valueWith(2) to base + tuning.assumedPointPenalty,
-                token.valueWith(1) to base + tuning.unusualPointPenalty,
-                token.valueWith(3) to base + tuning.unusualPointPenalty,
+                token.valueWith(USUAL_DECIMALS) to base + tuning.assumedPointPenalty,
+                token.valueWith(ONE_DECIMAL) to base + tuning.unusualPointPenalty,
+                token.valueWith(THREE_DECIMALS) to base + tuning.unusualPointPenalty,
             )
         }
     }
@@ -180,6 +176,9 @@ internal class TriangleReader(private val tuning: ScanTuning, private val layout
 
     private companion object {
         const val MAX_PER_ROLE = 32
+        const val USUAL_DECIMALS = 2
+        const val ONE_DECIMAL = 1
+        const val THREE_DECIMALS = 3
         const val QUANTITY_DECIMALS = 2
         const val PERCENT = 100.0
     }

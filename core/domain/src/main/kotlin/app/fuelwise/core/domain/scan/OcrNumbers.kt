@@ -64,6 +64,18 @@ internal object OcrNumbers {
     }
 
     private fun token(row: OcrRow, text: String, range: IntRange): NumberToken? {
+        val (start, end) = trimmed(text, range)
+        val raw = text.substring(start, end)
+        val real = raw.count { it.isDigit() }
+        val repairs = raw.count { it in CONFUSIONS }
+        if (real == 0 || repairs > real || embedded(text, start, end)) return null
+        val mapped = raw.map { CONFUSIONS[it] ?: it }.joinToString("")
+        val (digits, decimals) = separators(mapped) ?: return null
+        return NumberToken(row.index, start, end, digits, decimals, row.box, repairs)
+    }
+
+    /** The run without letters that belong to neighbouring words, or edge punctuation. */
+    private fun trimmed(text: String, range: IntRange): Pair<Int, Int> {
         var start = range.first
         var end = range.last + 1
         // A confusable letter touching a word belongs to the word: "Rs.2000" is not "R5.2000".
@@ -72,14 +84,14 @@ internal object OcrNumbers {
         // Points and commas at the edges are punctuation ("Rs." or "2000.00,").
         while (start < end && text[start] in ".,") start++
         while (end > start && text[end - 1] in ".,") end--
-        val raw = text.substring(start, end)
-        val real = raw.count { it.isDigit() }
-        val repairs = raw.count { it in CONFUSIONS }
-        val embedded = start > 0 && text[start - 1].isLetter() && end < text.length && text[end].isLetter()
-        if (real == 0 || repairs > real || embedded) return null
-        val mapped = raw.map { CONFUSIONS[it] ?: it }.joinToString("")
-        val (digits, decimals) = separators(mapped) ?: return null
-        return NumberToken(row.index, start, end, digits, decimals, row.box, repairs)
+        return start to end
+    }
+
+    /** Letters on both sides: part of a code such as a GSTIN, not a number. */
+    private fun embedded(text: String, start: Int, end: Int): Boolean {
+        val before = start > 0 && text[start - 1].isLetter()
+        val after = end < text.length && text[end].isLetter()
+        return before && after
     }
 
     /** The run's last char is a letter that belongs to the following word or unit ("19.43ltr", "19.43l"). */

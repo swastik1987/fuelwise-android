@@ -34,9 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -323,14 +323,19 @@ private fun formatValue(field: ScanField, values: ScanPrefill, unit: QuantityUni
     val unitText = stringResource(VehicleLabels.unit(unit))
     return when (field) {
         ScanField.Total -> values.total?.let(IndianNumberFormat::rupees)
+
         ScanField.Quantity -> values.quantity?.let { IndianNumberFormat.decimal(it, 2) + " " + unitText }
+
         ScanField.Rate -> values.unitPrice?.let {
             stringResource(R.string.scan_rate, IndianNumberFormat.rupees(it), unitText)
         }
+
         ScanField.Odometer -> values.odometerKm?.let { stringResource(R.string.scan_km, IndianNumberFormat.group(it)) }
+
         ScanField.Date -> values.dateTimeUtcMs?.let {
             IndianNumberFormat.date(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate())
         }
+
         ScanField.Station -> values.stationName
     }
 }

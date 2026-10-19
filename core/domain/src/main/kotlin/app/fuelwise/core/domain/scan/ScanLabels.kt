@@ -16,12 +16,17 @@ internal object ScanLabels {
     private val VOCABULARY: List<Pair<Role, Regex>> = listOf(
         Role.Ignore to words(
             "DENSITY", "DENS", "KG\\s*/\\s*M3", "KG\\s*/\\s*M", "T${O}TALI[ZS]ER", "N${O}ZZLE", "N${O}Z", "PRESET",
-            "TEMP", "INV${O}ICE\\s*N${O}", "RECEIPT\\s*N${O}", "BILL\\s*N${O}", "TXN", "TRANS", "GSTIN", "GST",
-            "TEL", "PH", "PHONE", "M${O}B", "M${O}BILE", "VEHICLE", "CARD", "FIP", "PUMP\\s*N${O}", "ID",
+            "TEMP", "INV${O}ICE\\s*N$O", "RECEIPT\\s*N$O", "BILL\\s*N$O", "TXN", "TRANS", "GSTIN", "GST",
+            "TEL", "PH", "PHONE", "M${O}B", "M${O}BILE", "VEHICLE", "CARD", "FIP", "PUMP\\s*N$O", "ID",
         ),
         Role.Rate to words(
-            "RATE", "PRICE", "UNIT\\s*PRICE", "RS\\.?\\s*/\\s*(L|LTR|LITRE|KG)", "₹\\s*/\\s*(L|LTR|KG)",
-            "/\\s*(L|LTR|LITRE|KG)", "PER\\s*(L|LTR|LITRE|KG)",
+            "RATE",
+            "PRICE",
+            "UNIT\\s*PRICE",
+            "RS\\.?\\s*/\\s*(L|LTR|LITRE|KG)",
+            "₹\\s*/\\s*(L|LTR|KG)",
+            "/\\s*(L|LTR|LITRE|KG)",
+            "PER\\s*(L|LTR|LITRE|KG)",
         ),
         Role.Quantity to words(
             "V${O}LUME", "V${O}L", "LITRES?", "LITERS?", "LTRS?", "QTY", "QUANTITY", "KGS?", "L",

@@ -11,15 +11,15 @@ import app.fuelwise.core.model.Money
  */
 data class ScanTuning(
     /** The price triangle check: |quantity × rate − total| ≤ this (PRD F-15: ₹1). */
-    val triangleTolerance: Money = Money(100),
+    val triangleTolerance: Money = Money(TOLERANCE_PAISE),
     /** Plausible ₹ per L / kg for petrol, diesel, CNG and autogas LPG in India. */
-    val minRate: Money = Money.ofRupees(40),
-    val maxRate: Money = Money.ofRupees(250),
+    val minRate: Money = Money.ofRupees(MIN_RATE_RUPEES),
+    val maxRate: Money = Money.ofRupees(MAX_RATE_RUPEES),
     /** L or kg in one fill. Trucks can take a few hundred litres. */
     val minQuantity: Double = 0.1,
     val maxQuantity: Double = 500.0,
-    val minTotal: Money = Money.ofRupees(10),
-    val maxTotal: Money = Money.ofRupees(100_000),
+    val minTotal: Money = Money.ofRupees(MIN_TOTAL_RUPEES),
+    val maxTotal: Money = Money.ofRupees(MAX_TOTAL_RUPEES),
     /** A label on the same row as the number ("RATE 102.92"). */
     val sameRowLabelWeight: Double = 3.0,
     /** A label on the row above or below (pump displays print labels under or over the digits). */
@@ -51,4 +51,12 @@ data class ScanTuning(
     val odometerTripPenalty: Double = 5.0,
     val odometerPredictionBonus: Double = 3.0,
     val odometerPredictionTolerancePercent: Int = 10,
-)
+) {
+    private companion object {
+        const val TOLERANCE_PAISE = 100L
+        const val MIN_RATE_RUPEES = 40L
+        const val MAX_RATE_RUPEES = 250L
+        const val MIN_TOTAL_RUPEES = 10L
+        const val MAX_TOTAL_RUPEES = 100_000L
+    }
+}

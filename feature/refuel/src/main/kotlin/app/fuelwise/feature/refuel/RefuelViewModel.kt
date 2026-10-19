@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
@@ -17,7 +16,6 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.entry.PriceTriangle.Field
 import app.fuelwise.core.domain.entry.odometerReadings
-import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.Money
@@ -56,7 +54,6 @@ class RefuelViewModel @Inject constructor(
     private val predictions: ComputePredictions,
     private val clock: Clock,
     private val zoneId: ZoneId,
-    private val documents: DocumentRepository,
     private val scanPhotos: ScanPhotoStash,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<RefuelRoute>()
@@ -315,9 +312,7 @@ class RefuelViewModel @Inject constructor(
         viewModelScope.launch {
             val id = entries.saveRefuel(refuel)
             // Encrypted in the vault only now that the entry exists (PRD F-15, CLAUDE.md rule 5).
-            checked.scanPhotoToken?.let(scanPhotos::take)?.let { jpeg ->
-                documents.addAttachment(id, Attachment.OwnerType.Refuel, jpeg, PHOTO_MIME)
-            }
+            checked.scanPhotoToken?.let { scanPhotos.attachToRefuel(it, id) }
             _state.update { it.copy(scanPhotoToken = null) }
             val fills = entries.observeRefuels(refuel.vehicleId).first().filter { it.tankId == refuel.tankId }
             _state.update { it.copy(saving = false, reward = computeReward(fills, id)) }
@@ -449,6 +444,5 @@ class RefuelViewModel @Inject constructor(
         const val MAX_TEXT = 60
         const val MAX_NOTES = 500
         const val FULL_SOC = 99f
-        const val PHOTO_MIME = "image/jpeg"
     }
 }

@@ -113,7 +113,11 @@ class ScanViewModel @Inject constructor(
             busy = false
             if (_state.value.review != null || _state.value.mode != mode) return@launch
             latestJpeg = frame.jpeg
-            stableFrames = if (valid && live.values == lastValid) stableFrames + 1 else if (valid) 1 else 0
+            stableFrames = when {
+                !valid -> 0
+                live.values == lastValid -> stableFrames + 1
+                else -> 1
+            }
             lastValid = live.values.takeIf { valid }
             if (live.labels.isNotEmpty()) restartStruggleTimer()
             _state.update {

@@ -40,7 +40,11 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwMotion
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.entry.FillReward
+import app.fuelwise.core.domain.units.DisplayUnits
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyUnit
+import app.fuelwise.core.ui.format.efficiencyValue
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -53,7 +57,8 @@ import kotlinx.coroutines.delay
 internal fun RewardOverlay(
     reward: FillReward,
     vehicleName: String,
-    unit: String,
+    quantity: QuantityUnit,
+    units: DisplayUnits,
     onDismiss: () -> Unit,
     // "You paid ₹0.42/L above the city price" (PRD F-09.3); null without a city price for that day.
     fairPriceLine: String? = null,
@@ -95,7 +100,7 @@ internal fun RewardOverlay(
                 Box(Modifier.size(36.dp, 4.dp).background(FwTheme.colors.ink3, FwTheme.radius.pill))
             }
             when (reward) {
-                is FillReward.Measured -> Measured(reward, vehicleName, unit, scale.value)
+                is FillReward.Measured -> Measured(reward, vehicleName, quantity, units, scale.value)
 
                 FillReward.Baseline -> Message(
                     R.string.reward_baseline_overline,
@@ -127,7 +132,13 @@ internal fun RewardOverlay(
 }
 
 @Composable
-private fun Measured(reward: FillReward.Measured, vehicleName: String, unit: String, scale: Float) {
+private fun Measured(
+    reward: FillReward.Measured,
+    vehicleName: String,
+    quantity: QuantityUnit,
+    units: DisplayUnits,
+    scale: Float,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         FwOverline(stringResource(R.string.reward_overline, vehicleName), Modifier.weight(1f))
         Icon(painterResource(FwIcons.Check), null, tint = FwTheme.colors.ink2, modifier = Modifier.size(16.dp))
@@ -139,12 +150,12 @@ private fun Measured(reward: FillReward.Measured, vehicleName: String, unit: Str
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
-            IndianNumberFormat.decimal(reward.interval.kmPerUnit, 1),
+            efficiencyValue(reward.interval.kmPerUnit, quantity, units),
             style = FwTheme.type.display,
             color = FwTheme.colors.ink,
         )
         Text(
-            stringResource(R.string.reward_unit, unit),
+            efficiencyUnit(quantity, units),
             style = FwTheme.type.h3,
             color = FwTheme.colors.ink2,
             modifier = Modifier.padding(bottom = 6.dp),
@@ -155,9 +166,10 @@ private fun Measured(reward: FillReward.Measured, vehicleName: String, unit: Str
         FwDeltaChip(
             Delta(
                 label = stringResource(R.string.reward_vs_average, percent),
+                // The arrow follows the number shown: in L/100 km a better tank reads lower.
                 direction = when {
                     percent == 0 -> Delta.Direction.Flat
-                    change > 0 -> Delta.Direction.Up
+                    (change > 0) == units.higherIsBetter -> Delta.Direction.Up
                     else -> Delta.Direction.Down
                 },
                 isImprovement = if (percent == 0) null else change > 0,

@@ -34,7 +34,7 @@
     <string name="card_mileage_drop_title">Mileage drop</string>
     <string name="card_mileage_drop_body">Your mileage dropped %1$d%% over the last 2 tanks. Check tyre pressure first, then the air filter, and whether a service is due.</string>
     <string name="card_real_vs_claimed_title">Real vs claimed</string>
-    <string name="card_real_vs_claimed_body">You get %1$d%% of the claimed mileage: %2$s km/%3$s against %4$s claimed.</string>
+    <string name="card_real_vs_claimed_body">You get %1$d%% of the claimed mileage: %2$s against %3$s claimed.</string>
     <string name="card_unlock">Unlock with Pro</string>
     <string name="card_pro_fuel_grade">Fuel grade compare</string>
     <string name="card_pro_cng">CNG saving</string>
@@ -51,13 +51,15 @@
     <string name="chart_odometer">Odometer</string>
     <string name="chart_fuel">Fuel and charging</string>
     <string name="chart_claimed">Claimed %1$s</string>
+    <!-- Price paid data table: your home city's price that day, e.g. "city ₹102.92" -->
+    <string name="chart_city_price">city %1$s</string>
     <string name="chart_no_data">Not enough entries in this period for this chart.</string>
     <string name="chart_show_table">Show data table</string>
     <string name="chart_hide_table">Hide data table</string>
     <string name="chart_data_table">Data</string>
     <string name="chart_mileage_formula">Each bar is one full-to-full tank: the distance between two full fills divided by everything filled in between, partial fills included. The line is the rolling mileage of the last 3 tanks (total distance ÷ total fuel). The dashed line is the claimed figure from the vehicle settings.</string>
     <string name="chart_monthly_spend_formula">Each bar is one month: fuel or charging paid (after discounts) in the dark part, every other expense in the light part, including EMIs.</string>
-    <string name="chart_price_paid_formula">The price per unit you paid at each fill-up, as entered or calculated from quantity and total.</string>
+    <string name="chart_price_paid_formula">The price per unit you paid at each fill-up, as entered or calculated from quantity and total. The thin grey line is your home city\'s price that day, where you\'ve added one.</string>
     <string name="chart_cost_per_km_formula">Each point is one month: fuel and running costs divided by the kilometres driven that month. Months without enough odometer readings are left out.</string>
     <string name="chart_by_category_formula">Everything spent in the period, grouped by category, largest first.</string>
     <string name="chart_odometer_formula">Every odometer reading you logged in the period, from fill-ups and expenses.</string>

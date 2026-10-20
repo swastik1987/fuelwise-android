@@ -17,6 +17,7 @@ import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.domain.insights.ComputeRecap
 import app.fuelwise.core.domain.insights.Recap
 import app.fuelwise.core.domain.insights.VehicleHistory
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -38,7 +39,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class RecapUiState(val recap: Recap, val vehicle: Vehicle, val showVehicleName: Boolean)
+data class RecapUiState(
+    val recap: Recap,
+    val vehicle: Vehicle,
+    val showVehicleName: Boolean,
+    /** The vehicle's display units (PRD F-18) for the best-tank figure. */
+    val units: DisplayUnits = DisplayUnits.INDIA,
+)
 
 sealed interface RecapEvent {
     data class Share(val uri: Uri) : RecapEvent
@@ -85,10 +92,10 @@ class RecapViewModel @Inject constructor(
                         v.id
                 },
             )
-            v to computeRecap(history, cats, month, zoneId)
+            Triple(v, computeRecap(history, cats, month, zoneId), data.units.forVehicle(v.id))
         }
-    }.combine(showVehicleName) { pair, show ->
-        pair?.let { (vehicle, recap) -> RecapUiState(recap, vehicle, show) }
+    }.combine(showVehicleName) { triple, show ->
+        triple?.let { (vehicle, recap, units) -> RecapUiState(recap, vehicle, show, units) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
 
     private val eventChannel = Channel<RecapEvent>(Channel.BUFFERED)

@@ -13,6 +13,7 @@ import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.priceFuelFor
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.Expense
@@ -46,6 +47,8 @@ sealed interface EntryDetailUiState {
         val distanceSincePrevious: Double?,
         /** "Did I pay fair?" against the home-city price that day (PRD F-09.3). */
         val fairPrice: FairPrice? = null,
+        /** The vehicle's display units (PRD F-18) for the interval's efficiency. */
+        val units: DisplayUnits = DisplayUnits.INDIA,
     ) : EntryDetailUiState
 
     data class Cost(val expense: Expense, val vehicle: Vehicle?, val category: Category?) : EntryDetailUiState
@@ -83,6 +86,7 @@ class EntryDetailViewModel @Inject constructor(
                         result = lookupIntervals(tankFills)[refuel.id],
                         distanceSincePrevious = previous?.let { refuel.odometerKm - it.odometerKm },
                         fairPrice = fairPrice(refuel, vehicle, data.homeCityId),
+                        units = data.units.forVehicle(refuel.vehicleId),
                     )
                 }
             }

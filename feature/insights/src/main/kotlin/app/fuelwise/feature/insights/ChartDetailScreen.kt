@@ -81,15 +81,15 @@ internal fun ChartDetailContent(kind: ChartKind, state: InsightsSnapshot?, onBac
                 color = FwTheme.colors.ink2,
             )
             Summary(kind, report, state.units)
-            if (report.series(kind).isEmpty()) {
+            if (report.series(kind, state.units).isEmpty()) {
                 Text(stringResource(R.string.chart_no_data), style = FwTheme.type.body, color = FwTheme.colors.ink2)
             } else {
-                ChartView(kind, report, state.categories)
+                ChartView(kind, report, state.categories, state.units, cityPrices = state.cityPrices)
                 FwTextButton(
                     stringResource(if (showTable) R.string.chart_hide_table else R.string.chart_show_table),
                     { showTable = !showTable },
                 )
-                if (showTable) DataTable(report.rows(kind, state.categories))
+                if (showTable) DataTable(report.rows(kind, state.categories, state.units, state.cityPrices))
             }
         }
     }

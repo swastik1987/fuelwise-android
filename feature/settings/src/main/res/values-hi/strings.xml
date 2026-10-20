@@ -91,19 +91,9 @@
 
     <string name="units_title">यूनिट</string>
     <string name="units_vehicle_title">यूनिट · %1$s</string>
-    <string name="units_distance">दूरी</string>
-    <string name="units_volume">लिक्विड फ़्यूल</string>
     <string name="units_efficiency">माइलेज</string>
-    <string name="units_distance_km">किलोमीटर (km)</string>
-    <string name="units_distance_mi">मील (mi)</string>
-    <string name="units_volume_litre">लीटर (L)</string>
-    <string name="units_volume_us">US गैलन</string>
-    <string name="units_volume_uk">UK गैलन</string>
     <string name="units_efficiency_distance">km/L · km/kg · km/kWh</string>
     <string name="units_efficiency_per100">L/100 km · kg/100 km · kWh/100 km</string>
-    <string name="units_efficiency_mpg_us">mpg (US)</string>
-    <string name="units_efficiency_mpg_uk">mpg (UK)</string>
-    <string name="units_efficiency_note">mpg चुनने पर CNG और EV में mi/kg और mi/kWh दिखेगा।</string>
     <string name="units_storage_note">एंट्री हमेशा km, L, kg और kWh में सेव होती हैं, इसलिए यूनिट बदलने से आपका डेटा नहीं बदलता।</string>
     <string name="units_per_vehicle">हर गाड़ी के लिए</string>
     <string name="units_same_as_default">डिफ़ॉल्ट जैसी</string>

@@ -111,6 +111,9 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             KEY_DYNAMIC_COLOR to p.dynamicColor,
             KEY_PINNED_CITIES to p.pinnedCityIdsList.toList(),
             KEY_PRICE_ALERTS to p.priceAlerts,
+            // Scanning (PRD F-15) and reports (PRD F-13.3, F-07.9).
+            KEY_SCAN_PHOTO_OPT_OUT to p.scanPhotoOptOut,
+            KEY_BUSINESS_RATE to p.businessRatePaisePerKm,
         )
     }
 
@@ -134,12 +137,19 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         }
         (values[KEY_UPI_VPA] as? String)?.let { upiVpa = it }
         (values[KEY_UPI_NAME] as? String)?.let { upiName = it }
+        importFeatures(values)
+        importSettings(values)
+    }
+
+    /** Keys owned by prices (PRD F-09), scanning (F-15) and reports (F-13.3). */
+    private fun UserPreferencesKt.Dsl.importFeatures(values: Map<String, Any?>) {
         (values[KEY_PINNED_CITIES] as? List<*>)?.filterIsInstance<String>()?.let {
             pinnedCityIds.clear()
             pinnedCityIds.addAll(it)
         }
         (values[KEY_PRICE_ALERTS] as? Boolean)?.let { priceAlerts = it }
-        importSettings(values)
+        (values[KEY_SCAN_PHOTO_OPT_OUT] as? Boolean)?.let { scanPhotoOptOut = it }
+        (values[KEY_BUSINESS_RATE] as? Long)?.let { businessRatePaisePerKm = it.coerceAtLeast(0) }
     }
 
     /** The Settings keys (PRD F-18). */
@@ -187,5 +197,7 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         const val KEY_DYNAMIC_COLOR = "dynamicColor"
         const val KEY_PINNED_CITIES = "pinnedCityIds"
         const val KEY_PRICE_ALERTS = "priceAlerts"
+        const val KEY_SCAN_PHOTO_OPT_OUT = "scanPhotoOptOut"
+        const val KEY_BUSINESS_RATE = "businessRatePaisePerKm"
     }
 }

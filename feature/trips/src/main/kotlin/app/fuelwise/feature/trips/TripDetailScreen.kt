@@ -63,10 +63,12 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripSplit
 import app.fuelwise.core.domain.trip.averageKmh
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.map.FwRouteMap
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.Instant
@@ -303,7 +305,7 @@ private fun CostsCard(state: TripDetailUiState, trip: Trip, links: TripsLinks) {
     FwCard(contentPadding = PaddingValues(18.dp)) {
         FwOverline(stringResource(R.string.trips_costs), Modifier.padding(bottom = 4.dp))
         trip.estimatedFuelCost?.let { fuel ->
-            CostLine(fuelLabel(state.fuelBasis), IndianNumberFormat.rupeesWhole(fuel), onClick = null)
+            CostLine(fuelLabel(state.fuelBasis, state.units), IndianNumberFormat.rupeesWhole(fuel), onClick = null)
         } ?: Text(
             stringResource(R.string.trips_estimate_none),
             style = FwTheme.type.bodyS,
@@ -481,14 +483,14 @@ private fun UpiSheet(
 }
 
 @Composable
-private fun fuelLabel(basis: TripCostBasis?): String = when (basis) {
+private fun fuelLabel(basis: TripCostBasis?, units: DisplayUnits): String = when (basis) {
     is TripCostBasis.Efficiency -> {
         val unit = stringResource(VehicleLabels.unit(basis.energyType.canonicalUnit))
         stringResource(
             R.string.trips_fuel_efficiency,
             IndianNumberFormat.decimal(basis.quantity, 1),
             unit,
-            IndianNumberFormat.decimal(basis.kmPerUnit, 1),
+            efficiencyText(basis.kmPerUnit, basis.energyType.canonicalUnit, units),
         )
     }
 

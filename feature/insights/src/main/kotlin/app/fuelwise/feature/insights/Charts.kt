@@ -22,9 +22,13 @@ import androidx.compose.ui.unit.dp
 import app.fuelwise.core.designsystem.component.FwSparkline
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.insights.InsightsReport
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
+import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
@@ -75,8 +79,8 @@ enum class ChartKind(
 internal data class ChartRow(val label: String, val value: String)
 
 /** Plotted values for [kind], oldest first. Money is plotted in rupees. */
-internal fun InsightsReport.series(kind: ChartKind): List<Double> = when (kind) {
-    ChartKind.Mileage -> mileage.map { it.interval.kmPerUnit }
+internal fun InsightsReport.series(kind: ChartKind, units: DisplayUnits): List<Double> = when (kind) {
+    ChartKind.Mileage -> mileage.map { shown(it.interval.kmPerUnit, units) ?: 0.0 }
     ChartKind.MonthlySpend -> monthlySpend.map { it.total.paise / PAISE }
     ChartKind.PricePaid -> prices.map { it.unitPrice.paise / PAISE }
     ChartKind.CostPerKm -> costPerKmByMonth.mapNotNull { it.costPerKm?.paise?.div(PAISE) }
@@ -85,22 +89,29 @@ internal fun InsightsReport.series(kind: ChartKind): List<Double> = when (kind) 
 }
 
 @Composable
-internal fun InsightsReport.rows(kind: ChartKind, categories: Map<String, Category>): List<ChartRow> {
+internal fun InsightsReport.rows(
+    kind: ChartKind,
+    categories: Map<String, Category>,
+    units: DisplayUnits,
+    cityPrices: List<Money?> = emptyList(),
+): List<ChartRow> {
+    val quantity = quantityUnit()
     val unit = energyUnit()
     return when (kind) {
         ChartKind.Mileage -> mileage.map {
-            ChartRow(shortDate(it.atUtcMs), "${IndianNumberFormat.decimal(it.interval.kmPerUnit, 1)} km/$unit")
+            ChartRow(shortDate(it.atUtcMs), efficiencyText(it.interval.kmPerUnit, quantity, units))
         }
 
         ChartKind.MonthlySpend -> monthlySpend.map {
             ChartRow(monthLabel(it.month.monthValue, it.month.year), IndianNumberFormat.rupeesWhole(it.total))
         }
 
-        ChartKind.PricePaid -> prices.map {
-            ChartRow(
-                shortDate(it.atUtcMs),
-                IndianNumberFormat.rupees(it.unitPrice) + "/$unit",
-            )
+        ChartKind.PricePaid -> prices.mapIndexed { i, point ->
+            val paid = IndianNumberFormat.rupees(point.unitPrice) + "/$unit"
+            val city = cityPrices.getOrNull(i)?.let {
+                stringResource(R.string.chart_city_price, IndianNumberFormat.rupees(it))
+            }
+            ChartRow(shortDate(point.atUtcMs), listOfNotNull(paid, city).joinToString(" · "))
         }
 
         ChartKind.CostPerKm -> costPerKmByMonth.map {
@@ -123,6 +134,13 @@ internal fun InsightsReport.rows(kind: ChartKind, categories: Map<String, Catego
     }
 }
 
+/** The canonical quantity this report's efficiency is per: L, kg or kWh. */
+internal fun InsightsReport.quantityUnit(): QuantityUnit = energyType?.canonicalUnit ?: QuantityUnit.LITRE
+
+/** A km-per-unit figure in the user's efficiency unit (PRD F-18), e.g. L/100 km; null when it can't be shown. */
+internal fun InsightsReport.shown(kmPerUnit: Double, units: DisplayUnits): Double? =
+    units.efficiency(kmPerUnit, quantityUnit())?.value
+
 @Composable
 internal fun InsightsReport.energyUnit(): String =
     energyType?.let { stringResource(VehicleLabels.unit(it.canonicalUnit)) }.orEmpty()
@@ -133,8 +151,13 @@ internal fun InsightsReport.energyColor(): Color =
 
 /** Mini preview on the chart list card. */
 @Composable
-internal fun ChartPreview(kind: ChartKind, report: InsightsReport, modifier: Modifier = Modifier) {
-    val values = report.series(kind)
+internal fun ChartPreview(
+    kind: ChartKind,
+    report: InsightsReport,
+    units: DisplayUnits,
+    modifier: Modifier = Modifier,
+) {
+    val values = report.series(kind, units)
     when (kind) {
         ChartKind.MonthlySpend, ChartKind.SpendByCategory -> MiniBars(
             if (kind == ChartKind.SpendByCategory) values.take(MINI_BARS) else values.takeLast(MINI_BARS),
@@ -180,10 +203,13 @@ internal fun ChartView(
     kind: ChartKind,
     report: InsightsReport,
     categories: Map<String, Category>,
+    units: DisplayUnits,
     modifier: Modifier = Modifier,
+    // The home-city price on each fill's day (PRD F-06 overlay); drawn as a second line where known.
+    cityPrices: List<Money?> = emptyList(),
 ) {
     if (kind == ChartKind.SpendByCategory) {
-        CategoryBars(report.rows(kind, categories), report.series(kind), modifier)
+        CategoryBars(report.rows(kind, categories, units), report.series(kind, units), modifier)
         return
     }
     val labels = when (kind) {
@@ -201,20 +227,26 @@ internal fun ChartView(
 
         ChartKind.SpendByCategory -> emptyList()
     }
-    val values = report.series(kind)
+    val values = report.series(kind, units)
     if (values.isEmpty()) return
     val producer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(report, kind) {
+    LaunchedEffect(report, kind, cityPrices) {
         producer.runTransaction {
             when (kind) {
                 ChartKind.Mileage -> {
                     columnModel { series(values) }
-                    lineModel { series(report.mileage.map { it.rollingKmPerUnit }) }
+                    lineModel { series(report.mileage.map { report.shown(it.rollingKmPerUnit, units) ?: 0.0 }) }
                 }
 
                 ChartKind.MonthlySpend -> columnModel {
                     series(report.monthlySpend.map { it.energy.paise / PAISE })
                     series(report.monthlySpend.map { it.expenses.paise / PAISE })
+                }
+
+                ChartKind.PricePaid -> lineModel {
+                    series(values)
+                    val known = cityPrices.mapIndexedNotNull { i, price -> price?.let { i to it.paise / PAISE } }
+                    if (known.isNotEmpty()) series(known.map { it.first }, known.map { it.second })
                 }
 
                 else -> lineModel { series(values) }
@@ -228,7 +260,7 @@ internal fun ChartView(
     val bottomFormatter =
         remember(labels) { CartesianValueFormatter { _, x, _ -> labels.getOrNull(x.toInt()).orEmpty() } }
     val energy = report.energyColor()
-    val claimed = report.claimedKmPerUnit.takeIf { kind == ChartKind.Mileage }
+    val claimed = report.claimedKmPerUnit?.takeIf { kind == ChartKind.Mileage }?.let { report.shown(it, units) }
     // Keep the claimed line inside the plot even when every tank is below it.
     val range = remember(claimed) {
         object : CartesianLayerRangeProvider {
@@ -250,6 +282,11 @@ internal fun ChartView(
             LineCartesianLayer.rememberLine(
                 fill = remember(colors.ink) { LineCartesianLayer.LineFill.single(Fill(colors.ink)) },
                 stroke = LineCartesianLayer.LineStroke.Continuous(thickness = 2.dp),
+            ),
+            // Second series: the city-price overlay on "Price paid".
+            LineCartesianLayer.rememberLine(
+                fill = remember(colors.ink3) { LineCartesianLayer.LineFill.single(Fill(colors.ink3)) },
+                stroke = LineCartesianLayer.LineStroke.Continuous(thickness = 1.dp),
             ),
         ),
         rangeProvider = range,

@@ -10,6 +10,7 @@ import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.Urgency
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.domain.summary.VehicleSummary
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.QuantityUnit
@@ -31,6 +32,8 @@ data class StatusWidgetModel(
     /** Mileage of the last measured tank. */
     val lastKmPerUnit: Double?,
     val unit: QuantityUnit?,
+    /** The vehicle's display units (PRD F-18) for the mileage figure. */
+    val units: DisplayUnits = DisplayUnits.INDIA,
     val isEstimate: Boolean,
     val nextDue: ReminderStatus?,
 )
@@ -51,12 +54,14 @@ fun statusWidgetModel(
     summary: VehicleSummary,
     statuses: List<ReminderStatus>,
     hideAmounts: Boolean,
+    units: DisplayUnits = DisplayUnits.INDIA,
 ): StatusWidgetModel = StatusWidgetModel(
     vehicleName = vehicle.name,
     costPerKm = summary.month.costPerKm,
     hideAmounts = hideAmounts,
     lastKmPerUnit = summary.latestInterval?.kmPerUnit,
     unit = vehicle.primaryTank?.energyType?.canonicalUnit,
+    units = units,
     isEstimate = summary.isEstimate,
     // Statuses come sorted by urgency, then nearest first; "Later" items aren't due enough to show (as on Home).
     nextDue = statuses.firstOrNull { it.reminder.vehicleId == vehicle.id && it.urgency != Urgency.Later },
@@ -116,6 +121,7 @@ class WidgetDataSource @Inject constructor(
             zoneId,
             trips.observeTrips().first(),
         )
-        return statusWidgetModel(vehicle, summary, statuses.now(), userData.userData.first().hideAmounts)
+        val user = userData.userData.first()
+        return statusWidgetModel(vehicle, summary, statuses.now(), user.hideAmounts, user.units.forVehicle(vehicle.id))
     }
 }

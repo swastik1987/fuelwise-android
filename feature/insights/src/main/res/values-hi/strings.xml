@@ -34,7 +34,7 @@
     <string name="card_mileage_drop_title">माइलेज घटा</string>
     <string name="card_mileage_drop_body">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। पहले टायर प्रेशर जाँचें, फिर एयर फ़िल्टर, और देखें कि सर्विस तो नहीं बाकी।</string>
     <string name="card_real_vs_claimed_title">असली बनाम दावा</string>
-    <string name="card_real_vs_claimed_body">आपको दावे का %1$d%% माइलेज मिलता है: %2$s km/%3$s, दावा %4$s।</string>
+    <string name="card_real_vs_claimed_body">आपको दावे का %1$d%% माइलेज मिलता है: %2$s, दावा %3$s।</string>
     <string name="card_unlock">Pro से देखें</string>
     <string name="card_pro_fuel_grade">फ़्यूल ग्रेड तुलना</string>
     <string name="card_pro_cng">CNG से बचत</string>
@@ -51,13 +51,14 @@
     <string name="chart_odometer">ओडोमीटर</string>
     <string name="chart_fuel">फ़्यूल और चार्जिंग</string>
     <string name="chart_claimed">दावा %1$s</string>
+    <string name="chart_city_price">शहर %1$s</string>
     <string name="chart_no_data">इस अवधि में इस चार्ट के लिए काफ़ी एंट्री नहीं हैं।</string>
     <string name="chart_show_table">डेटा टेबल दिखाएँ</string>
     <string name="chart_hide_table">डेटा टेबल छिपाएँ</string>
     <string name="chart_data_table">डेटा</string>
     <string name="chart_mileage_formula">हर बार एक फ़ुल से फ़ुल टंकी है: दो फ़ुल टंकियों के बीच की दूरी को बीच में भरवाए सारे फ़्यूल से भाग, थोड़ा भरवाया फ़्यूल भी। लाइन पिछली 3 टंकियों का माइलेज है (कुल दूरी ÷ कुल फ़्यूल)। डैश वाली लाइन गाड़ी की सेटिंग में लिखा दावा है।</string>
     <string name="chart_monthly_spend_formula">हर बार एक महीना है: गहरे हिस्से में फ़्यूल या चार्जिंग (छूट के बाद), हल्के हिस्से में बाकी सारे खर्च, EMI भी।</string>
-    <string name="chart_price_paid_formula">हर फ़्यूल एंट्री पर चुकाया गया प्रति यूनिट दाम, जैसा भरा गया या मात्रा और कुल रकम से निकला।</string>
+    <string name="chart_price_paid_formula">हर फ़्यूल एंट्री पर चुकाया गया प्रति यूनिट दाम, जैसा भरा गया या मात्रा और कुल रकम से निकला। पतली धूसर रेखा उस दिन आपके शहर का दाम है, जहाँ आपने दाम डाला है।</string>
     <string name="chart_cost_per_km_formula">हर बिंदु एक महीना है: फ़्यूल और गाड़ी चलाने के खर्च को उस महीने चली दूरी से भाग। जिन महीनों में ओडोमीटर रीडिंग काफ़ी नहीं, वे छोड़े गए हैं।</string>
     <string name="chart_by_category_formula">अवधि का सारा खर्च, श्रेणी के हिसाब से, सबसे बड़ा पहले।</string>
     <string name="chart_odometer_formula">अवधि में फ़्यूल और खर्च के साथ दर्ज हर ओडोमीटर रीडिंग।</string>

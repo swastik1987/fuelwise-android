@@ -292,7 +292,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards locked; custom date range and the city-price overlay are still open, the overlay waits for the price feed in M9)
+### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards locked; custom date range still open. City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
 
 **F-06.1 Period selector:** this month, last month, 3M, 6M, YTD, 12M, all time, custom.
 
@@ -579,11 +579,11 @@ Built with Jetpack Glance.
 
 ---
 
-### F-18 Settings, units and localisation — R1 ✅ built (units not yet converted in entry forms, trips, Insights charts/recap, distance strings on Home; weekly digest toggle is stored but no digest is sent yet; R2 location settings and crash reports not shown)
+### F-18 Settings, units and localisation — R1 ✅ built (units: owner decision 20 Oct 2026, R1 shows km and litres everywhere and offers only km/L or L/100 km, with the kg and kWh variants, applied on Home, Logbook, Insights charts and cards, recap, reward, trips and the Status widget; entry fields stay in km and litres. Miles, gallons and mpg are kept in core:domain and the proto for later. Weekly digest ✅ 20 Oct 2026: Monday notification for the selected vehicle from the daily check. R2 location settings and crash reports not shown)
 
 - **Units:**
   - Defaults: km, L, kg (CNG), kWh, km/L, km/kg, km/kWh.
-  - Alternatives: L/100km, mi, gallons, etc.
+  - Alternatives: L/100km in R1; mi, gallons and mpg later (R1 decision, 20 Oct 2026).
   - Settable per vehicle.
 - **Currency:** INR default. Currency stored per entry for future-proofing.
 - **Number format:** Indian grouping (₹1,23,456.78). Dates `16 Oct 2026`. 12/24-hour follows the system.
@@ -775,7 +775,7 @@ All IDs are UUIDv7 strings. Money is `Long` in **paise**. Distances are `Double`
 | `attachment` | id, ownerType, ownerId, mime, sha256, sizeBytes, localPath, uploaded |
 | `fastag_account` | id, vehicleId, issuer, tagLast4, balanceAnchorPaise, anchorDate, lowBalanceThresholdPaise |
 | `fastag_recharge` | id, fastagAccountId, date, amountPaise, notes |
-| `fuel_price_cache` | cityId, date, fuelType, pricePaise (reference data, **not synced**) |
+| `fuel_price` (Room v7) | cityId, fuel, epochDay, pricePaise, origin (`Manual` typed by the user, or `Feed`), plus sync columns. **Synced and backed up**: typed prices are user data. A typed price for a day is never overwritten by the feed (docs/price-feed.md). |
 | `sync_state` | deviceId, lastSnapshotAt, lastChangeSeq, remoteCursor (json) |
 
 Settings live in DataStore (Proto), are included in the backup snapshot and excluded from sync merges except an allow-list.

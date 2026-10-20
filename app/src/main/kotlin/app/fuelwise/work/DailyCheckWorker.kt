@@ -8,7 +8,6 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FastagRepository
 import app.fuelwise.core.data.repository.ObserveReminderStatuses
 import app.fuelwise.core.data.repository.RecurrenceRepository
-import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.recurrence.balance
 import app.fuelwise.core.notifications.Notifier
@@ -18,16 +17,14 @@ import dagger.assisted.AssistedInject
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.YearMonth
 import java.time.ZoneId
-import java.time.format.TextStyle
-import java.util.Locale
 import kotlinx.coroutines.flow.first
 
 /**
  * The once-a-day check, around the preferred time (PRD F-11.3; WorkManager, never exact alarms):
- * create due recurring expenses, post reminder notifications, warn on a low FASTag estimate, and on the 1st
- * announce the monthly recap. Every step is idempotent, so a rerun after reboot, update or restore is safe.
+ * create due recurring expenses, post reminder notifications, warn on a low FASTag estimate, announce the monthly
+ * recap on the 1st and send the weekly digest on Mondays (if on). Every step is idempotent, so a rerun after reboot,
+ * update or restore is safe.
  */
 @HiltWorker
 class DailyCheckWorker @AssistedInject constructor(
@@ -38,8 +35,8 @@ class DailyCheckWorker @AssistedInject constructor(
     private val vehicles: VehicleRepository,
     private val fastag: FastagRepository,
     private val entries: EntryRepository,
-    private val userData: UserDataRepository,
     private val notifier: Notifier,
+    private val insights: InsightNotifications,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : CoroutineWorker(context, params) {
@@ -52,7 +49,8 @@ class DailyCheckWorker @AssistedInject constructor(
             names[status.reminder.vehicleId]?.let { notifier.reminder(status, it) }
         }
         checkFastag(names)
-        announceRecap()
+        insights.monthlyRecap()
+        insights.weeklyDigest()
         return Result.success()
     }
 
@@ -73,16 +71,6 @@ class DailyCheckWorker @AssistedInject constructor(
                 notifier.fastagLow(name, IndianNumberFormat.rupeesWhole(balance.estimate))
             }
         }
-    }
-
-    private suspend fun announceRecap() {
-        val today = LocalDate.now(clock.withZone(zoneId))
-        if (today.dayOfMonth != 1 || !userData.userData.first().monthlyRecap) return
-        val last = YearMonth.from(today).minusMonths(1)
-        val start = last.atDay(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
-        val end = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
-        val hadEntries = entries.observeAllRefuels().first().any { it.dateTimeUtcMs in start until end }
-        if (hadEntries) notifier.recap(last.month.getDisplayName(TextStyle.FULL, Locale.getDefault()))
     }
 
     companion object {

@@ -164,20 +164,16 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
     }
 }
 
+/**
+ * R1 shows km and litres everywhere and offers only km/L or L/100 km (with the kg and kWh variants): Indian odometers
+ * and pumps use km and litres (owner decision, 20 Oct 2026). Miles, gallons and mpg stay in the proto and in
+ * core:domain for later, but a stored choice of them reads as the India default here.
+ */
 internal fun UnitPreferences.toDisplayUnits() = DisplayUnits(
-    distance = when (distance) {
-        DistanceUnitPref.DISTANCE_UNIT_MILE -> DistanceUnit.MILE
-        else -> DistanceUnit.KILOMETRE
-    },
-    volume = when (volume) {
-        VolumeUnitPref.VOLUME_UNIT_US_GALLON -> VolumeUnit.US_GALLON
-        VolumeUnitPref.VOLUME_UNIT_UK_GALLON -> VolumeUnit.UK_GALLON
-        else -> VolumeUnit.LITRE
-    },
+    distance = DistanceUnit.KILOMETRE,
+    volume = VolumeUnit.LITRE,
     efficiency = when (efficiency) {
         EfficiencyUnitPref.EFFICIENCY_UNIT_QUANTITY_PER_100_DISTANCE -> EfficiencyUnit.QUANTITY_PER_100_DISTANCE
-        EfficiencyUnitPref.EFFICIENCY_UNIT_MPG_US -> EfficiencyUnit.MPG_US
-        EfficiencyUnitPref.EFFICIENCY_UNIT_MPG_UK -> EfficiencyUnit.MPG_UK
         else -> EfficiencyUnit.DISTANCE_PER_QUANTITY
     },
 )

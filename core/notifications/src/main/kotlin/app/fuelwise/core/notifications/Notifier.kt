@@ -56,6 +56,9 @@ object NotificationRoutes {
 
     /** Scan pump meter (PRD F-15). */
     const val OPEN_SCAN = "scan"
+
+    /** The Insights tab, from the Monday weekly digest. */
+    const val OPEN_INSIGHTS = "insights"
 }
 
 /** Channel ids other modules use: the trip recorder in core:location posts, Settings links to the system screens. */
@@ -206,6 +209,29 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
         )
     }
 
+    /**
+     * The Monday weekly digest (PRD §3 "Check"): last week's cost per km, distance and spend, and the change on the
+     * week before. On the Insights channel with the monthly recap; the in-app "Weekly digest" switch turns it off.
+     */
+    fun weeklyDigest(vehicleName: String, costPerKm: String, km: String, spend: String, changePercent: Int?) {
+        val change = changePercent?.let {
+            when {
+                it < 0 -> context.getString(R.string.notif_digest_cheaper, -it)
+                it > 0 -> context.getString(R.string.notif_digest_dearer, it)
+                else -> context.getString(R.string.notif_digest_same)
+            }
+        }
+        post(
+            DIGEST_ID,
+            base(
+                CHANNEL_INSIGHTS,
+                context.getString(R.string.notif_digest_title, vehicleName, costPerKm),
+                listOfNotNull(context.getString(R.string.notif_digest_body, km, spend), change).joinToString(" "),
+                open(NotificationRoutes.OPEN_INSIGHTS, DIGEST_ID),
+            ),
+        )
+    }
+
     fun fastagLow(vehicleName: String, balance: String) {
         val id = notificationId("fastag:$vehicleName")
         post(
@@ -278,5 +304,6 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
         const val CHANNEL_INSIGHTS = NotificationChannels.INSIGHTS
         const val CHANNEL_PRICE_ALERTS = NotificationChannels.PRICE_ALERTS
         const val RECAP_ID = 1
+        const val DIGEST_ID = 2
     }
 }

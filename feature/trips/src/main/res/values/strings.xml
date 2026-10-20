@@ -42,8 +42,8 @@
     <string name="trips_to">To</string>
     <string name="trips_notes">Notes</string>
     <string name="trips_estimate_none">Log two full fill-ups to estimate fuel cost.</string>
-    <!-- 1: total, 2: quantity, 3: unit (L, kg), 4: km per unit -->
-    <string name="trips_estimate_efficiency">Fuel ≈ %1$s est. · %2$s %3$s at %4$s km/%3$s</string>
+    <!-- 1: total, 2: quantity, 3: unit (L, kg), 4: efficiency with its unit, e.g. "14.6 km/L" -->
+    <string name="trips_estimate_efficiency">Fuel ≈ %1$s est. · %2$s %3$s at %4$s</string>
     <!-- 1: total, 2: cost per km -->
     <string name="trips_estimate_per_km">Fuel ≈ %1$s est. · %2$s/km from your history</string>
 
@@ -56,7 +56,7 @@
     <string name="trips_odometer_range">%1$s → %2$s</string>
     <string name="trips_costs">What it cost</string>
     <string name="trips_fuel">Fuel (est.)</string>
-    <string name="trips_fuel_efficiency">Fuel · %1$s %2$s at %3$s km/%2$s</string>
+    <string name="trips_fuel_efficiency">Fuel · %1$s %2$s at %3$s</string>
     <string name="trips_fuel_per_km">Fuel · %1$s/km</string>
     <string name="trips_add_toll">Add toll</string>
     <string name="trips_add_cost">Add cost</string>

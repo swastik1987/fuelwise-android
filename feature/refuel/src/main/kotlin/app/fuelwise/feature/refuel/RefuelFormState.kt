@@ -4,6 +4,7 @@ import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -27,6 +28,8 @@ data class RefuelFormState(
     val isEdit: Boolean = false,
     val vehicle: Vehicle? = null,
     val vehicles: List<Vehicle> = emptyList(),
+    /** The vehicle's display units (PRD F-18); entry fields stay in km and litres. */
+    val units: DisplayUnits = DisplayUnits.INDIA,
     val tankIndex: Int = 0,
     val dateTimeUtcMs: Long = 0,
     val odometer: String = "",

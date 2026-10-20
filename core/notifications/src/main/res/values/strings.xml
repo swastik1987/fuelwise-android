@@ -26,6 +26,13 @@
     <string name="notif_action_snooze">Snooze 3 days</string>
     <string name="notif_recap_title">Your %1$s recap is ready</string>
     <string name="notif_recap_body">Kilometres, spend and your best tank, as a card you can share.</string>
+    <!-- Weekly digest (Monday). 1: vehicle, 2: cost per km, e.g. "₹4.82" -->
+    <string name="notif_digest_title">Last week, %1$s: %2$s/km</string>
+    <!-- 1: km driven, 2: amount spent -->
+    <string name="notif_digest_body">%1$s km driven, %2$s spent.</string>
+    <string name="notif_digest_cheaper">%1$d%% cheaper per km than the week before.</string>
+    <string name="notif_digest_dearer">%1$d%% dearer per km than the week before.</string>
+    <string name="notif_digest_same">Same cost per km as the week before.</string>
     <string name="notif_fastag_title">FASTag balance is low</string>
     <string name="notif_fastag_body">%1$s · about %2$s left (est.)</string>
 </resources>

@@ -48,7 +48,10 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.insights.Recap
+import app.fuelwise.core.domain.units.DisplayUnits
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.format.TextStyle
 import java.util.Locale
@@ -130,7 +133,7 @@ internal fun RecapContent(
                     POSTER_WIDTH,
                 ).align(androidx.compose.ui.Alignment.CenterHorizontally).then(captured),
             ) {
-                RecapPoster(state.recap, state.vehicle.name.takeIf { state.showVehicleName })
+                RecapPoster(state.recap, state.vehicle.name.takeIf { state.showVehicleName }, state.units)
             }
             FwSwitchRow(
                 title = stringResource(R.string.recap_show_vehicle),
@@ -147,15 +150,14 @@ internal fun RecapContent(
 
 /** Bold typographic 9:16 poster. Always light so a shared image looks the same everywhere. */
 @Composable
-internal fun RecapPoster(recap: Recap, vehicleName: String?) {
-    FuelwiseTheme(darkTheme = false) { PosterBody(recap, vehicleName) }
+internal fun RecapPoster(recap: Recap, vehicleName: String?, units: DisplayUnits = DisplayUnits.INDIA) {
+    FuelwiseTheme(darkTheme = false) { PosterBody(recap, vehicleName, units) }
 }
 
 @Composable
-private fun PosterBody(recap: Recap, vehicleName: String?) {
+private fun PosterBody(recap: Recap, vehicleName: String?, units: DisplayUnits) {
     val ink = FwTheme.colors.ink
     val stripe = recap.energyType?.let { VehicleLabels.energyColor(it) } ?: FwTheme.colors.accent
-    val unit = recap.energyType?.let { stringResource(VehicleLabels.unit(it.canonicalUnit)) }.orEmpty()
     Row(
         Modifier.fillMaxWidth().aspectRatio(POSTER_RATIO).clip(FwTheme.radius.card).background(FwTheme.colors.surface),
     ) {
@@ -187,7 +189,7 @@ private fun PosterBody(recap: Recap, vehicleName: String?) {
             }
             recap.bestTank?.let {
                 PosterFigure(
-                    "${IndianNumberFormat.decimal(it.kmPerUnit, 1)} km/$unit",
+                    efficiencyText(it.kmPerUnit, recap.energyType?.canonicalUnit ?: QuantityUnit.LITRE, units),
                     stringResource(R.string.recap_best_tank),
                 )
             }

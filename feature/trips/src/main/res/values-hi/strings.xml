@@ -42,7 +42,7 @@
     <string name="trips_to">कहाँ तक</string>
     <string name="trips_notes">नोट</string>
     <string name="trips_estimate_none">ईंधन खर्च का अनुमान लगाने के लिए दो फ़ुल टैंक दर्ज करें।</string>
-    <string name="trips_estimate_efficiency">ईंधन ≈ %1$s अनु. · %2$s %3$s, %4$s किमी/%3$s पर</string>
+    <string name="trips_estimate_efficiency">ईंधन ≈ %1$s अनु. · %2$s %3$s, %4$s पर</string>
     <string name="trips_estimate_per_km">ईंधन ≈ %1$s अनु. · आपके रिकॉर्ड से %2$s/किमी</string>
 
     <string name="trips_detail_title">यात्रा</string>
@@ -54,7 +54,7 @@
     <string name="trips_odometer_range">%1$s → %2$s</string>
     <string name="trips_costs">कितना खर्च हुआ</string>
     <string name="trips_fuel">ईंधन (अनु.)</string>
-    <string name="trips_fuel_efficiency">ईंधन · %1$s %2$s, %3$s किमी/%2$s पर</string>
+    <string name="trips_fuel_efficiency">ईंधन · %1$s %2$s, %3$s पर</string>
     <string name="trips_fuel_per_km">ईंधन · %1$s/किमी</string>
     <string name="trips_add_toll">टोल जोड़ें</string>
     <string name="trips_add_cost">खर्च जोड़ें</string>

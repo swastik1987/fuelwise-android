@@ -38,7 +38,6 @@ import app.fuelwise.core.domain.units.EfficiencyUnit
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
-import app.fuelwise.core.ui.format.UnitFormat
 
 /** A plausible home tariff: above zero, at most ₹100/kWh. */
 internal fun isValidTariff(tariff: Money?): Boolean = tariff != null && tariff.paise in 1..MAX_TARIFF_PAISE
@@ -239,11 +238,8 @@ internal fun DeleteAllForm(
 
 /** "km · L · km/L": the default units in one line. */
 @Composable
-internal fun unitsSummary(units: DisplayUnits): String = listOf(
-    stringResource(UnitFormat.distance(units.distance)),
-    stringResource(UnitFormat.volume(units.volume)),
-    stringResource(efficiencyShort(units.efficiency)),
-).joinToString(" · ")
+// R1 fixes km and litres, so the summary is the mileage unit alone (owner decision, 20 Oct 2026).
+internal fun unitsSummary(units: DisplayUnits): String = stringResource(efficiencyShort(units.efficiency))
 
 internal fun efficiencyShort(unit: EfficiencyUnit): Int = when (unit) {
     EfficiencyUnit.DISTANCE_PER_QUANTITY -> app.fuelwise.core.ui.R.string.unit_km_per_l

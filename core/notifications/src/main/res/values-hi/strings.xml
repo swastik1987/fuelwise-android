@@ -26,6 +26,11 @@
     <string name="notif_action_snooze">3 दिन बाद</string>
     <string name="notif_recap_title">%1$s का सार तैयार है</string>
     <string name="notif_recap_body">किलोमीटर, खर्च और सबसे अच्छी टंकी, शेयर करने लायक कार्ड में।</string>
+    <string name="notif_digest_title">पिछला हफ़्ता, %1$s: %2$s/km</string>
+    <string name="notif_digest_body">%1$s km चली, %2$s खर्च।</string>
+    <string name="notif_digest_cheaper">पिछले हफ़्ते से प्रति km %1$d%% सस्ता।</string>
+    <string name="notif_digest_dearer">पिछले हफ़्ते से प्रति km %1$d%% महँगा।</string>
+    <string name="notif_digest_same">प्रति km खर्च पिछले हफ़्ते जितना ही।</string>
     <string name="notif_fastag_title">FASTag बैलेंस कम है</string>
     <string name="notif_fastag_body">%1$s · लगभग %2$s बाकी (अनुमान)</string>
 </resources>

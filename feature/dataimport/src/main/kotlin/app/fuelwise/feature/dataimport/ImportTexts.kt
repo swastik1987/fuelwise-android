@@ -65,7 +65,7 @@ internal object ImportTexts {
         ImportField.Notes -> R.string.help_notes
     }
 
-    private fun categoryName(resources: Resources, category: Category): String =
+    fun categoryName(resources: Resources, category: Category): String =
         category.customName ?: category.systemKey?.let { resources.getString(EntryLabels.category(it)) }.orEmpty()
 
     fun vocabulary(context: Context, categories: List<Category>): ImportVocabulary {

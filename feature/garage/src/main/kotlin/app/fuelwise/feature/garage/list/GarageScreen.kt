@@ -264,6 +264,7 @@ data class GarageLinks(
     val onPrices: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
+    val onExport: () -> Unit = {},
 )
 
 /**
@@ -320,6 +321,7 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
             links.onBackup,
         )
         UtilityRow(FwIcons.UploadFile, stringResource(R.string.garage_import), null, links.onImport)
+        UtilityRow(FwIcons.Download, stringResource(R.string.garage_export), null, links.onExport)
     }
 }
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget picker (PRD F-16, design.md screen 30) -->
+    <string name="widget_quick_add_name">Quick add</string>
+    <string name="widget_quick_add_description">Log fuel, a charge, an expense or a trip in one tap.</string>
+    <string name="widget_status_name">Running cost</string>
+    <string name="widget_status_description">Cost per km this month, last mileage and what\'s due next.</string>
+    <string name="widget_trip_name">Trip controls</string>
+    <string name="widget_trip_description">Start and stop a GPS trip, with the distance so far.</string>
+
+    <!-- Quick add -->
+    <string name="widget_add_fuel">Add fuel</string>
+    <string name="widget_add_charge">Add charge</string>
+    <string name="widget_add_expense">Add expense</string>
+    <string name="widget_add_trip">Add trip</string>
+
+    <!-- Status -->
+    <string name="widget_cost_overline">This month</string>
+    <string name="widget_per_km">/km</string>
+    <string name="widget_mileage">Last tank</string>
+    <string name="widget_mileage_est">Last tank (est.)</string>
+    <string name="widget_mileage_value">%1$s km/%2$s</string>
+    <string name="widget_nothing_due">Nothing due soon</string>
+    <string name="widget_due_item">%1$s · %2$s</string>
+    <string name="widget_due_overdue">overdue</string>
+    <string name="widget_due_today">today</string>
+    <plurals name="widget_due_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="widget_due_km">in ~%1$s km</string>
+    <string name="widget_no_vehicle">Add a vehicle to see your running cost.</string>
+    <string name="widget_open_app">Open the app</string>
+
+    <!-- Trip controls -->
+    <string name="widget_start_trip">Start trip</string>
+    <string name="widget_stop_trip">Stop trip</string>
+    <string name="widget_trip_idle">GPS trip</string>
+    <string name="widget_trip_recording">Recording</string>
+    <string name="widget_trip_paused">Paused</string>
+    <string name="widget_trip_distance">%1$s km</string>
+    <string name="widget_open_live_trip">Open the live trip</string>
+
+    <!-- Quick Settings tiles -->
+    <string name="tile_log_fuel">Log fuel</string>
+    <string name="tile_start_trip">Start trip</string>
+    <string name="tile_trip_recording">Recording · %1$s km</string>
+
+    <!-- App shortcuts (long-press the icon) -->
+    <string name="shortcut_add_fuel">Add fuel</string>
+    <string name="shortcut_add_fuel_long">Add a fill-up</string>
+    <string name="shortcut_scan">Scan</string>
+    <string name="shortcut_scan_long">Scan pump meter</string>
+    <string name="shortcut_start_trip">Start trip</string>
+    <string name="shortcut_start_trip_long">Start a GPS trip</string>
+    <string name="shortcut_documents">Documents</string>
+    <string name="shortcut_documents_long">Open documents</string>
+</resources>

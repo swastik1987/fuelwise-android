@@ -72,6 +72,7 @@ dependencies {
     implementation(projects.feature.dataimport)
     implementation(projects.feature.trips)
     implementation(projects.feature.prices)
+    implementation(projects.widget)
     implementation(projects.feature.scan)
 
     implementation(libs.androidx.core.ktx)

@@ -36,6 +36,9 @@ message UserPreferences {
   int64 price_feed_last_fetch_at = 22;
   // Scanning (PRD F-15) uses field numbers 60–69. The pump/receipt photo is attached to the entry unless turned off.
   bool scan_photo_opt_out = 60;
+  // Reports (PRD F-13.3) use field numbers 70–79.
+  // Business mileage reimbursement rate in paise per km (PRD F-07.9, F-13.3). 0 means not set yet.
+  int64 business_rate_paise_per_km = 70;
 }
 
 message BackupSettings {

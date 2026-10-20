@@ -74,6 +74,7 @@
     </plurals>
     <string name="garage_backup">बैकअप और सिंक</string>
     <string name="garage_import">डेटा इम्पोर्ट करें</string>
+    <string name="garage_export">एक्सपोर्ट और रिपोर्ट</string>
     <string name="garage_backup_ok">चालू</string>
     <string name="garage_backup_error">ध्यान दें</string>
     <string name="garage_backup_off">बंद</string>

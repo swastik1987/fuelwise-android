@@ -27,7 +27,9 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
 import app.fuelwise.feature.backup.backupScreen
+import app.fuelwise.feature.dataimport.ExportRoute
 import app.fuelwise.feature.dataimport.ImportRoute
+import app.fuelwise.feature.dataimport.exportScreen
 import app.fuelwise.feature.dataimport.importScreen
 import app.fuelwise.feature.documents.DocumentEditorRoute
 import app.fuelwise.feature.documents.DocumentViewRoute
@@ -104,6 +106,19 @@ fun FuelwiseApp(
 
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
+
+            // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
+            NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
+
+            NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
+
+            NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
+
+            NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+
+            NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
+
+            NotificationRoutes.OPEN_SCAN -> ScanRoute()
 
             else -> return@LaunchedEffect
         }
@@ -210,6 +225,7 @@ fun FuelwiseApp(
                     onPrices = { navController.navigate(PricesRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onExport = { navController.navigate(ExportRoute) },
                 ),
             )
             remindersScreen(
@@ -235,6 +251,7 @@ fun FuelwiseApp(
             )
             importScreen(onBack = navController::popBackStack)
             pricesScreen(onBack = navController::popBackStack)
+            exportScreen(onBack = navController::popBackStack)
             tripsScreens(
                 TripsLinks(
                     onBack = navController::popBackStack,

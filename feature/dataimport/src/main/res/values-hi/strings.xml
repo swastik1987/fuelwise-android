@@ -164,4 +164,109 @@
     <string name="template_example_plaza">नेलमंगला</string>
     <string name="template_yes">हाँ</string>
     <string name="template_no">नहीं</string>
+
+    <!-- एक्सपोर्ट और रिपोर्ट (PRD F-13.1, F-13.3, F-07.9) -->
+    <string name="export_title">एक्सपोर्ट और रिपोर्ट</string>
+    <string name="export_empty_title">अभी एक्सपोर्ट करने को कुछ नहीं</string>
+    <string name="export_empty_body">एक वाहन जोड़ें और कोई फ़िल-अप या खर्च दर्ज करें। फिर आप सब कुछ CSV में एक्सपोर्ट कर सकते हैं या रिपोर्ट शेयर कर सकते हैं।</string>
+    <string name="export_csv_title">अपना डेटा एक्सपोर्ट करें</string>
+    <string name="export_csv_body">हर तरह के रिकॉर्ड की एक CSV फ़ाइल, एक ही .zip में। रकम रुपये में, दूरी km में। दस्तावेज़ों की फ़ोटो आपके फ़ोन से बाहर नहीं जातीं।</string>
+    <string name="export_vehicles">वाहन</string>
+    <string name="export_all_vehicles">सभी वाहन</string>
+    <string name="export_range">अवधि</string>
+    <string name="export_range_all">पूरा समय</string>
+    <string name="export_range_this_month">इस महीने</string>
+    <string name="export_range_last_month">पिछले महीने</string>
+    <string name="export_range_three_months">पिछले 3 महीने</string>
+    <string name="export_range_this_year">इस साल</string>
+    <string name="export_range_last_year">पिछले साल</string>
+    <string name="export_csv_action">CSV एक्सपोर्ट करें (.zip)</string>
+    <string name="export_working">एक्सपोर्ट तैयार हो रहा है…</string>
+    <string name="export_nothing">इस चुनाव में एक्सपोर्ट करने को कुछ नहीं। कोई और अवधि या वाहन चुनें।</string>
+    <string name="export_failed">फ़ाइल सेव नहीं हो सकी। देखें कि जगह खाली है और फिर कोशिश करें।</string>
+    <plurals name="export_done">
+        <item quantity="one">%d फ़ाइल एक्सपोर्ट हुई</item>
+        <item quantity="other">%d फ़ाइलें एक्सपोर्ट हुईं</item>
+    </plurals>
+
+    <string name="report_section_title">रिपोर्ट</string>
+    <string name="report_section_body">टेक्स्ट के रूप में शेयर करें या CSV में सेव करें।</string>
+    <string name="report_kind_vehicle">वाहन</string>
+    <string name="report_kind_seller">बिक्री के लिए</string>
+    <string name="report_kind_business">बिज़नेस</string>
+    <string name="report_span_month">महीना</string>
+    <string name="report_span_year">साल</string>
+    <string name="report_previous">पिछली अवधि</string>
+    <string name="report_next">अगली अवधि</string>
+    <string name="report_rate_label">भुगतान दर</string>
+    <string name="report_rate_hint">जैसे 10.50</string>
+    <string name="report_rate_unit">₹/km</string>
+    <string name="report_need_rate">बिज़नेस ट्रिप और क्लेम की रकम देखने के लिए अपनी ₹ प्रति km दर डालें।</string>
+    <string name="report_pick_vehicle">एक वाहन चुनें।</string>
+    <string name="report_share">टेक्स्ट शेयर करें</string>
+    <string name="report_save_csv">CSV में सेव करें</string>
+    <string name="report_saved">रिपोर्ट सेव हुई</string>
+    <string name="report_save_failed">रिपोर्ट सेव नहीं हो सकी</string>
+    <string name="report_pdf_pro">PDF रिपोर्ट Fuelwise Pro के साथ मिलती हैं।</string>
+
+    <string name="report_header">Fuelwise · %1$s</string>
+    <string name="report_vehicle_title">वाहन रिपोर्ट</string>
+    <string name="report_seller_title">बिक्री रिपोर्ट</string>
+    <string name="report_business_title">बिज़नेस माइलेज</string>
+    <string name="report_period_range">%1$s – %2$s</string>
+    <string name="report_km">%1$s km</string>
+    <string name="report_category_unknown">अन्य</string>
+    <string name="report_vehicle_empty">इस अवधि में कुछ दर्ज नहीं हुआ।</string>
+    <string name="report_distance">दूरी: %1$s</string>
+    <string name="report_distance_est">दूरी: लगभग %1$s (अनुमान)</string>
+    <string name="report_energy_line">%1$s: %2$s · %3$s · %4$s</string>
+    <plurals name="report_fill_ups">
+        <item quantity="one">%d फ़िल-अप</item>
+        <item quantity="other">%d फ़िल-अप</item>
+    </plurals>
+    <string name="report_expenses">खर्च: %1$s</string>
+    <string name="report_expense_line">%1$s (%2$d): %3$s</string>
+    <string name="report_total">कुल खर्च: %1$s</string>
+    <string name="report_cost_per_km">प्रति km लागत: %1$s</string>
+    <string name="report_average">औसत: %1$s km/%2$s</string>
+    <string name="report_odometer">ओडोमीटर: %1$s</string>
+    <string name="report_logged_since">%1$s से दर्ज · %2$s चला</string>
+    <plurals name="report_fill_ups_logged">
+        <item quantity="one">%d फ़िल-अप दर्ज</item>
+        <item quantity="other">%d फ़िल-अप दर्ज</item>
+    </plurals>
+    <string name="report_service_history">सर्विस इतिहास</string>
+    <string name="report_documents">दस्तावेज़</string>
+    <string name="report_none">कुछ दर्ज नहीं</string>
+    <string name="report_valid_until">%1$s · %2$s तक मान्य</string>
+    <string name="report_prices_hidden">इस रिपोर्ट में कीमतें नहीं दिखाई गई हैं।</string>
+    <string name="report_rate">दर: %1$s प्रति km</string>
+    <string name="report_business_empty">इस अवधि में कोई बिज़नेस ट्रिप नहीं।</string>
+    <plurals name="report_business_trips">
+        <item quantity="one">%d बिज़नेस ट्रिप</item>
+        <item quantity="other">%d बिज़नेस ट्रिप</item>
+    </plurals>
+    <string name="report_total_distance">कुल दूरी: %1$s</string>
+    <string name="report_total_claim">क्लेम की रकम: %1$s</string>
+
+    <string name="report_csv_item">मद</string>
+    <string name="report_csv_count">संख्या</string>
+    <string name="report_csv_quantity">मात्रा</string>
+    <string name="report_csv_unit">इकाई</string>
+    <string name="report_csv_amount">रकम (₹)</string>
+    <string name="report_csv_distance">दूरी</string>
+    <string name="report_csv_total">कुल</string>
+    <string name="report_csv_cost_per_km">प्रति km लागत (₹)</string>
+    <string name="report_csv_section">भाग</string>
+    <string name="report_csv_date">तारीख</string>
+    <string name="report_csv_odometer">ओडोमीटर</string>
+    <string name="report_csv_odometer_km">ओडोमीटर (km)</string>
+    <string name="report_csv_service">सर्विस</string>
+    <string name="report_csv_document">दस्तावेज़</string>
+    <string name="report_csv_vehicle">वाहन</string>
+    <string name="report_csv_from">कहाँ से</string>
+    <string name="report_csv_to">कहाँ तक</string>
+    <string name="report_csv_notes">नोट्स</string>
+    <string name="report_csv_distance_km">दूरी (km)</string>
+    <string name="report_csv_rate">दर (₹/km)</string>
 </resources>

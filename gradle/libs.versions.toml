@@ -40,6 +40,7 @@ mapsCompose = "8.6.0"
 okhttp = "5.5.0"
 bouncycastle = "1.86"
 secrets = "2.0.1"
+glance = "1.2.0"
 camerax = "1.6.2"
 mlkitTextRecognition = "16.0.1"
 
@@ -94,6 +95,7 @@ bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "boun
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }

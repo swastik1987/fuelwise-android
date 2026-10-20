@@ -24,7 +24,8 @@ class StartTripForSelectedVehicle @Inject constructor(
 /**
  * Intents for surfaces outside the app's screens (home-screen widgets, PRD F-16) to drive the recorder. Send them
  * only from a user's tap on a widget: that is one of the few ways Android lets a background app start a `location`
- * foreground service with while-in-use access. Start only when location is already granted ([TripRecorder.hasPermission]);
+ * foreground service with while-in-use access. Start only when location is already granted
+ * ([TripRecorder.hasPermission]);
  * otherwise open the app's Trips screen, which asks first.
  */
 object TripRecordingIntents {

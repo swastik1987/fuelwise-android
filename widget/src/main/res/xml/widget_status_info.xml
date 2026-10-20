@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- PRD F-16. No periodic refresh beyond once a day: the app redraws widgets when their data changes (WidgetUpdater). -->
+<!-- targetCellWidth/Height size the widget on Android 12+; older launchers use minWidth/minHeight. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:description="@string/widget_status_description"
     android:initialLayout="@layout/glance_default_loading_layout"
     android:minWidth="110dp"
@@ -11,4 +13,5 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="86400000"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    tools:targetApi="31" />

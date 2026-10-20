@@ -36,6 +36,7 @@ object NotificationRoutes {
     const val OPEN_TRIP_ODOMETER = "trip_odometer"
 
     // Widgets, Quick Settings tiles and app shortcuts (PRD F-16) open the app the same way.
+
     /** The fill-up sheet; [EXTRA_ARG] may name the vehicle (an EV for "Charge"). */
     const val OPEN_ADD_FUEL = "add_fuel"
     const val OPEN_ADD_EXPENSE = "add_expense"

@@ -24,8 +24,20 @@ import kotlin.math.roundToInt
 object AppShortcuts {
     fun publish(context: Context) {
         val shortcuts = listOf(
-            Spec(ID_ADD_FUEL, R.string.shortcut_add_fuel, R.string.shortcut_add_fuel_long, FwIcons.Fuel, NotificationRoutes.OPEN_ADD_FUEL),
-            Spec(ID_SCAN, R.string.shortcut_scan, R.string.shortcut_scan_long, FwIcons.Camera, NotificationRoutes.OPEN_SCAN),
+            Spec(
+                ID_ADD_FUEL,
+                R.string.shortcut_add_fuel,
+                R.string.shortcut_add_fuel_long,
+                FwIcons.Fuel,
+                NotificationRoutes.OPEN_ADD_FUEL,
+            ),
+            Spec(
+                ID_SCAN,
+                R.string.shortcut_scan,
+                R.string.shortcut_scan_long,
+                FwIcons.Camera,
+                NotificationRoutes.OPEN_SCAN,
+            ),
             Spec(
                 ID_START_TRIP,
                 R.string.shortcut_start_trip,
@@ -43,7 +55,12 @@ object AppShortcuts {
         )
         val current = ShortcutManagerCompat.getDynamicShortcuts(context).associate { it.id to it.shortLabel.toString() }
         if (current == shortcuts.associate { it.id to context.getString(it.shortLabel) }) return
-        ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts.mapIndexed { rank, spec -> spec.build(context, rank) })
+        ShortcutManagerCompat.setDynamicShortcuts(
+            context,
+            shortcuts.mapIndexed { rank, spec ->
+                spec.build(context, rank)
+            },
+        )
     }
 
     private class Spec(

@@ -36,5 +36,6 @@ internal object WidgetType {
     val value = TextStyle(color = WidgetColors.ink, fontSize = type.h2.fontSize, fontWeight = FontWeight.Medium)
     val label = TextStyle(color = WidgetColors.ink, fontSize = type.label.fontSize, fontWeight = FontWeight.Medium)
     val caption = TextStyle(color = WidgetColors.ink2, fontSize = type.caption.fontSize)
-    val overline = TextStyle(color = WidgetColors.ink2, fontSize = type.overline.fontSize, fontWeight = FontWeight.Medium)
+    val overline =
+        TextStyle(color = WidgetColors.ink2, fontSize = type.overline.fontSize, fontWeight = FontWeight.Medium)
 }

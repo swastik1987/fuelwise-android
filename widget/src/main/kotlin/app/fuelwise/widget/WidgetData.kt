@@ -18,7 +18,10 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 
-/** What the Status widget shows for the selected vehicle (design.md screen 30: "₹4.82/km", "16.8 km/L", "PUC · 12 days"). */
+/**
+ * What the Status widget shows for the selected vehicle (design.md screen 30: "₹4.82/km", "16.8 km/L",
+ * "PUC · 12 days").
+ */
 data class StatusWidgetModel(
     val vehicleName: String,
     /** This month's cost per km; null until the month has a distance. */

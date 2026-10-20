@@ -95,7 +95,10 @@ internal fun TripContent(model: TripWidgetModel) {
                 Text(status, style = WidgetType.overline, maxLines = 1)
                 if (recording != null) {
                     Text(
-                        context.getString(R.string.widget_trip_distance, IndianNumberFormat.decimal(recording.distanceKm, 1)),
+                        context.getString(
+                            R.string.widget_trip_distance,
+                            IndianNumberFormat.decimal(recording.distanceKm, 1),
+                        ),
                         style = WidgetType.value,
                         maxLines = 1,
                     )
@@ -106,7 +109,15 @@ internal fun TripContent(model: TripWidgetModel) {
             Spacer(GlanceModifier.width(FwSpacing.xs))
             WidgetIconButton(
                 icon = if (recording != null) FwIcons.Stop else FwIcons.Play,
-                label = context.getString(if (recording != null) R.string.widget_stop_trip else R.string.widget_start_trip),
+                label = context.getString(
+                    if (recording !=
+                        null
+                    ) {
+                        R.string.widget_stop_trip
+                    } else {
+                        R.string.widget_start_trip
+                    },
+                ),
                 onClick = if (recording != null) {
                     actionStartService(TripRecordingIntents.stop(context), isForegroundService = true)
                 } else {

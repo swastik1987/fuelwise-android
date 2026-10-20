@@ -49,7 +49,11 @@ internal fun QuickAddContent(chargeVehicleId: String?) {
     val context = LocalContext.current
     WidgetSurface {
         Row(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-            QuickAddSlot(FwIcons.Fuel, R.string.widget_add_fuel, WidgetLinks.open(context, NotificationRoutes.OPEN_ADD_FUEL))
+            QuickAddSlot(
+                FwIcons.Fuel,
+                R.string.widget_add_fuel,
+                WidgetLinks.open(context, NotificationRoutes.OPEN_ADD_FUEL),
+            )
             QuickAddSlot(
                 FwIcons.Charge,
                 R.string.widget_add_charge,
@@ -60,7 +64,11 @@ internal fun QuickAddContent(chargeVehicleId: String?) {
                 R.string.widget_add_expense,
                 WidgetLinks.open(context, NotificationRoutes.OPEN_ADD_EXPENSE),
             )
-            QuickAddSlot(FwIcons.Route, R.string.widget_add_trip, WidgetLinks.open(context, NotificationRoutes.OPEN_ADD_TRIP))
+            QuickAddSlot(
+                FwIcons.Route,
+                R.string.widget_add_trip,
+                WidgetLinks.open(context, NotificationRoutes.OPEN_ADD_TRIP),
+            )
         }
     }
 }

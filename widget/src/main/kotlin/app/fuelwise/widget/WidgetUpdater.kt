@@ -31,9 +31,9 @@ import kotlinx.coroutines.launch
  * redraw. Data only changes inside the app's process, so watching while it runs is enough; widgets also refresh once a
  * day for date-based reminders (appwidget-provider updatePeriodMillis). Started from the Application.
  *
- * Pro widgets (Dashboard 4×2, Consumption; PRD F-16) are deferred with billing (F-19). Each will be a GlanceAppWidget +
- * receiver like [StatusWidget], declared in this module's manifest, gated through EntitlementRepository, and redrawn
- * from the data signal below.
+ * Pro widgets (Dashboard 4×2, Consumption; PRD F-16) are deferred with billing (F-19). Each will be a
+ * GlanceAppWidget + receiver like [StatusWidget], declared in this module's manifest, gated through
+ * EntitlementRepository, and redrawn from the data signal below.
  */
 @Singleton
 class WidgetUpdater @Inject constructor(

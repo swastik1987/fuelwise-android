@@ -35,7 +35,8 @@ class WidgetModelsTest {
         val later = status(safari.id, "later", Urgency.Later, days = 200)
         val otherCar = status(ertiga.id, "ertiga-puc", Urgency.Overdue, days = -3)
         val soon = status(safari.id, "puc", Urgency.Soon, days = 12)
-        val model = statusWidgetModel(safari, summary(Money(482), Interval(504.0, 30.0)), listOf(otherCar, soon, later), false)
+        val model =
+            statusWidgetModel(safari, summary(Money(482), Interval(504.0, 30.0)), listOf(otherCar, soon, later), false)
 
         assertThat(model.vehicleName).isEqualTo("Safari")
         assertThat(model.costPerKm).isEqualTo(Money(482))
@@ -47,7 +48,8 @@ class WidgetModelsTest {
 
     @Test
     fun `nothing due when only far-off items exist`() {
-        val model = statusWidgetModel(safari, summary(null, null), listOf(status(safari.id, "x", Urgency.Later, 90)), false)
+        val model =
+            statusWidgetModel(safari, summary(null, null), listOf(status(safari.id, "x", Urgency.Later, 90)), false)
         assertThat(model.nextDue).isNull()
         assertThat(costText(model)).isEqualTo("—")
     }
@@ -65,7 +67,9 @@ class WidgetModelsTest {
         assertThat(dueLabel(status(safari.id, "a", Urgency.Overdue, days = -2))).isEqualTo(DueLabel.Overdue)
         assertThat(dueLabel(status(safari.id, "a", Urgency.Soon, days = 60, km = 400.0))).isEqualTo(DueLabel.Km(400.0))
         assertThat(dueLabel(status(safari.id, "a", Urgency.Soon, days = 20, km = 400.0))).isEqualTo(DueLabel.Days(20))
-        assertThat(dueLabel(status(safari.id, "a", Urgency.Overdue, days = null, km = -50.0))).isEqualTo(DueLabel.Overdue)
+        assertThat(
+            dueLabel(status(safari.id, "a", Urgency.Overdue, days = null, km = -50.0)),
+        ).isEqualTo(DueLabel.Overdue)
     }
 
     @Test
@@ -94,14 +98,22 @@ class WidgetModelsTest {
             .isEqualTo(TripWidgetModel.Recording(23.4, paused = true))
     }
 
-    private fun status(vehicleId: String, id: String, urgency: Urgency, days: Long?, km: Double? = null) = ReminderStatus(
-        reminder = Reminder(id, vehicleId, ReminderKind.Puc, title = null, dueDateUtcMs = null, dueOdometerKm = null),
-        daysLeft = days,
-        kmLeft = km,
-        predictedOdometerDate = null,
-        urgency = urgency,
-        notifyToday = false,
-    )
+    private fun status(vehicleId: String, id: String, urgency: Urgency, days: Long?, km: Double? = null) =
+        ReminderStatus(
+            reminder = Reminder(
+                id,
+                vehicleId,
+                ReminderKind.Puc,
+                title = null,
+                dueDateUtcMs = null,
+                dueOdometerKm = null,
+            ),
+            daysLeft = days,
+            kmLeft = km,
+            predictedOdometerDate = null,
+            urgency = urgency,
+            notifyToday = false,
+        )
 
     private fun summary(costPerKm: Money?, latest: Interval?): VehicleSummary {
         val month = CostMetrics(Money(0), Money(0), Money(0), null, costPerKm, null, Money(0), Money(0))

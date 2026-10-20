@@ -71,6 +71,7 @@ dependencies {
     implementation(projects.feature.backup)
     implementation(projects.feature.dataimport)
     implementation(projects.feature.trips)
+    implementation(projects.widget)
     implementation(projects.feature.scan)
     implementation(projects.feature.settings)
 

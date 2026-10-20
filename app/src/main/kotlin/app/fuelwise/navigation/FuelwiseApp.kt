@@ -27,7 +27,9 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
 import app.fuelwise.feature.backup.backupScreen
+import app.fuelwise.feature.dataimport.ExportRoute
 import app.fuelwise.feature.dataimport.ImportRoute
+import app.fuelwise.feature.dataimport.exportScreen
 import app.fuelwise.feature.dataimport.importScreen
 import app.fuelwise.feature.documents.DocumentEditorRoute
 import app.fuelwise.feature.documents.DocumentViewRoute
@@ -104,6 +106,19 @@ fun FuelwiseApp(
 
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
+
+            // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
+            NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
+
+            NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
+
+            NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
+
+            NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+
+            NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
+
+            NotificationRoutes.OPEN_SCAN -> ScanRoute()
 
             else -> return@LaunchedEffect
         }
@@ -208,6 +223,7 @@ fun FuelwiseApp(
                     onTrips = { navController.navigate(TripsRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onExport = { navController.navigate(ExportRoute) },
                     onSettings = { navController.navigate(SettingsRoute) },
                 ),
             )
@@ -233,6 +249,7 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            exportScreen(onBack = navController::popBackStack)
             settingsScreens(
                 SettingsLinks(
                     onBack = navController::popBackStack,
@@ -240,8 +257,7 @@ fun FuelwiseApp(
                     // TODO(F-09): once :feature:prices is on main, wire
                     //  onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) }. Null hides the row.
                     onHomeCity = null,
-                    // TODO(F-13): open Export & reports once the Export session's route is on main.
-                    onExport = null,
+                    onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                     // Everything is gone, onboarding included: start over at Welcome with an empty back stack.

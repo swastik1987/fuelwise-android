@@ -8,11 +8,11 @@ import app.fuelwise.core.domain.insights.ComputeInsights
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.VehicleHistory
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Vehicle
 import java.time.ZoneId
 import javax.inject.Inject
-import app.fuelwise.core.domain.units.DisplayUnits
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 

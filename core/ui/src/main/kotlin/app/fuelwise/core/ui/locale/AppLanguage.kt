@@ -1,11 +1,13 @@
 package app.fuelwise.core.ui.locale
 
+import android.annotation.SuppressLint
 import android.app.LocaleManager
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import androidx.annotation.RequiresApi
+import androidx.core.content.edit
 import java.util.Locale
 
 /**
@@ -32,11 +34,15 @@ object AppLanguage {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             platformSet(context, tag)
         } else {
-            legacyPrefs(context).edit().putString(KEY, tag).apply()
+            legacyPrefs(context).edit { putString(KEY, tag) }
         }
     }
 
+    // Language splits are off in the app bundle (app/build.gradle.kts, bundle.language.enableSplit = false), so every
+    // language is installed and no Play Core download is needed; lint can't see that from this library module.
+
     /** For attachBaseContext below Android 13: applies the stored choice, or returns [base] unchanged. */
+    @SuppressLint("AppBundleLocaleChanges")
     fun wrap(base: Context): Context {
         if (!needsRecreate) return base
         val tag = legacyPrefs(base).getString(KEY, SYSTEM).orEmpty()

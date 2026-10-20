@@ -35,10 +35,10 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.insights.InsightsReport
-import app.fuelwise.core.model.Money
-import app.fuelwise.core.model.sum
 import app.fuelwise.core.domain.units.DisplayUnits
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.QuantityUnit
+import app.fuelwise.core.model.sum
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.efficiencyText
 

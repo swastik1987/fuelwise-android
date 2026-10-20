@@ -1,12 +1,16 @@
 package app.fuelwise.feature.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -16,6 +20,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
+import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.domain.units.EfficiencyUnit
 import app.fuelwise.core.model.Money
@@ -60,12 +65,7 @@ class SettingsScreensTest {
         var confirmed: Boolean? = null
         compose.setContent {
             FuelwiseTheme {
-                SettingsContent(
-                    state,
-                    chrome,
-                    SettingsActions(onDeleteAll = { confirmed = it }),
-                    initialSheet = "Delete",
-                )
+                DeleteAllForm(driveConnected = true, deleting = false, onConfirm = { confirmed = it }, onDismiss = {})
             }
         }
         compose.onNodeWithText("Delete everything").assertIsNotEnabled()
@@ -94,12 +94,12 @@ class SettingsScreensTest {
 
     @Test
     fun deleteDialogLight() = capture("settings_delete_light", dark = false) {
-        SettingsContent(state, chrome, SettingsActions(), initialSheet = "Delete")
+        DeleteForm()
     }
 
     @Test
     fun deleteDialogDark() = capture("settings_delete_dark", dark = true) {
-        SettingsContent(state, chrome, SettingsActions(), initialSheet = "Delete")
+        DeleteForm()
     }
 
     @Test
@@ -123,6 +123,20 @@ class SettingsScreensTest {
         compose.onNode(isRoot()).captureRoboImage("src/test/screenshots/settings_font200.png")
     }
 
+    // The form alone: Robolectric never idles with a dialog window, so tests render the dialog's content directly.
+    @Composable
+    private fun DeleteForm() = Box(Modifier.background(FwTheme.colors.bg).padding(FwTheme.spacing.gutter)) {
+        Surface(shape = FwTheme.radius.card, color = FwTheme.colors.surface) {
+            DeleteAllForm(driveConnected = true, deleting = false, onConfirm = {}, onDismiss = {})
+        }
+    }
+
+    @Test
+    fun confirmationWordIgnoresCaseAndSpaces() {
+        assertThat(deleteConfirmed(" delete ", "DELETE")).isTrue()
+        assertThat(deleteConfirmed("DELET", "DELETE")).isFalse()
+    }
+
     @Composable
     private fun Settings() = SettingsContent(state, chrome, SettingsActions())
 
@@ -144,7 +158,6 @@ class SettingsScreensTest {
 
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
         compose.setContent { FuelwiseTheme(darkTheme = dark) { content() } }
-        val root = if (name.contains("delete")) compose.onNode(isDialog()) else compose.onNode(isRoot())
-        root.captureRoboImage("src/test/screenshots/$name.png")
+        compose.onNode(isRoot()).captureRoboImage("src/test/screenshots/$name.png")
     }
 }

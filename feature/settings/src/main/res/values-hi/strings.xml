@@ -87,7 +87,6 @@
     <string name="settings_version">वर्शन</string>
 
     <string name="settings_save">सेव करें</string>
-    <string name="settings_clear">हटाएँ</string>
 
     <string name="units_title">यूनिट</string>
     <string name="units_vehicle_title">यूनिट · %1$s</string>

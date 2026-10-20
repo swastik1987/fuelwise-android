@@ -430,4 +430,3 @@ private fun Context.openChannelSettings(channel: String) {
 
 private fun Context.versionName(): String =
     runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull().orEmpty()
-

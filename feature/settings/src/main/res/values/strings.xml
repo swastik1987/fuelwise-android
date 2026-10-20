@@ -96,7 +96,6 @@
     <string name="settings_version">Version</string>
 
     <string name="settings_save">Save</string>
-    <string name="settings_clear">Clear</string>
 
     <!-- Units -->
     <string name="units_title">Units</string>

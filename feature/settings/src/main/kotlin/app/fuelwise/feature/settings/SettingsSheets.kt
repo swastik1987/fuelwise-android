@@ -2,15 +2,16 @@ package app.fuelwise.feature.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -19,11 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.window.Dialog
 import app.fuelwise.core.designsystem.component.FwInkButton
 import app.fuelwise.core.designsystem.component.FwSwitchRow
 import app.fuelwise.core.designsystem.component.FwTextButton
@@ -163,7 +166,7 @@ private fun SettingsSheet(
 
 /**
  * "Delete all data" (PRD F-18): a typed confirmation, because it can't be undone, and the Drive option when Drive is
- * connected. The button stays disabled until the confirmation word matches.
+ * connected. The dialog window only hosts [DeleteAllForm], which tests render on their own.
  */
 @Composable
 internal fun DeleteAllDialog(
@@ -172,56 +175,66 @@ internal fun DeleteAllDialog(
     onConfirm: (alsoDrive: Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    Dialog(onDismissRequest = { if (!deleting) onDismiss() }) {
+        Surface(shape = FwTheme.radius.card, color = FwTheme.colors.surface) {
+            DeleteAllForm(driveConnected, deleting, onConfirm, onDismiss)
+        }
+    }
+}
+
+/** Whether the typed text matches the confirmation word, ignoring case and stray spaces. */
+internal fun deleteConfirmed(typed: String, word: String): Boolean = typed.trim().equals(word, ignoreCase = true)
+
+/** The delete confirmation itself. "Delete everything" stays disabled until the confirmation word matches. */
+@Composable
+internal fun DeleteAllForm(
+    driveConnected: Boolean,
+    deleting: Boolean,
+    onConfirm: (alsoDrive: Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val word = stringResource(R.string.settings_delete_word)
     var typed by rememberSaveable { mutableStateOf("") }
     var alsoDrive by rememberSaveable { mutableStateOf(false) }
-    val matches = typed.trim().equals(word, ignoreCase = true)
-    AlertDialog(
-        onDismissRequest = { if (!deleting) onDismiss() },
-        containerColor = FwTheme.colors.surface,
-        title = { Text(stringResource(R.string.settings_delete_title), style = FwTheme.type.h3) },
-        text = {
-            Column(
-                Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
-            ) {
-                Text(
-                    stringResource(R.string.settings_delete_body),
-                    style = FwTheme.type.bodyS,
-                    color = FwTheme.colors.ink2,
-                )
-                if (driveConnected) {
-                    FwSwitchRow(
-                        title = stringResource(R.string.settings_delete_drive),
-                        subtitle = stringResource(R.string.settings_delete_drive_body),
-                        checked = alsoDrive,
-                        onCheckedChange = { alsoDrive = it },
-                    )
-                }
-                FwTextField(
-                    value = typed,
-                    onValueChange = { typed = it.take(word.length + 2) },
-                    label = stringResource(R.string.settings_delete_type, word),
-                    capitalization = KeyboardCapitalization.Characters,
-                    imeAction = ImeAction.Done,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+    val matches = deleteConfirmed(typed, word)
+    Column(
+        Modifier.padding(FwTheme.spacing.xl),
+        verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
+    ) {
+        Text(stringResource(R.string.settings_delete_title), style = FwTheme.type.h3, color = FwTheme.colors.ink)
+        Text(
+            stringResource(R.string.settings_delete_body),
+            style = FwTheme.type.bodyS,
+            color = FwTheme.colors.ink2,
+        )
+        if (driveConnected) {
+            FwSwitchRow(
+                title = stringResource(R.string.settings_delete_drive),
+                subtitle = stringResource(R.string.settings_delete_drive_body),
+                checked = alsoDrive,
+                onCheckedChange = { alsoDrive = it },
+            )
+        }
+        FwTextField(
+            value = typed,
+            onValueChange = { typed = it.take(word.length + 2) },
+            label = stringResource(R.string.settings_delete_type, word),
+            capitalization = KeyboardCapitalization.Characters,
+            imeAction = ImeAction.Done,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
+            TextButton(onClick = onDismiss, enabled = !deleting) {
+                Text(stringResource(R.string.settings_delete_cancel), color = FwTheme.colors.ink)
             }
-        },
-        confirmButton = {
             TextButton(onClick = { onConfirm(alsoDrive && driveConnected) }, enabled = matches && !deleting) {
                 Text(
                     stringResource(if (deleting) R.string.settings_deleting else R.string.settings_delete_confirm),
                     color = if (matches && !deleting) FwTheme.colors.negative else FwTheme.colors.ink3,
                 )
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !deleting) {
-                Text(stringResource(R.string.settings_delete_cancel), color = FwTheme.colors.ink)
-            }
-        },
-    )
+        }
+    }
 }
 
 /** "km · L · km/L": the default units in one line. */

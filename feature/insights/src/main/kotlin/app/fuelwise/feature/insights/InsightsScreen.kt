@@ -47,9 +47,11 @@ import app.fuelwise.core.domain.insights.InsightCard
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.ProInsight
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.UnitFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.format.efficiencyUnit
 import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.vehicle.AllVehiclesPill
@@ -156,7 +158,6 @@ private fun Overview(
 ) {
     val m = report.metrics
     val quantity = report.energyType?.canonicalUnit ?: QuantityUnit.LITRE
-    val unit = report.energyUnit()
     Column(
         Modifier.verticalScroll(
             rememberScrollState(),
@@ -234,7 +235,7 @@ private fun Overview(
         if (report.cards.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 FwOverline(stringResource(R.string.insights_cards))
-                report.cards.forEach { InsightCardView(it, unit) }
+                report.cards.forEach { InsightCardView(it, quantity, state.units) }
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -252,7 +253,7 @@ private fun Overview(
                         )
                         Icon(painterResource(FwIcons.ChevronRight), null, tint = FwTheme.colors.ink3)
                     }
-                    ChartPreview(kind, report, Modifier.padding(top = 10.dp))
+                    ChartPreview(kind, report, state.units, Modifier.padding(top = 10.dp))
                 }
             }
         }
@@ -266,7 +267,7 @@ private fun Overview(
 }
 
 @Composable
-private fun InsightCardView(card: InsightCard, unit: String) {
+private fun InsightCardView(card: InsightCard, quantity: QuantityUnit, units: DisplayUnits) {
     FwCard(contentPadding = PaddingValues(16.dp)) {
         when (card) {
             is InsightCard.MileageDrop -> {
@@ -280,9 +281,8 @@ private fun InsightCardView(card: InsightCard, unit: String) {
                     stringResource(
                         R.string.card_real_vs_claimed_body,
                         percent(card.ratio),
-                        IndianNumberFormat.decimal(card.actualKmPerUnit, 1),
-                        unit,
-                        IndianNumberFormat.decimal(card.claimedKmPerUnit, 1),
+                        efficiencyText(card.actualKmPerUnit, quantity, units),
+                        efficiencyText(card.claimedKmPerUnit, quantity, units),
                     ),
                 )
             }

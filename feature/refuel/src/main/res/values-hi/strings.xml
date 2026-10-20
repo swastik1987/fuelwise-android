@@ -47,7 +47,6 @@
 
     <string name="reward_overline">यह टंकी · %1$s</string>
     <string name="reward_saved">सेव हो गया</string>
-    <string name="reward_unit">km/%1$s</string>
     <string name="reward_vs_average">आपके औसत से %1$d%%</string>
     <string name="reward_cost_per_km">इस टंकी में %1$s/km · %2$s km</string>
     <string name="reward_unusual">आपकी पिछली टंकियों से अलग है। लॉगबुक में एंट्री जाँच लें।</string>

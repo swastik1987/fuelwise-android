@@ -47,7 +47,6 @@
 
     <string name="reward_overline">This tank · %1$s</string>
     <string name="reward_saved">Saved</string>
-    <string name="reward_unit">km/%1$s</string>
     <string name="reward_vs_average">%1$d%% vs your average</string>
     <string name="reward_cost_per_km">%1$s/km this tank · %2$s km</string>
     <string name="reward_unusual">Unusual compared with your recent tanks. Check the entry in Logbook.</string>

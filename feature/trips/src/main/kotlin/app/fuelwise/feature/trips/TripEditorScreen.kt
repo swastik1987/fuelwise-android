@@ -37,10 +37,12 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.ui.entry.EntryDateTimePicker
 import app.fuelwise.core.ui.entry.entryDateTimeLabel
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.ZoneId
@@ -173,7 +175,7 @@ internal fun TripEditorContent(
                     },
                 )
             }
-            EstimateLine(state.estimate)
+            EstimateLine(state.estimate, state.unitSettings.forVehicle(state.vehicle?.id))
 
             FwOverline(stringResource(R.string.trips_purpose))
             FlowRow(
@@ -238,7 +240,7 @@ internal fun TripEditorContent(
 
 /** "Fuel ≈ ₹896 est. · 10.9 L at 13.4 km/L", or why there's no estimate yet. */
 @Composable
-private fun EstimateLine(estimate: TripCostEstimate?) {
+private fun EstimateLine(estimate: TripCostEstimate?, units: DisplayUnits) {
     val text = when (val basis = estimate?.basis) {
         null -> stringResource(R.string.trips_estimate_none)
 
@@ -249,7 +251,7 @@ private fun EstimateLine(estimate: TripCostEstimate?) {
                 IndianNumberFormat.rupeesWhole(estimate.fuelCost),
                 IndianNumberFormat.decimal(basis.quantity, 1),
                 unit,
-                IndianNumberFormat.decimal(basis.kmPerUnit, 1),
+                efficiencyText(basis.kmPerUnit, basis.energyType.canonicalUnit, units),
             )
         }
 

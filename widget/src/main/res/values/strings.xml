@@ -19,7 +19,7 @@
     <string name="widget_per_km">/km</string>
     <string name="widget_mileage">Last tank</string>
     <string name="widget_mileage_est">Last tank (est.)</string>
-    <string name="widget_mileage_value">%1$s km/%2$s</string>
+    <string name="widget_mileage_value">%1$s %2$s</string>
     <string name="widget_nothing_due">Nothing due soon</string>
     <string name="widget_due_item">%1$s · %2$s</string>
     <string name="widget_due_overdue">overdue</string>

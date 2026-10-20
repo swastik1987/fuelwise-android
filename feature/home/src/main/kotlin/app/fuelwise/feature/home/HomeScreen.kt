@@ -69,7 +69,6 @@ import app.fuelwise.core.ui.format.efficiencyUnit
 import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.format.quantityText
 import app.fuelwise.core.ui.price.PriceLabels
-import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.Instant
@@ -459,10 +458,8 @@ private fun milestoneBody(milestone: Milestone, state: HomeUiState.Ready): Strin
     Milestone.Kind.OneYear -> stringResource(R.string.milestone_year_body)
 
     Milestone.Kind.BestEverTank -> {
-        val unit = state.vehicle.primaryTank?.let {
-            stringResource(VehicleLabels.unit(it.energyType.canonicalUnit))
-        }.orEmpty()
-        stringResource(R.string.milestone_best_body, IndianNumberFormat.decimal(milestone.kmPerUnit ?: 0.0, 1), unit)
+        val quantity = state.vehicle.primaryTank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE
+        stringResource(R.string.milestone_best_body, efficiencyText(milestone.kmPerUnit ?: 0.0, quantity, state.units))
     }
 }
 

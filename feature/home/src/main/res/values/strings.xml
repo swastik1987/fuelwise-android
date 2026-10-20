@@ -40,7 +40,7 @@
     <string name="milestone_year_title">One year of logging</string>
     <string name="milestone_year_body">A full year of fill-ups and costs. Your monthly and seasonal trends now mean something.</string>
     <string name="milestone_best_title">Best tank ever</string>
-    <string name="milestone_best_body">%1$s km/%2$s: your best full-to-full tank so far.</string>
+    <string name="milestone_best_body">%1$s: your best full-to-full tank so far.</string>
     <string name="home_upcoming">Upcoming</string>
     <string name="home_pill_today">today</string>
     <string name="home_pill_overdue">overdue</string>

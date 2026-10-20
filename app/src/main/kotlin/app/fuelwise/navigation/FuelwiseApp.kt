@@ -108,6 +108,8 @@ fun FuelwiseApp(
 
             NotificationRoutes.OPEN_PRICES -> PricesRoute()
 
+            NotificationRoutes.OPEN_INSIGHTS -> TopLevelDestination.Insights.route
+
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
 

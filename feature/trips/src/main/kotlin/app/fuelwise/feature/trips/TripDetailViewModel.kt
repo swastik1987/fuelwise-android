@@ -22,6 +22,7 @@ import app.fuelwise.core.domain.trip.gpxTrackName
 import app.fuelwise.core.domain.trip.splitTripCost
 import app.fuelwise.core.domain.trip.tripCost
 import app.fuelwise.core.domain.trip.withEndOdometer
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.TrackPoint
@@ -68,6 +69,8 @@ data class TripDetailUiState(
     /** Opened from the post-trip notification: show the odometer sheet once. */
     val askOdometer: Boolean = false,
     val odometerError: Boolean = false,
+    /** The vehicle's display units (PRD F-18) for the fuel line. */
+    val units: DisplayUnits = DisplayUnits.INDIA,
 )
 
 sealed interface TripDetailEvent {
@@ -119,6 +122,7 @@ class TripDetailViewModel @Inject constructor(
             split = tripCost(trip, expenses)?.let { splitTripCost(it, extras.people) },
             upiVpa = user.upiVpa,
             upiName = user.upiName,
+            units = user.units.forVehicle(trip.vehicleId),
             upiError = extras.upiError,
             route = extras.route,
             needsOdometer = trip.source != TripSource.Manual && trip.endOdometerKm == null,

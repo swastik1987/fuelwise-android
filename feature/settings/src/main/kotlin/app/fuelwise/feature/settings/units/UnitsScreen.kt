@@ -24,9 +24,7 @@ import app.fuelwise.core.designsystem.component.FwSwitchRow
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.units.DisplayUnits
-import app.fuelwise.core.domain.units.DistanceUnit
 import app.fuelwise.core.domain.units.EfficiencyUnit
-import app.fuelwise.core.domain.units.VolumeUnit
 import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.format.efficiencyUnit
 import app.fuelwise.feature.settings.R
@@ -58,11 +56,13 @@ internal fun UnitsScreen(
     )
 }
 
-private enum class UnitField { Distance, Volume, Efficiency }
+// R1 offers km/L or L/100 km only; km and litres are fixed (owner decision, 20 Oct 2026). Miles, gallons and mpg
+// stay in core:domain for a later release.
+private val R1_EFFICIENCY = listOf(EfficiencyUnit.DISTANCE_PER_QUANTITY, EfficiencyUnit.QUANTITY_PER_100_DISTANCE)
 
 @Composable
 internal fun UnitsContent(state: UnitsUiState, actions: UnitsActions) {
-    var picking by rememberSaveable { mutableStateOf<UnitField?>(null) }
+    var picking by rememberSaveable { mutableStateOf(false) }
     val vehicle = state.vehicle
     // A vehicle following the default shows the default greyed out until it gets its own units.
     val editable = vehicle == null || vehicle.override != null
@@ -91,21 +91,11 @@ internal fun UnitsContent(state: UnitsUiState, actions: UnitsActions) {
             }
             val quantity = vehicle?.vehicle?.primaryTank?.energyType?.canonicalUnit
             FwSettingsRow(
-                stringResource(R.string.units_distance),
-                value = stringResource(distanceLabel(shown.distance)),
-                onClick = if (editable) ({ picking = UnitField.Distance }) else null,
-            )
-            FwSettingsRow(
-                stringResource(R.string.units_volume),
-                value = stringResource(volumeLabel(shown.volume)),
-                onClick = if (editable) ({ picking = UnitField.Volume }) else null,
-            )
-            FwSettingsRow(
                 stringResource(R.string.units_efficiency),
                 // On a vehicle, show its own fuel's unit ("kWh/100 km"), not the whole family.
                 value = quantity?.let { efficiencyUnit(it, shown) }
                     ?: stringResource(efficiencyLabel(shown.efficiency)),
-                onClick = if (editable) ({ picking = UnitField.Efficiency }) else null,
+                onClick = if (editable) ({ picking = true }) else null,
             )
             Note(R.string.units_storage_note)
             if (state.vehicles.isNotEmpty()) {
@@ -126,30 +116,13 @@ internal fun UnitsContent(state: UnitsUiState, actions: UnitsActions) {
             }
         }
     }
-    when (picking) {
-        UnitField.Distance -> Picker(
-            R.string.units_distance,
-            DistanceUnit.entries.map { stringResource(distanceLabel(it)) },
-            shown.distance.ordinal,
-            onDismiss = { picking = null },
-        ) { i -> actions.onChange { it.copy(distance = DistanceUnit.entries[i]) } }
-
-        UnitField.Volume -> Picker(
-            R.string.units_volume,
-            VolumeUnit.entries.map { stringResource(volumeLabel(it)) },
-            shown.volume.ordinal,
-            onDismiss = { picking = null },
-        ) { i -> actions.onChange { it.copy(volume = VolumeUnit.entries[i]) } }
-
-        UnitField.Efficiency -> Picker(
+    if (picking) {
+        Picker(
             R.string.units_efficiency,
-            EfficiencyUnit.entries.map { stringResource(efficiencyLabel(it)) },
-            shown.efficiency.ordinal,
-            subtitle = stringResource(R.string.units_efficiency_note),
-            onDismiss = { picking = null },
-        ) { i -> actions.onChange { it.copy(efficiency = EfficiencyUnit.entries[i]) } }
-
-        null -> Unit
+            R1_EFFICIENCY.map { stringResource(efficiencyLabel(it)) },
+            R1_EFFICIENCY.indexOf(shown.efficiency).coerceAtLeast(0),
+            onDismiss = { picking = false },
+        ) { i -> actions.onChange { it.copy(efficiency = R1_EFFICIENCY[i]) } }
     }
 }
 
@@ -185,28 +158,16 @@ private fun Note(text: Int) {
     )
 }
 
-/** A vehicle's own units in one line, with its own fuel's mileage unit. */
+/** A vehicle's own mileage unit, in its own fuel ("kWh/100 km" for an EV). */
 @Composable
-private fun unitsSummaryFor(units: DisplayUnits, quantity: QuantityUnit?): String {
-    val summary = unitsSummary(units)
-    if (quantity == null) return summary
-    return summary.substringBeforeLast(" · ") + " · " + efficiencyUnit(quantity, units)
-}
-
-private fun distanceLabel(unit: DistanceUnit): Int = when (unit) {
-    DistanceUnit.KILOMETRE -> R.string.units_distance_km
-    DistanceUnit.MILE -> R.string.units_distance_mi
-}
-
-private fun volumeLabel(unit: VolumeUnit): Int = when (unit) {
-    VolumeUnit.LITRE -> R.string.units_volume_litre
-    VolumeUnit.US_GALLON -> R.string.units_volume_us
-    VolumeUnit.UK_GALLON -> R.string.units_volume_uk
-}
+private fun unitsSummaryFor(units: DisplayUnits, quantity: QuantityUnit?): String =
+    quantity?.let { efficiencyUnit(it, units) } ?: unitsSummary(units)
 
 private fun efficiencyLabel(unit: EfficiencyUnit): Int = when (unit) {
     EfficiencyUnit.DISTANCE_PER_QUANTITY -> R.string.units_efficiency_distance
+
     EfficiencyUnit.QUANTITY_PER_100_DISTANCE -> R.string.units_efficiency_per100
-    EfficiencyUnit.MPG_US -> R.string.units_efficiency_mpg_us
-    EfficiencyUnit.MPG_UK -> R.string.units_efficiency_mpg_uk
+
+    // Not offered in R1 (see R1_EFFICIENCY).
+    EfficiencyUnit.MPG_US, EfficiencyUnit.MPG_UK -> R.string.units_efficiency_distance
 }

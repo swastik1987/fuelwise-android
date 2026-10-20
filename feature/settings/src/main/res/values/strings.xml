@@ -101,19 +101,9 @@
     <!-- Units -->
     <string name="units_title">Units</string>
     <string name="units_vehicle_title">Units · %1$s</string>
-    <string name="units_distance">Distance</string>
-    <string name="units_volume">Liquid fuel</string>
     <string name="units_efficiency">Mileage</string>
-    <string name="units_distance_km">Kilometres (km)</string>
-    <string name="units_distance_mi">Miles (mi)</string>
-    <string name="units_volume_litre">Litres (L)</string>
-    <string name="units_volume_us">US gallons</string>
-    <string name="units_volume_uk">UK gallons</string>
     <string name="units_efficiency_distance">km/L · km/kg · km/kWh</string>
     <string name="units_efficiency_per100">L/100 km · kg/100 km · kWh/100 km</string>
-    <string name="units_efficiency_mpg_us">mpg (US)</string>
-    <string name="units_efficiency_mpg_uk">mpg (UK)</string>
-    <string name="units_efficiency_note">CNG and EV show mi/kg and mi/kWh with mpg.</string>
     <string name="units_storage_note">Entries are always stored in km, L, kg and kWh, so changing units never changes your data.</string>
     <string name="units_per_vehicle">Per vehicle</string>
     <string name="units_same_as_default">Same as default</string>

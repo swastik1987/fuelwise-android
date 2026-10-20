@@ -12,6 +12,7 @@ import app.fuelwise.core.domain.trip.EstimateTripCost
 import app.fuelwise.core.domain.trip.TripCostEstimate
 import app.fuelwise.core.domain.trip.TripDistance
 import app.fuelwise.core.domain.trip.resolveTripDistance
+import app.fuelwise.core.domain.units.UnitSettings
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
@@ -41,6 +42,8 @@ data class TripFormState(
     val saving: Boolean = false,
     val vehicles: List<Vehicle> = emptyList(),
     val vehicle: Vehicle? = null,
+    /** Display units (PRD F-18), app-wide and per vehicle, for the estimate line. */
+    val unitSettings: UnitSettings = UnitSettings(),
     val startUtcMs: Long = 0L,
     val startOdometer: String = "",
     val endOdometer: String = "",
@@ -87,7 +90,8 @@ class TripEditorViewModel @Inject constructor(
         val existing = route.tripId?.let { trips.observeTrip(it).first() }
         editing = existing
         refuels = entries.observeAllRefuels().first()
-        val vehicleId = existing?.vehicleId ?: userData.userData.first().selectedVehicleId
+        val user = userData.userData.first()
+        val vehicleId = existing?.vehicleId ?: user.selectedVehicleId
         val vehicle = all.firstOrNull { it.id == vehicleId } ?: all.firstOrNull()
         _state.update { s ->
             val typedDistance = existing?.takeIf { it.startOdometerKm == null || it.endOdometerKm == null }
@@ -95,6 +99,7 @@ class TripEditorViewModel @Inject constructor(
                 loading = false,
                 vehicles = all,
                 vehicle = vehicle,
+                unitSettings = user.units,
                 startUtcMs = existing?.startUtcMs ?: s.startUtcMs,
                 startOdometer = existing?.startOdometerKm?.let(NumberInput::plain).orEmpty(),
                 endOdometer = existing?.endOdometerKm?.let(NumberInput::plain).orEmpty(),

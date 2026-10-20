@@ -24,9 +24,10 @@ import androidx.glance.text.Text
 import app.fuelwise.core.designsystem.theme.FwSpacing
 import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.Urgency
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
-import app.fuelwise.core.ui.vehicle.VehicleLabels
+import app.fuelwise.core.ui.format.UnitFormat
 
 /** Status 2×2 (PRD F-16, design.md screen 30): ₹/km this month, last mileage, next due item. Tap opens Home. */
 class StatusWidget : GlanceAppWidget() {
@@ -105,8 +106,10 @@ internal fun costText(model: StatusWidgetModel): String = when {
 
 private fun mileageText(context: Context, model: StatusWidgetModel): String {
     val km = model.lastKmPerUnit ?: return NO_VALUE
-    val unit = model.unit?.let { context.getString(VehicleLabels.unit(it)) }.orEmpty()
-    return context.getString(R.string.widget_mileage_value, IndianNumberFormat.decimal(km, 1), unit)
+    // In the user's efficiency unit (PRD F-18): km/L, L/100 km and the kg and kWh variants.
+    val figure = model.units.efficiency(km, model.unit ?: QuantityUnit.LITRE) ?: return NO_VALUE
+    val label = context.getString(UnitFormat.label(figure.label))
+    return context.getString(R.string.widget_mileage_value, IndianNumberFormat.decimal(figure.value, 1), label)
 }
 
 private fun dueText(context: Context, status: ReminderStatus): String {

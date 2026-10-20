@@ -56,6 +56,7 @@ import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.PriceSource
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.entry.EntryDateTimePicker
 import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.entryDateTimeLabel
@@ -215,7 +216,8 @@ internal fun RefuelContent(
         RewardOverlay(
             reward = reward,
             vehicleName = state.vehicle?.name.orEmpty(),
-            unit = unitLabel(state),
+            quantity = state.tank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE,
+            units = state.units,
             onDismiss = onClose,
             fairPriceLine = state.fairPrice?.let { fairPriceText(it) },
         )

@@ -1,11 +1,14 @@
 package app.fuelwise.core.domain.prices
 
+import app.fuelwise.core.domain.insights.PricePoint
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceFuel
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * The city price list a tank's fill compares with. Premium-grade petrol uses the premium price; LPG, EV and flex
@@ -75,3 +78,13 @@ fun choosePriceDefault(
         else -> null
     }
 }
+
+/**
+ * The home-city price in effect on each fill's day, for the Insights "Price paid" overlay (PRD F-06, F-09). Aligned
+ * with [points]; null where no price qualifies (the same 7-day rule as "Did I pay fair?"). [cityPrices] are one city
+ * and fuel.
+ */
+fun cityPriceOverlay(points: List<PricePoint>, cityPrices: List<FuelPrice>, zone: ZoneId): List<Money?> =
+    points.map { point ->
+        FairPrice.priceInEffect(cityPrices, Instant.ofEpochMilli(point.atUtcMs).atZone(zone).toLocalDate())?.price
+    }

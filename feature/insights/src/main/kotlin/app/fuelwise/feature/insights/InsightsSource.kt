@@ -2,19 +2,30 @@ package app.fuelwise.feature.insights
 
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.insights.ComputeInsights
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.VehicleHistory
+import app.fuelwise.core.domain.prices.cityPriceOverlay
+import app.fuelwise.core.domain.prices.priceFuelFor
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
+import app.fuelwise.core.model.FuelPrice
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Vehicle
+import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 /** What the Insights screens show for one scope (a vehicle or all vehicles) and period. */
 data class InsightsSnapshot(
@@ -27,6 +38,11 @@ data class InsightsSnapshot(
     val report: InsightsReport?,
     /** Display units (PRD F-18): the vehicle's own, or the default for "All vehicles". */
     val units: DisplayUnits = DisplayUnits.INDIA,
+    /**
+     * The home-city price in effect on each "Price paid" point's day (PRD F-06 overlay, F-09), aligned with
+     * report.prices; empty for "All vehicles", without a home city or for a fuel with no city price (EV, LPG).
+     */
+    val cityPrices: List<Money?> = emptyList(),
 )
 
 /** Shared by the overview and chart detail, so both always agree on the numbers. */
@@ -35,41 +51,54 @@ class InsightsSource @Inject constructor(
     private val entries: EntryRepository,
     private val categories: CategoryRepository,
     private val userData: UserDataRepository,
+    private val cityPrices: FuelPriceRepository,
     private val compute: ComputeInsights,
     private val zoneId: ZoneId,
 ) {
     fun observe(allVehicles: Boolean, period: InsightPeriod): Flow<InsightsSnapshot> = combine(
-        vehicles.observeVehicles(),
-        userData.userData,
+        combine(vehicles.observeVehicles(), userData.userData, ::Pair),
         entries.observeAllRefuels(),
         entries.observeAllExpenses(),
         categories.observeCategories(),
-    ) { list, data, refuels, expenses, cats ->
+        homeCityPrices(),
+    ) { (list, data), refuels, expenses, cats, cityHistory ->
         val selected = list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull()
         val scope = if (allVehicles) list else listOfNotNull(selected)
         val histories = scope.map { v ->
             VehicleHistory(v, refuels.filter { it.vehicleId == v.id }, expenses.filter { it.vehicleId == v.id })
         }
+        val report = if (histories.isEmpty()) {
+            null
+        } else {
+            compute(histories, cats, period, zoneId, vehicleCount = list.size)
+        }
+        val fuel = selected?.primaryTank?.energyType?.let { priceFuelFor(it) }
         InsightsSnapshot(
             vehicles = list,
             selected = selected,
             allVehicles = allVehicles,
             period = period,
             categories = cats.associateBy { it.id },
-            report = if (histories.isEmpty()) {
-                null
-            } else {
-                compute(
-                    histories,
-                    cats,
-                    period,
-                    zoneId,
-                    vehicleCount = list.size,
-                )
-            },
+            report = report,
             units = data.units.forVehicle(if (allVehicles) null else selected?.id),
+            cityPrices = if (allVehicles || report == null || fuel == null) {
+                emptyList()
+            } else {
+                cityPriceOverlay(report.prices, cityHistory.filter { it.fuel == fuel }, zoneId)
+            },
         )
     }
 
     suspend fun select(vehicleId: String) = userData.setSelectedVehicle(vehicleId)
+
+    // Every stored price for the home city; the table holds a few rows per day at most.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun homeCityPrices(): Flow<List<FuelPrice>> =
+        userData.userData.map { it.homeCityId }.distinctUntilChanged().flatMapLatest { city ->
+            city?.let { cityPrices.observePrices(setOf(it), PRICES_SINCE) } ?: flowOf(emptyList())
+        }
+
+    private companion object {
+        val PRICES_SINCE: LocalDate = LocalDate.of(2000, 1, 1)
+    }
 }

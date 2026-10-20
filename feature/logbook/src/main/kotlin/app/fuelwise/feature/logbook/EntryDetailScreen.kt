@@ -40,9 +40,11 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.model.EntrySource
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.price.fairPriceText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.Instant
@@ -240,10 +242,11 @@ private fun FillUpFacts(state: EntryDetailUiState.FillUp, onFormula: () -> Unit)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     when (val result = state.result) {
-                        is IntervalResult.Measured -> "${IndianNumberFormat.decimal(
+                        is IntervalResult.Measured -> efficiencyText(
                             result.interval.kmPerUnit,
-                            1,
-                        )} km/$unit"
+                            tank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE,
+                            state.units,
+                        )
 
                         IntervalResult.Baseline -> stringResource(R.string.detail_interval_baseline)
 

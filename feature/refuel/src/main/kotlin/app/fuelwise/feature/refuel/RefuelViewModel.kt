@@ -150,7 +150,8 @@ class RefuelViewModel @Inject constructor(
         val vehicleId = existing?.vehicleId ?: route.vehicleId ?: userData.userData.first().selectedVehicleId
         val vehicle = all.firstOrNull { it.id == vehicleId } ?: all.firstOrNull()
             ?: vehicles.observeVehicle(vehicleId.orEmpty()).first()
-        _state.update { it.copy(vehicles = all, vehicle = vehicle, loading = false) }
+        val units = userData.userData.first().units.forVehicle(vehicle?.id)
+        _state.update { it.copy(vehicles = all, vehicle = vehicle, units = units, loading = false) }
         if (existing != null) {
             val tankIndex = vehicle?.tanks?.indexOfFirst { it.id == existing.tankId }?.coerceAtLeast(0) ?: 0
             _state.update { it.copy(tankIndex = tankIndex).withEntry(existing) }
@@ -356,6 +357,8 @@ class RefuelViewModel @Inject constructor(
         }
         viewModelScope.launch {
             userData.setSelectedVehicle(vehicle.id)
+            val units = userData.userData.first().units.forVehicle(vehicle.id)
+            _state.update { it.copy(units = units) }
             refreshTank(applyDefaults = true)
         }
     }

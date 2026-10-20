@@ -80,7 +80,7 @@ class SettingsScreensTest {
         compose.setContent { FuelwiseTheme { SettingsContent(state, chrome, SettingsActions()) } }
         compose.onNodeWithText("₹8.20 per kWh").assertExists()
         compose.onNodeWithText("asha.k@okaxis").assertExists()
-        compose.onNodeWithText("km · L · km/L · 1 vehicle has its own").assertExists()
+        compose.onNodeWithText("km/L · 1 vehicle has its own").assertExists()
         // Rows owned by sessions not merged yet stay hidden until the app shell links them.
         compose.onNodeWithText("Home city").assertDoesNotExist()
         compose.onNodeWithText("Delete all data").performScrollTo()

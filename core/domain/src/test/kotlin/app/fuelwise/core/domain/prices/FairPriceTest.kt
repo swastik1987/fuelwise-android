@@ -1,11 +1,13 @@
 package app.fuelwise.core.domain.prices
 
+import app.fuelwise.core.domain.insights.PricePoint
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceFuel
 import com.google.common.truth.Truth.assertThat
 import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.jupiter.api.Test
 
 class FairPriceTest {
@@ -62,5 +64,24 @@ class FairPriceTest {
         assertThat(choosePriceDefault(Money(10_250), day.minusDays(2), future, day))
             .isEqualTo(PriceDefault.LastPaid(Money(10_250)))
         assertThat(choosePriceDefault(null, null, null, day)).isNull()
+    }
+
+    @Test
+    fun `overlay - the city price in effect on each fill's local day`() {
+        val zone = ZoneId.of("Asia/Kolkata")
+        fun at(date: LocalDate, hour: Int) = date.atTime(hour, 0).atZone(zone).toInstant().toEpochMilli()
+        val city = listOf(
+            price("bengaluru", PriceFuel.Petrol, day.minusDays(3), 10_250),
+            price("bengaluru", PriceFuel.Petrol, day, 10_292),
+        )
+        val points = listOf(
+            // 00:30 IST on the 16th is still the 15th in UTC: the 16th's price applies.
+            PricePoint(at(day, 0) + 30 * 60_000L, Money(10_300)),
+            PricePoint(at(day.minusDays(1), 9), Money(10_250)),
+            // More than 7 days after the last price: too stale to show.
+            PricePoint(at(day.plusDays(8), 9), Money(10_400)),
+        )
+        assertThat(cityPriceOverlay(points, city, zone))
+            .containsExactly(Money(10_292), Money(10_250), null).inOrder()
     }
 }

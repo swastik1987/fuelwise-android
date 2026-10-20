@@ -51,6 +51,9 @@ import kotlinx.coroutines.launch
  * Add / edit fill-up and EV charge (PRD F-02, design.md screens 6 and 8). Orchestration only: the triangle, checks
  * and reward come from core:domain.
  */
+// The sheet reads a vehicle's fills, trips, city prices and scan results, so it lists more collaborators than the
+// detekt limit; a holder object would only hide them (as in HomeViewModel).
+@Suppress("LongParameterList")
 @HiltViewModel
 class RefuelViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
@@ -178,24 +181,28 @@ class RefuelViewModel @Inject constructor(
                     socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,
                     socEnd = last?.socEndPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_END,
                 )
-                // Price defaults to the last price paid for this tank, or the home-city price when that is at least
-                // as new (PRD F-02.3, F-09), and counts as one locked edit.
-                val default = if (next.isCharge) {
-                    tankFills.filter { it.chargerType == next.charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
-                        ?.let(PriceDefault::LastPaid)
-                } else {
-                    choosePriceDefault(last?.unitPrice, last?.let { localDate(it.dateTimeUtcMs) }, latestCity, today())
-                }
-                if (default != null && current.unitPrice.isEmpty()) {
-                    next = next.copy(
-                        unitPrice = MoneyInput.plain(default.price),
-                        recentEdits = listOf(Field.UnitPrice),
-                        priceSource = if (default is PriceDefault.City) PriceSource.CityPrice else PriceSource.LastPaid,
-                    )
-                }
+                if (current.unitPrice.isEmpty()) next = next.withPriceDefault(last, latestCity)
             }
             next.revalidated()
         }
+    }
+
+    /**
+     * Price defaults to the last price paid for this tank, or the home-city price when that is at least as new
+     * (PRD F-02.3, F-09), and counts as one locked edit.
+     */
+    private fun RefuelFormState.withPriceDefault(last: Refuel?, latestCity: FuelPrice?): RefuelFormState {
+        val default = if (isCharge) {
+            tankFills.filter { it.chargerType == charger }.maxByOrNull { it.dateTimeUtcMs }?.unitPrice
+                ?.let(PriceDefault::LastPaid)
+        } else {
+            choosePriceDefault(last?.unitPrice, last?.let { localDate(it.dateTimeUtcMs) }, latestCity, today())
+        } ?: return this
+        return copy(
+            unitPrice = MoneyInput.plain(default.price),
+            recentEdits = listOf(Field.UnitPrice),
+            priceSource = if (default is PriceDefault.City) PriceSource.CityPrice else PriceSource.LastPaid,
+        )
     }
 
     /** The newest home-city price for the tank's fuel, if a home city and a price exist (PRD F-09.1). */

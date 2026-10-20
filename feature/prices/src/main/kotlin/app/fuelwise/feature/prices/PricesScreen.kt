@@ -2,7 +2,6 @@ package app.fuelwise.feature.prices
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +37,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.Delta
@@ -82,7 +82,7 @@ internal fun PricesScreen(onBack: () -> Unit, pickCity: Boolean, viewModel: Pric
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is PricesEvent.OpenMaps -> try {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(event.url)))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, event.url.toUri()))
                 } catch (_: ActivityNotFoundException) {
                     Toast.makeText(context, R.string.prices_no_maps, Toast.LENGTH_SHORT).show()
                 }

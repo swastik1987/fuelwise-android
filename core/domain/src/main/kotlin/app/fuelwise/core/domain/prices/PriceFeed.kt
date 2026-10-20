@@ -55,18 +55,20 @@ object PriceFeedParser {
         val root = try {
             json.parseToJsonElement(text) as? JsonObject
         } catch (e: SerializationException) {
-            throw PriceFeedFormatException("Not JSON", e)
-        } ?: throw PriceFeedFormatException("Root is not an object")
-        val schema = (root["schema"] as? JsonPrimitive)?.intOrNull
-            ?: throw PriceFeedFormatException("Missing schema")
-        if (schema > SUPPORTED_SCHEMA) throw PriceFeedFormatException("Unsupported schema $schema")
-        val cities = (root["cities"] as? JsonArray) ?: throw PriceFeedFormatException("Missing cities")
+            reject("Not JSON", e)
+        } ?: reject("Root is not an object")
+        val schema = (root["schema"] as? JsonPrimitive)?.intOrNull ?: reject("Missing schema")
+        if (schema > SUPPORTED_SCHEMA) reject("Unsupported schema $schema")
+        val cities = (root["cities"] as? JsonArray) ?: reject("Missing cities")
         return PriceFeed(
             schema = schema,
             generatedAt = root.string("generatedAt")?.let(::parseInstant),
             cities = cities.mapNotNull { (it as? JsonObject)?.let(::parseCity) },
         )
     }
+
+    private fun reject(message: String, cause: Throwable? = null): Nothing =
+        throw PriceFeedFormatException(message, cause)
 
     private fun parseCity(obj: JsonObject): FeedCity? {
         val id = obj.string("id")?.takeIf { it.isNotBlank() } ?: return null

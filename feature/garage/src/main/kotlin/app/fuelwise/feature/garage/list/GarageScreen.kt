@@ -266,7 +266,10 @@ data class GarageLinks(
     val onImport: () -> Unit = {},
 )
 
-/** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Fuel prices · Trips (design.md screen 21). */
+/**
+ * Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Fuel prices · Trips (design.md
+ * screen 21).
+ */
 @Composable
 private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
     Column(Modifier.padding(top = FwTheme.spacing.l)) {

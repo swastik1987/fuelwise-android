@@ -66,6 +66,8 @@ class PriceFeedRunner @Inject constructor(
     private val alerts: PriceAlertSink,
     private val detect: DetectPriceAlerts,
 ) {
+    // Guard clauses, one per reason a run stops early; nesting them would read worse.
+    @Suppress("ReturnCount")
     suspend fun run(now: Instant): FeedOutcome {
         val s = settings.settings.first()
         val url = endpoint.url

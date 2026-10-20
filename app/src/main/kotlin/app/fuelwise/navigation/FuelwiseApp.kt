@@ -103,6 +103,19 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
 
+            // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
+            NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
+
+            NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
+
+            NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
+
+            NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+
+            NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
+
+            NotificationRoutes.OPEN_SCAN -> ScanRoute()
+
             else -> return@LaunchedEffect
         }
         if (!startWithOnboarding) navController.navigate(route)

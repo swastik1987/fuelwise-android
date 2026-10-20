@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget picker (PRD F-16, design.md screen 30) -->
+    <string name="widget_quick_add_name">झटपट जोड़ें</string>
+    <string name="widget_quick_add_description">एक टैप में फ़्यूल, चार्जिंग, खर्च या यात्रा दर्ज करें।</string>
+    <string name="widget_status_name">चलाने का खर्च</string>
+    <string name="widget_status_description">इस महीने प्रति km खर्च, पिछला माइलेज और आगे क्या बाकी है।</string>
+    <string name="widget_trip_name">यात्रा कंट्रोल</string>
+    <string name="widget_trip_description">GPS यात्रा शुरू और बंद करें, अब तक की दूरी के साथ।</string>
+
+    <!-- Quick add -->
+    <string name="widget_add_fuel">फ़्यूल जोड़ें</string>
+    <string name="widget_add_charge">चार्जिंग जोड़ें</string>
+    <string name="widget_add_expense">खर्च जोड़ें</string>
+    <string name="widget_add_trip">यात्रा जोड़ें</string>
+
+    <!-- Status -->
+    <string name="widget_cost_overline">इस महीने</string>
+    <string name="widget_per_km">/km</string>
+    <string name="widget_mileage">पिछली टंकी</string>
+    <string name="widget_mileage_est">पिछली टंकी (अनुमान)</string>
+    <string name="widget_mileage_value">%1$s km/%2$s</string>
+    <string name="widget_nothing_due">जल्द कुछ बाकी नहीं</string>
+    <string name="widget_due_item">%1$s · %2$s</string>
+    <string name="widget_due_overdue">देर हो गई</string>
+    <string name="widget_due_today">आज</string>
+    <plurals name="widget_due_days">
+        <item quantity="one">%1$d दिन</item>
+        <item quantity="other">%1$d दिन</item>
+    </plurals>
+    <string name="widget_due_km">लगभग %1$s km में</string>
+    <string name="widget_no_vehicle">चलाने का खर्च देखने के लिए गाड़ी जोड़ें।</string>
+    <string name="widget_open_app">ऐप खोलें</string>
+
+    <!-- Trip controls -->
+    <string name="widget_start_trip">यात्रा शुरू करें</string>
+    <string name="widget_stop_trip">यात्रा बंद करें</string>
+    <string name="widget_trip_idle">GPS यात्रा</string>
+    <string name="widget_trip_recording">रिकॉर्ड हो रही है</string>
+    <string name="widget_trip_paused">रुकी है</string>
+    <string name="widget_trip_distance">%1$s km</string>
+    <string name="widget_open_live_trip">चल रही यात्रा खोलें</string>
+
+    <!-- Quick Settings tiles -->
+    <string name="tile_log_fuel">फ़्यूल दर्ज करें</string>
+    <string name="tile_start_trip">यात्रा शुरू करें</string>
+    <string name="tile_trip_recording">रिकॉर्ड हो रही है · %1$s km</string>
+
+    <!-- App shortcuts (long-press the icon) -->
+    <string name="shortcut_add_fuel">फ़्यूल जोड़ें</string>
+    <string name="shortcut_add_fuel_long">फ़्यूल भरवाना दर्ज करें</string>
+    <string name="shortcut_scan">स्कैन</string>
+    <string name="shortcut_scan_long">पंप मीटर स्कैन करें</string>
+    <string name="shortcut_start_trip">यात्रा शुरू करें</string>
+    <string name="shortcut_start_trip_long">GPS यात्रा शुरू करें</string>
+    <string name="shortcut_documents">कागज़ात</string>
+    <string name="shortcut_documents_long">कागज़ात खोलें</string>
+</resources>

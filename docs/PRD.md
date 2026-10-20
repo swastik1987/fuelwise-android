@@ -551,13 +551,13 @@ FREE users can generate a text/CSV version of each. ✅ built (free text/CSV ver
 
 ---
 
-### F-16 Widgets, shortcuts and notifications — R1
+### F-16 Widgets, shortcuts and notifications — R1 ✅ built (free part: Quick add, Status and Trip controls widgets, "Log fuel" and "Start trip" tiles, app shortcuts; Pro widgets not yet, with billing F-19)
 
 | Surface | Tier |
 |---|---|
-| Quick Add widget (2×1): Fuel / Charge / Expense / Trip | FREE |
-| Status widget (2×2): ₹/km this month, last efficiency, next due item | FREE |
-| Trip controls widget | FREE |
+| Quick Add widget (2×1): Fuel / Charge / Expense / Trip ✅ built | FREE |
+| Status widget (2×2): ₹/km this month, last efficiency, next due item ✅ built | FREE |
+| Trip controls widget ✅ built | FREE |
 | Dashboard widget (4×2): spend, efficiency trend sparkline, range left | PRO |
 | Consumption widget | PRO |
 

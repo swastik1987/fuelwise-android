@@ -78,6 +78,10 @@ object FwIcons {
 
     @DrawableRes val Route = R.drawable.fw_ic_route
 
+    @DrawableRes val Play = R.drawable.fw_ic_play_arrow
+
+    @DrawableRes val Stop = R.drawable.fw_ic_stop
+
     @DrawableRes val NoAds = R.drawable.fw_ic_block
 
     @DrawableRes val NoAccount = R.drawable.fw_ic_person_off

@@ -77,8 +77,8 @@ data class ExportUiState(
     /** Vehicle and seller reports need one; the business report takes null as every vehicle. */
     val reportVehicleId: String? = null,
     val span: ReportSpan = ReportSpan.Month,
-    val month: YearMonth = YearMonth.from(LocalDate.EPOCH),
-    val thisMonth: YearMonth = YearMonth.from(LocalDate.EPOCH),
+    val month: YearMonth = YearMonth.of(PLACEHOLDER_YEAR, 1),
+    val thisMonth: YearMonth = YearMonth.of(PLACEHOLDER_YEAR, 1),
     val rateText: String = "",
     val report: Report? = null,
     /** PDF reports are Pro (PRD F-13.3); free users get text and CSV. Billing arrives with F-19. */
@@ -360,3 +360,6 @@ class ExportViewModel @Inject constructor(
         fun exportFileName(today: LocalDate) = "fuelwise-export-$today.zip"
     }
 }
+
+/** Placeholder until the view model sets today's month from the injected clock. */
+private const val PLACEHOLDER_YEAR = 1970

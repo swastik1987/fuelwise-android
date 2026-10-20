@@ -1,6 +1,5 @@
 package app.fuelwise.feature.prices
 
-import androidx.compose.foundation.ExperimentalLayoutApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,7 +44,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 
 /** Search field, popular cities as chips, then every match (design.md screen 3's picker). */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CityPickerSheet(
     catalog: CityCatalog,

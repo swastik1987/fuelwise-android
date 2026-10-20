@@ -27,6 +27,7 @@ class FuelwiseApplication :
     @Inject lateinit var backupScheduler: BackupScheduler
 
     @Inject lateinit var priceFeedScheduler: PriceFeedScheduler
+
     @Inject lateinit var widgetUpdater: WidgetUpdater
 
     @Inject

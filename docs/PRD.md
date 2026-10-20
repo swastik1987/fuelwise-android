@@ -183,7 +183,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 **F-02.4 Odometer input modes.** (not yet: odometer mode only) "Odometer" (default) or "Trip meter since last fill" (converted to odometer). Decimal allowed.
 
-**F-02.5 EV charge session fields:** ✅ built (home tariff setting arrives with Settings, M11; the last tariff per charger type is used meanwhile)
+**F-02.5 EV charge session fields:** ✅ built (Home AC charges start from the Settings home tariff; other chargers from the last tariff per charger type)
 - Date-time, odometer
 - Energy (kWh billed/metered), cost (₹) or tariff (₹/kWh), price triangle on kWh
 - Start SoC %, end SoC %
@@ -579,7 +579,7 @@ Built with Jetpack Glance.
 
 ---
 
-### F-18 Settings, units and localisation — R1
+### F-18 Settings, units and localisation — R1 ✅ built (units not yet converted in entry forms, trips, Insights charts/recap, distance strings on Home; weekly digest toggle is stored but no digest is sent yet; R2 location settings and crash reports not shown)
 
 - **Units:**
   - Defaults: km, L, kg (CNG), kWh, km/L, km/kg, km/kWh.

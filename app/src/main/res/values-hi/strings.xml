@@ -10,4 +10,8 @@
     <string name="quick_expense">खर्च</string>
     <string name="quick_toll">टोल</string>
     <string name="quick_trip">यात्रा</string>
+    <string name="lock_title">Fuelwise लॉक है</string>
+    <string name="lock_body">फ़िंगरप्रिंट, चेहरे या स्क्रीन लॉक से खोलें।</string>
+    <string name="lock_unlock">खोलें</string>
+    <string name="lock_prompt_title">Fuelwise खोलें</string>
 </resources>

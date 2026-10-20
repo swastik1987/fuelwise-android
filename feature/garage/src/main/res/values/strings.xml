@@ -74,6 +74,7 @@
     </plurals>
     <string name="garage_backup">Backup &amp; sync</string>
     <string name="garage_import">Import data</string>
+    <string name="garage_settings">Settings</string>
     <string name="garage_export">Export &amp; reports</string>
     <string name="garage_backup_ok">On</string>
     <string name="garage_backup_error">Needs attention</string>

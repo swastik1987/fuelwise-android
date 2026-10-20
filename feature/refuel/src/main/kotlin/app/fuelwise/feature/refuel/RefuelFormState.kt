@@ -36,6 +36,8 @@ data class RefuelFormState(
     val total: String = "",
     val recentEdits: List<PriceTriangle.Field> = emptyList(),
     val priceSource: PriceSource = PriceSource.Typed,
+    /** The price came from the home charging tariff in Settings (PRD F-02.5), so the row says so. */
+    val homeTariffPrice: Boolean = false,
     val focus: NumericField? = NumericField.Odometer,
     val isFull: Boolean = true,
     val moreExpanded: Boolean = false,

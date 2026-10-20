@@ -7,12 +7,16 @@ import app.fuelwise.core.designsystem.component.FwEntryRow
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.EnergyColors
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.ui.R
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.distanceText
+import app.fuelwise.core.ui.format.efficiencyText
+import app.fuelwise.core.ui.format.quantityText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import java.time.Instant
 import java.time.ZoneId
@@ -33,19 +37,24 @@ fun LogbookEntryRow(
     modifier: Modifier = Modifier,
     showVehicleName: Boolean = false,
     amountText: String = IndianNumberFormat.rupeesWhole(entry.amount),
+    /** The vehicle's display units (PRD F-18); storage stays canonical. */
+    units: DisplayUnits = DisplayUnits.INDIA,
 ) {
     val tank = vehicle?.tanks?.firstOrNull { it.id == entry.tankId }
-    val unit = tank?.let { stringResource(VehicleLabels.unit(it.energyType.canonicalUnit)) }.orEmpty()
+    val quantityUnit = tank?.energyType?.canonicalUnit
+    val quantity = entry.quantity?.let { q ->
+        quantityUnit?.let { quantityText(q, it, units) } ?: IndianNumberFormat.decimal(q, 1)
+    }
     val category = entry.categoryId?.let { categories[it] }
     val title = when (entry.kind) {
         LogbookKind.Fuel -> listOfNotNull(
             tank?.let { stringResource(VehicleLabels.energy(it.energyType)) } ?: stringResource(R.string.logbook_fuel),
-            entry.quantity?.let { "${IndianNumberFormat.decimal(it, 1)} $unit" },
+            quantity,
         ).joinToString(" · ")
 
         LogbookKind.Charge -> listOfNotNull(
             stringResource(R.string.logbook_charge),
-            entry.quantity?.let { "${IndianNumberFormat.decimal(it, 1)} $unit" },
+            quantity,
         ).joinToString(" · ")
 
         LogbookKind.Toll -> listOfNotNull(stringResource(R.string.logbook_toll), entry.place).joinToString(" · ")
@@ -56,7 +65,7 @@ fun LogbookEntryRow(
         shortDate(entry.dateTimeUtcMs),
         if (showVehicleName) vehicle?.name else null,
         entry.place.takeIf { entry.kind == LogbookKind.Fuel || entry.kind == LogbookKind.Charge },
-        entry.odometerKm?.let { "${IndianNumberFormat.decimal(it, 0)} km" },
+        entry.odometerKm?.let { distanceText(it, units) },
     ).joinToString(" · ")
     val (icon, tint) = when (entry.kind) {
         LogbookKind.Fuel ->
@@ -75,7 +84,7 @@ fun LogbookEntryRow(
         title = title,
         meta = meta,
         amount = amountText,
-        chip = kmPerUnit?.let { "${IndianNumberFormat.decimal(it, 1)} km/$unit" },
+        chip = kmPerUnit?.let { km -> quantityUnit?.let { efficiencyText(km, it, units) } },
         onClick = onClick,
         modifier = modifier,
     )

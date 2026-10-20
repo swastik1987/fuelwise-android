@@ -74,6 +74,7 @@ dependencies {
     implementation(projects.feature.prices)
     implementation(projects.widget)
     implementation(projects.feature.scan)
+    implementation(projects.feature.settings)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

@@ -26,6 +26,19 @@
     <string name="unit_kg">kg</string>
     <string name="unit_kwh">kWh</string>
     <string name="unit_km">km</string>
+    <string name="unit_mile">mi</string>
+    <string name="unit_us_gallon">US gal</string>
+    <string name="unit_uk_gallon">UK gal</string>
+    <string name="unit_km_per_l">km/L</string>
+    <string name="unit_km_per_kg">km/kg</string>
+    <string name="unit_km_per_kwh">km/kWh</string>
+    <string name="unit_l_per_100km">L/100 km</string>
+    <string name="unit_kg_per_100km">kg/100 km</string>
+    <string name="unit_kwh_per_100km">kWh/100 km</string>
+    <string name="unit_mpg_us">mpg (US)</string>
+    <string name="unit_mpg_uk">mpg (UK)</string>
+    <string name="unit_mi_per_kg">mi/kg</string>
+    <string name="unit_mi_per_kwh">mi/kWh</string>
 
     <string name="vehicle_switcher_title">आपकी गाड़ियाँ</string>
     <string name="vehicle_switcher_all">सभी गाड़ियाँ</string>

@@ -39,6 +39,44 @@ message UserPreferences {
   // Reports (PRD F-13.3) use field numbers 70–79.
   // Business mileage reimbursement rate in paise per km (PRD F-07.9, F-13.3). 0 means not set yet.
   int64 business_rate_paise_per_km = 70;
+
+  // Settings (PRD F-18). Numbers 30–49 are this feature's range.
+  // Display units; storage stays canonical (CLAUDE.md rule 2). Per-vehicle entries override the default.
+  UnitPreferences units = 30;
+  map<string, UnitPreferences> vehicle_units = 31;
+  // Home charging tariff in paise per kWh; 0 = not set (PRD F-02.5).
+  int64 home_tariff_paise = 32;
+  // Material You colours instead of the brand palette. Off by default (PRD F-18).
+  bool dynamic_color = 33;
+  // App lock with BiometricPrompt or the device credential. Device-specific: never restored from a backup.
+  bool app_lock = 34;
+  // Lock again after this long in the background; 0 = as soon as the app leaves the screen.
+  int32 app_lock_timeout_minutes = 35;
+}
+
+// Zero values are the India defaults: km, L, km/L.
+message UnitPreferences {
+  DistanceUnitPref distance = 1;
+  VolumeUnitPref volume = 2;
+  EfficiencyUnitPref efficiency = 3;
+}
+
+enum DistanceUnitPref {
+  DISTANCE_UNIT_KM = 0;
+  DISTANCE_UNIT_MILE = 1;
+}
+
+enum VolumeUnitPref {
+  VOLUME_UNIT_LITRE = 0;
+  VOLUME_UNIT_US_GALLON = 1;
+  VOLUME_UNIT_UK_GALLON = 2;
+}
+
+enum EfficiencyUnitPref {
+  EFFICIENCY_UNIT_DISTANCE_PER_QUANTITY = 0;
+  EFFICIENCY_UNIT_QUANTITY_PER_100_DISTANCE = 1;
+  EFFICIENCY_UNIT_MPG_US = 2;
+  EFFICIENCY_UNIT_MPG_UK = 3;
 }
 
 message BackupSettings {

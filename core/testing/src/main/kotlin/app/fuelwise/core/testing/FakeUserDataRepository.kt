@@ -4,6 +4,8 @@ import app.fuelwise.core.data.repository.FeatureFlags
 import app.fuelwise.core.data.repository.ThemeMode
 import app.fuelwise.core.data.repository.UserData
 import app.fuelwise.core.data.repository.UserDataRepository
+import app.fuelwise.core.domain.units.DisplayUnits
+import app.fuelwise.core.model.Money
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -39,6 +41,25 @@ class FakeUserDataRepository(initial: UserData = DEFAULT) : UserDataRepository {
 
     override suspend fun setUpiPayee(vpa: String, name: String) = state.update {
         it.copy(upiVpa = vpa.trim(), upiName = name.trim())
+    }
+
+    override suspend fun setUnits(vehicleId: String?, units: DisplayUnits?) = state.update {
+        val current = it.units
+        it.copy(
+            units = when {
+                vehicleId == null -> current.copy(default = units ?: DisplayUnits.INDIA)
+                units == null -> current.copy(perVehicle = current.perVehicle - vehicleId)
+                else -> current.copy(perVehicle = current.perVehicle + (vehicleId to units))
+            },
+        )
+    }
+
+    override suspend fun setHomeTariff(tariff: Money?) = state.update { it.copy(homeTariff = tariff) }
+
+    override suspend fun setDynamicColor(enabled: Boolean) = state.update { it.copy(dynamicColor = enabled) }
+
+    override suspend fun setAppLock(enabled: Boolean, timeoutMinutes: Int) = state.update {
+        it.copy(appLock = enabled, appLockTimeoutMinutes = timeoutMinutes)
     }
 
     companion object {

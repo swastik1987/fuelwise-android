@@ -75,6 +75,10 @@ import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
 import app.fuelwise.feature.scan.ScanRoute
 import app.fuelwise.feature.scan.scanScreen
+import app.fuelwise.feature.settings.SettingsLinks
+import app.fuelwise.feature.settings.SettingsRoute
+import app.fuelwise.feature.settings.UnitsRoute
+import app.fuelwise.feature.settings.settingsScreens
 import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
@@ -226,6 +230,7 @@ fun FuelwiseApp(
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                     onExport = { navController.navigate(ExportRoute) },
+                    onSettings = { navController.navigate(SettingsRoute) },
                 ),
             )
             remindersScreen(
@@ -252,6 +257,18 @@ fun FuelwiseApp(
             importScreen(onBack = navController::popBackStack)
             pricesScreen(onBack = navController::popBackStack)
             exportScreen(onBack = navController::popBackStack)
+            settingsScreens(
+                SettingsLinks(
+                    onBack = navController::popBackStack,
+                    onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
+                    onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) },
+                    onExport = { navController.navigate(ExportRoute) },
+                    onBackup = { navController.navigate(BackupRoute) },
+                    onImport = { navController.navigate(ImportRoute) },
+                    // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
+                    onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
+                ),
+            )
             tripsScreens(
                 TripsLinks(
                     onBack = navController::popBackStack,

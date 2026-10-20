@@ -14,6 +14,7 @@ import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.units.UnitSettings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.EntrySource
@@ -67,6 +68,8 @@ data class LogbookChrome(
     val mapMode: Boolean = false,
     val pins: List<LogbookPin> = emptyList(),
     val selectedPinId: String? = null,
+    /** Display units per vehicle (PRD F-18). */
+    val units: UnitSettings = UnitSettings(),
 ) {
     val filtering: Boolean get() = kinds.isNotEmpty() || query.isNotBlank()
 }
@@ -101,13 +104,13 @@ class LogbookViewModel @Inject constructor(
 
     private val controls = MutableStateFlow(Controls())
 
-    private val selectedVehicle: Flow<Pair<List<Vehicle>, Vehicle?>> =
+    private val selectedVehicle: Flow<Triple<List<Vehicle>, Vehicle?, UnitSettings>> =
         combine(vehicles.observeVehicles(includeArchived = true), userData.userData) { all, data ->
             val active = all.filterNot { it.isArchived }
-            all to (active.firstOrNull { it.id == data.selectedVehicleId } ?: active.firstOrNull())
+            Triple(all, active.firstOrNull { it.id == data.selectedVehicleId } ?: active.firstOrNull(), data.units)
         }
 
-    private val filter: Flow<LogbookFilter> = combine(selectedVehicle, controls) { (_, selected), c ->
+    private val filter: Flow<LogbookFilter> = combine(selectedVehicle, controls) { (_, selected, _), c ->
         LogbookFilter(vehicleId = if (c.allVehicles) null else selected?.id, kinds = c.kinds, query = c.query)
     }
 
@@ -122,7 +125,7 @@ class LogbookViewModel @Inject constructor(
         categories.observeCategories(),
         entries.observeAllRefuels(),
         filter.flatMapLatest { logbook.monthTotals(it) },
-    ) { (all, selected), c, cats, refuels, totals ->
+    ) { (all, selected, units), c, cats, refuels, totals ->
         val vehicleId = if (c.allVehicles) null else selected?.id
         LogbookChrome(
             vehicles = all,
@@ -138,6 +141,7 @@ class LogbookViewModel @Inject constructor(
             mapMode = c.mapMode,
             pins = if (c.mapMode) pins(refuels, all, vehicleId, c) else emptyList(),
             selectedPinId = c.selectedPinId,
+            units = units,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), LogbookChrome())
 

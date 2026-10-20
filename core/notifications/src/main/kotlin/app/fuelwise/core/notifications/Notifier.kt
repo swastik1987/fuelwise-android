@@ -58,9 +58,12 @@ object NotificationRoutes {
     const val OPEN_SCAN = "scan"
 }
 
-/** Channel ids other modules post to (the trip recorder in core:location). */
+/** Channel ids other modules use: the trip recorder in core:location posts, Settings links to the system screens. */
 object NotificationChannels {
     const val TRIP_RECORDING = "trip_recording"
+    const val REMINDERS = "reminders"
+    const val INSIGHTS = "insights"
+    const val PRICE_ALERTS = "price_alerts"
 }
 
 /**
@@ -271,9 +274,9 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
     private fun notificationId(key: String): Int = key.hashCode() and Int.MAX_VALUE / 2
 
     private companion object {
-        const val CHANNEL_REMINDERS = "reminders"
-        const val CHANNEL_INSIGHTS = "insights"
-        const val CHANNEL_PRICE_ALERTS = "price_alerts"
+        const val CHANNEL_REMINDERS = NotificationChannels.REMINDERS
+        const val CHANNEL_INSIGHTS = NotificationChannels.INSIGHTS
+        const val CHANNEL_PRICE_ALERTS = NotificationChannels.PRICE_ALERTS
         const val RECAP_ID = 1
     }
 }

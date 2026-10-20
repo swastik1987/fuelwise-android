@@ -35,9 +35,12 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.insights.InsightsReport
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.model.sum
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.efficiencyText
 
 @Composable
 internal fun ChartDetailScreen(onBack: () -> Unit, viewModel: ChartDetailViewModel = hiltViewModel()) {
@@ -77,7 +80,7 @@ internal fun ChartDetailContent(kind: ChartKind, state: InsightsSnapshot?, onBac
                 style = FwTheme.type.bodyS,
                 color = FwTheme.colors.ink2,
             )
-            Summary(kind, report)
+            Summary(kind, report, state.units)
             if (report.series(kind).isEmpty()) {
                 Text(stringResource(R.string.chart_no_data), style = FwTheme.type.body, color = FwTheme.colors.ink2)
             } else {
@@ -98,17 +101,18 @@ internal fun ChartDetailContent(kind: ChartKind, state: InsightsSnapshot?, onBac
 }
 
 @Composable
-private fun Summary(kind: ChartKind, report: InsightsReport) {
+private fun Summary(kind: ChartKind, report: InsightsReport, units: DisplayUnits) {
     val unit = report.energyUnit()
+    val quantity = report.energyType?.canonicalUnit ?: QuantityUnit.LITRE
     val tiles: List<Pair<String, String>> = when (kind) {
         ChartKind.Mileage -> listOfNotNull(
             report.average?.let {
                 stringResource(R.string.summary_average) to
-                    "${IndianNumberFormat.decimal(it.kmPerUnit, 1)} km/$unit"
+                    efficiencyText(it.kmPerUnit, quantity, units)
             },
             report.best?.let {
                 stringResource(R.string.summary_best) to
-                    "${IndianNumberFormat.decimal(it.kmPerUnit, 1)} km/$unit"
+                    efficiencyText(it.kmPerUnit, quantity, units)
             },
         )
 

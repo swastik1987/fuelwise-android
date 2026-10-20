@@ -11,6 +11,7 @@ import app.fuelwise.core.data.repository.DataStoreBackupSettingsRepository
 import app.fuelwise.core.data.repository.DataStorePriceSettingsRepository
 import app.fuelwise.core.data.repository.DataStoreScanSettingsRepository
 import app.fuelwise.core.data.repository.DataStoreUserDataRepository
+import app.fuelwise.core.data.repository.DeviceLocalDataReset
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntitlementRepository
 import app.fuelwise.core.data.repository.EntryRepository
@@ -18,6 +19,7 @@ import app.fuelwise.core.data.repository.FastagRepository
 import app.fuelwise.core.data.repository.FreeTierEntitlementRepository
 import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.ImportRepository
+import app.fuelwise.core.data.repository.LocalDataReset
 import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.OfflineCategoryRepository
 import app.fuelwise.core.data.repository.OfflineDocumentRepository
@@ -116,6 +118,9 @@ internal interface DataModule {
 
     @Binds
     fun deviceIdProvider(impl: DataStoreDeviceIdProvider): DeviceIdProvider
+
+    @Binds
+    fun localDataReset(impl: DeviceLocalDataReset): LocalDataReset
 
     companion object {
         /** The user's time zone, stored next to UTC timestamps (CLAUDE.md: UTC ms plus zoneId). */

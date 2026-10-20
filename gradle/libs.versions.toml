@@ -40,6 +40,8 @@ mapsCompose = "8.6.0"
 okhttp = "5.5.0"
 bouncycastle = "1.86"
 secrets = "2.0.1"
+# App lock (PRD F-18; approved 19 Oct 2026, PRD section 9). 1.1.0 is the latest stable.
+biometric = "1.1.0"
 glance = "1.2.0"
 camerax = "1.6.2"
 mlkitTextRecognition = "16.0.1"
@@ -92,6 +94,7 @@ maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }

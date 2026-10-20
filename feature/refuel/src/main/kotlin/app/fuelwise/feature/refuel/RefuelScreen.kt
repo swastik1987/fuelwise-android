@@ -303,6 +303,7 @@ private fun TriangleSection(state: RefuelFormState, actions: RefuelActions) {
             autoLabel = auto,
             caption = when {
                 state.computedField == Field.UnitPrice -> null
+                state.homeTariffPrice -> stringResource(R.string.refuel_price_home_tariff)
                 state.priceSource == PriceSource.LastPaid -> stringResource(R.string.refuel_price_last_paid)
                 state.priceSource == PriceSource.CityPrice -> stringResource(R.string.refuel_price_city)
                 else -> null

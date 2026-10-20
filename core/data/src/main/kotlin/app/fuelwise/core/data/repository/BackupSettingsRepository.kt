@@ -2,8 +2,14 @@ package app.fuelwise.core.data.repository
 
 import app.fuelwise.core.datastore.BackupError as ProtoError
 import app.fuelwise.core.datastore.BackupFrequency as ProtoFrequency
+import app.fuelwise.core.datastore.DistanceUnitPref
+import app.fuelwise.core.datastore.EfficiencyUnitPref
 import app.fuelwise.core.datastore.PreferencesDataSource
 import app.fuelwise.core.datastore.ThemeMode as ProtoThemeMode
+import app.fuelwise.core.datastore.UnitPreferences
+import app.fuelwise.core.datastore.UserPreferencesKt
+import app.fuelwise.core.datastore.VolumeUnitPref
+import app.fuelwise.core.datastore.unitPreferences
 import app.fuelwise.core.model.BackupError
 import app.fuelwise.core.model.BackupFrequency
 import app.fuelwise.core.model.BackupSettings
@@ -98,6 +104,11 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             KEY_MILESTONES to p.shownMilestonesList.toList(),
             KEY_UPI_VPA to p.upiVpa,
             KEY_UPI_NAME to p.upiName,
+            // Settings (PRD F-18). The app lock is this device's choice and stays out of backups.
+            KEY_UNITS to p.units.encode(),
+            KEY_VEHICLE_UNITS to p.vehicleUnitsMap.map { (id, units) -> "$id=${units.encode()}" },
+            KEY_HOME_TARIFF to p.homeTariffPaise,
+            KEY_DYNAMIC_COLOR to p.dynamicColor,
             KEY_PINNED_CITIES to p.pinnedCityIdsList.toList(),
             KEY_PRICE_ALERTS to p.priceAlerts,
         )
@@ -128,6 +139,36 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             pinnedCityIds.addAll(it)
         }
         (values[KEY_PRICE_ALERTS] as? Boolean)?.let { priceAlerts = it }
+        importSettings(values)
+    }
+
+    /** The Settings keys (PRD F-18). */
+    private fun UserPreferencesKt.Dsl.importSettings(values: Map<String, Any?>) {
+        (values[KEY_UNITS] as? String)?.let { units = decodeUnits(it) }
+        (values[KEY_VEHICLE_UNITS] as? List<*>)?.filterIsInstance<String>()?.let { list ->
+            vehicleUnits.clear()
+            list.forEach { entry ->
+                val id = entry.substringBefore('=')
+                if (id.isNotEmpty()) vehicleUnits.put(id, decodeUnits(entry.substringAfter('=')))
+            }
+        }
+        (values[KEY_HOME_TARIFF] as? Long)?.let { homeTariffPaise = it.coerceAtLeast(0) }
+        (values[KEY_DYNAMIC_COLOR] as? Boolean)?.let { dynamicColor = it }
+    }
+
+    /** "DISTANCE_UNIT_KM,VOLUME_UNIT_LITRE,EFFICIENCY_UNIT_…": snapshots carry strings, lists and numbers only. */
+    private fun UnitPreferences.encode(): String = listOf(distance.name, volume.name, efficiency.name).joinToString(",")
+
+    private fun decodeUnits(text: String): UnitPreferences {
+        val names = text.split(',').toSet()
+        return unitPreferences {
+            DistanceUnitPref.entries.firstOrNull { it.name in names && it != DistanceUnitPref.UNRECOGNIZED }
+                ?.let { distance = it }
+            VolumeUnitPref.entries.firstOrNull { it.name in names && it != VolumeUnitPref.UNRECOGNIZED }
+                ?.let { volume = it }
+            EfficiencyUnitPref.entries.firstOrNull { it.name in names && it != EfficiencyUnitPref.UNRECOGNIZED }
+                ?.let { efficiency = it }
+        }
     }
 
     private companion object {
@@ -140,6 +181,10 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         const val KEY_MILESTONES = "shownMilestones"
         const val KEY_UPI_VPA = "upiVpa"
         const val KEY_UPI_NAME = "upiName"
+        const val KEY_UNITS = "units"
+        const val KEY_VEHICLE_UNITS = "vehicleUnits"
+        const val KEY_HOME_TARIFF = "homeTariffPaise"
+        const val KEY_DYNAMIC_COLOR = "dynamicColor"
         const val KEY_PINNED_CITIES = "pinnedCityIds"
         const val KEY_PRICE_ALERTS = "priceAlerts"
     }

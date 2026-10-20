@@ -47,7 +47,11 @@ import app.fuelwise.core.domain.insights.InsightCard
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.ProInsight
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.core.ui.format.UnitFormat
+import app.fuelwise.core.ui.format.efficiencyUnit
+import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.vehicle.AllVehiclesPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
@@ -151,6 +155,7 @@ private fun Overview(
     onInfo: (String) -> Unit,
 ) {
     val m = report.metrics
+    val quantity = report.energyType?.canonicalUnit ?: QuantityUnit.LITRE
     val unit = report.energyUnit()
     Column(
         Modifier.verticalScroll(
@@ -178,8 +183,10 @@ private fun Overview(
                 )
                 FwMetricTile(
                     overline = stringResource(R.string.insights_distance),
-                    value = m.distance?.let { IndianNumberFormat.decimal(it.km, 0) } ?: "—",
-                    unit = "km",
+                    value = m.distance?.let {
+                        IndianNumberFormat.decimal(state.units.distance.fromKm(it.km), 0)
+                    } ?: "—",
+                    unit = stringResource(UnitFormat.distance(state.units.distance)),
                     caption = m.distance?.takeIf {
                         it.isEstimated
                     }?.let { stringResource(R.string.insights_estimated) },
@@ -190,10 +197,13 @@ private fun Overview(
                 if (report.energyType != null) {
                     FwMetricTile(
                         overline = stringResource(R.string.insights_avg_mileage),
-                        value = report.average?.let { IndianNumberFormat.decimal(it.kmPerUnit, 1) } ?: "—",
-                        unit = "km/$unit",
+                        value = efficiencyValue(report.average?.kmPerUnit, quantity, state.units),
+                        unit = efficiencyUnit(quantity, state.units),
                         caption = report.best?.let {
-                            stringResource(R.string.insights_best, IndianNumberFormat.decimal(it.kmPerUnit, 1))
+                            stringResource(
+                                R.string.insights_best,
+                                efficiencyValue(it.kmPerUnit, quantity, state.units),
+                            )
                         },
                         modifier = Modifier.weight(1f),
                     )

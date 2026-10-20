@@ -14,16 +14,27 @@ import kotlinx.coroutines.flow.stateIn
 sealed interface MainActivityUiState {
     data object Loading : MainActivityUiState
 
-    data class Ready(val onboardingCompleted: Boolean, val themeMode: ThemeMode) : MainActivityUiState
+    data class Ready(
+        val onboardingCompleted: Boolean,
+        val themeMode: ThemeMode,
+        val dynamicColor: Boolean = false,
+        val appLock: Boolean = false,
+        val appLockTimeoutMinutes: Int = 0,
+    ) : MainActivityUiState
 }
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(userData: UserDataRepository) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = userData.userData
-        .map { MainActivityUiState.Ready(it.onboardingCompleted, it.themeMode) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MainActivityUiState.Loading)
-
-    private companion object {
-        const val STOP_TIMEOUT_MS = 5_000L
-    }
+        .map {
+            MainActivityUiState.Ready(
+                onboardingCompleted = it.onboardingCompleted,
+                themeMode = it.themeMode,
+                dynamicColor = it.dynamicColor,
+                appLock = it.appLock,
+                appLockTimeoutMinutes = it.appLockTimeoutMinutes,
+            )
+        }
+        // Eagerly: the lock check in onStart reads the latest value even before the UI collects it.
+        .stateIn(viewModelScope, SharingStarted.Eagerly, MainActivityUiState.Loading)
 }

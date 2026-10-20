@@ -51,6 +51,15 @@ class DatabaseSnapshotter @Inject constructor(private val db: FuelwiseDatabase) 
         }
     }
 
+    /**
+     * "Delete all data" (PRD F-18): empties every table in one transaction, tombstones included. Only a full reset may
+     * do this; everyday deletes keep tombstones (CLAUDE.md rule 3).
+     */
+    fun clearAll() {
+        val tables = userTables()
+        db.runInTransaction { tables.forEach { sql.execSQL("DELETE FROM `$it`") } }
+    }
+
     private fun userTables(): Set<String> = sql.query(
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' " +
             "AND name NOT IN ('android_metadata', 'room_master_table', 'room_table_modification_log')",

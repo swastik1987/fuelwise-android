@@ -8,6 +8,7 @@ import app.fuelwise.core.domain.insights.ComputeInsights
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.VehicleHistory
+import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Vehicle
 import java.time.ZoneId
@@ -24,6 +25,8 @@ data class InsightsSnapshot(
     val period: InsightPeriod,
     val categories: Map<String, Category>,
     val report: InsightsReport?,
+    /** Display units (PRD F-18): the vehicle's own, or the default for "All vehicles". */
+    val units: DisplayUnits = DisplayUnits.INDIA,
 )
 
 /** Shared by the overview and chart detail, so both always agree on the numbers. */
@@ -64,6 +67,7 @@ class InsightsSource @Inject constructor(
                     vehicleCount = list.size,
                 )
             },
+            units = data.units.forVehicle(if (allVehicles) null else selected?.id),
         )
     }
 

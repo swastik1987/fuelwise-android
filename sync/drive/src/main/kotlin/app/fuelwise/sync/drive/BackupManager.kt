@@ -42,6 +42,8 @@ sealed interface RestoreOutcome {
  * Backup and restore (PRD F-14, R1 scope): snapshots to the user's Drive app folder or to a file they pick, encrypted
  * when they chose a passphrase. One operation at a time; every step is safe to rerun after a crash or a kill.
  */
+// Backup, restore, file export, encryption and the "Delete all data" erase share one owner of the Drive lock.
+@Suppress("TooManyFunctions")
 @Singleton
 class BackupManager @Inject constructor(
     private val snapshotter: DatabaseSnapshotter,
@@ -151,6 +153,20 @@ class BackupManager @Inject constructor(
         keys.save(key)
         settings.update { it.copy(encrypted = true, lastError = null) }
     }
+
+    /**
+     * "Delete all data" with "also delete Drive backups" (PRD F-18): removes every file in the app folder, snapshots
+     * and encrypted photos alike. Returns null on success, or what stopped it.
+     */
+    suspend fun deleteDriveBackups(): BackupError? = mutex.withLock {
+        when (val r = runCatchingDrive { token -> drive.list(token).forEach { drive.delete(token, it.id) } }) {
+            is DriveResult.Ok -> null
+            is DriveResult.Error -> r.error
+        }
+    }
+
+    /** Full reset: forgets the backup key on this device. The settings themselves reset with the preferences. */
+    suspend fun forgetKey() = mutex.withLock { keys.clear() }
 
     suspend fun disableEncryption() {
         keys.clear()

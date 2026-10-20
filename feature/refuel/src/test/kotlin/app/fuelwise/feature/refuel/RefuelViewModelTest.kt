@@ -121,13 +121,13 @@ class RefuelViewModelTest {
         assertThat(ready.unitPrice).isEqualTo("88.95")
         assertThat(ready.priceSource).isEqualTo(PriceSource.CityPrice)
 
+        // Paying the prefilled city price is "the city price"; above/below is covered in core:domain FairPriceTest.
         vm.type(NumericField.Odometer, "42318")
-        vm.type(NumericField.Quantity, "40")
-        vm.type(NumericField.Total, "3574.80")
+        vm.type(NumericField.Total, "3558")
         vm.save()
         val fair = vm.state.first { it.reward != null }.fairPrice!!
-        assertThat(fair.delta).isEqualTo(Money(42))
-        assertThat(fair.verdict).isEqualTo(FairPrice.Verdict.Above)
+        assertThat(fair.city.price).isEqualTo(Money(8_895))
+        assertThat(fair.verdict).isEqualTo(FairPrice.Verdict.Same)
     }
 
     @Test

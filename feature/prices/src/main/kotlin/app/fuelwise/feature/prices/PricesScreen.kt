@@ -290,7 +290,11 @@ private fun FuelRow(row: FuelPriceRow, today: LocalDate, onClick: () -> Unit) {
                 if (previous != null && change != null) {
                     PriceDelta(change, IndianNumberFormat.date(previous.date))
                 } else if (latest.date != today) {
-                    Text(IndianNumberFormat.date(latest.date), style = FwTheme.type.caption, color = FwTheme.colors.ink2)
+                    Text(
+                        IndianNumberFormat.date(latest.date),
+                        style = FwTheme.type.caption,
+                        color = FwTheme.colors.ink2,
+                    )
                 }
             }
             if (row.sparkline.isNotEmpty()) {

@@ -54,8 +54,7 @@ data class PricesUiState(
     val canPin: Boolean get() = home != null && pinned.size < PriceSettings.MAX_PINNED
 
     /** True when any shown price came from the feed, for the "Updated 06:30 IST" caption. */
-    fun fromFeed(prices: CityPrices): Boolean =
-        prices.summary.rows.any { it.latest?.origin == FuelPriceOrigin.Feed }
+    fun fromFeed(prices: CityPrices): Boolean = prices.summary.rows.any { it.latest?.origin == FuelPriceOrigin.Feed }
 }
 
 /** One-off events: open Maps with a search (PRD F-09.4). */

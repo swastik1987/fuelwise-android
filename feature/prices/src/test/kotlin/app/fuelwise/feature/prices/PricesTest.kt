@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -125,9 +127,11 @@ class PricesTest {
 
     @Test
     fun emptyCityRowInvitesTodaysPrice() {
-        compose.setContent { FuelwiseTheme { PricesContent(ready(home = "pune"), PricesActions()) } }
+        compose.setContent {
+            FuelwiseTheme { PricesContent(ready(home = "pune", pinned = emptyList()), PricesActions()) }
+        }
         compose.onNodeWithText("Petrol").assertIsDisplayed()
-        compose.onNodeWithText("No price yet — add today's price").assertIsDisplayed()
+        compose.onAllNodesWithText("No price yet — add today's price").onFirst().assertIsDisplayed()
         compose.onNodeWithText("Petrol").performClick()
         compose.onNodeWithText("Save price").assertIsDisplayed()
     }
@@ -144,14 +148,14 @@ class PricesTest {
         PricesContent(PricesUiState(loading = false, catalog = FakeCityRepository.SAMPLE), PricesActions())
     }
 
-    private fun ready(home: String = "bengaluru"): PricesUiState {
+    private fun ready(home: String = "bengaluru", pinned: List<String> = listOf("delhi", "mumbai")): PricesUiState {
         val summarize = SummarizeCityPrices()
         fun of(id: String) = CityPrices(FakeCityRepository.city(id), summarize(id, samplePrices, today))
         return PricesUiState(
             loading = false,
             catalog = FakeCityRepository.SAMPLE,
             home = of(home),
-            pinned = listOf(of("delhi"), of("mumbai")),
+            pinned = pinned.map(::of),
             energy = SampleVehicles.safari.primaryTank?.energyType,
             today = today,
         )

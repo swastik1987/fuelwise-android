@@ -25,8 +25,7 @@ data class FeedCity(val city: City, val prices: List<FeedPrice>)
 /** The parsed national file: every city, every fuel, today plus 30 days of history (docs/price-feed.md). */
 data class PriceFeed(val schema: Int, val generatedAt: Instant?, val cities: List<FeedCity>) {
     /** Filters on the device (CLAUDE.md rule 5): only the cities the user follows are kept. */
-    fun pricesFor(cityIds: Set<String>): List<FeedPrice> =
-        cities.filter { it.city.id in cityIds }.flatMap { it.prices }
+    fun pricesFor(cityIds: Set<String>): List<FeedPrice> = cities.filter { it.city.id in cityIds }.flatMap { it.prices }
 }
 
 class PriceFeedFormatException(message: String, cause: Throwable? = null) : Exception(message, cause)
@@ -96,8 +95,7 @@ object PriceFeedParser {
     private fun JsonElement.paiseOrNull(): Long? =
         if (this is JsonNull) null else (this as? JsonPrimitive)?.takeUnless { it.isString }?.longOrNull
 
-    private fun JsonObject.string(key: String): String? =
-        (this[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+    private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
 
     private fun parseDate(text: String): LocalDate? = try {
         LocalDate.parse(text)

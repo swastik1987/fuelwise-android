@@ -6,8 +6,8 @@ import app.fuelwise.core.data.repository.PriceSettings
 import app.fuelwise.core.data.repository.PriceSettingsRepository
 import app.fuelwise.core.domain.prices.CityCatalog
 import app.fuelwise.core.domain.prices.FeedPrice
-import app.fuelwise.core.model.City
 import app.fuelwise.core.model.Cities
+import app.fuelwise.core.model.City
 import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.FuelPriceOrigin
 import app.fuelwise.core.model.Money

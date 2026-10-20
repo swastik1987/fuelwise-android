@@ -66,7 +66,11 @@ internal fun CityPickerSheet(
         ) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.m)) {
-                    Text(stringResource(R.string.prices_picker_title), style = FwTheme.type.h3, color = FwTheme.colors.ink)
+                    Text(
+                        stringResource(R.string.prices_picker_title),
+                        style = FwTheme.type.h3,
+                        color = FwTheme.colors.ink,
+                    )
                     FwTextField(
                         value = query,
                         onValueChange = { query = it.take(MAX_QUERY) },

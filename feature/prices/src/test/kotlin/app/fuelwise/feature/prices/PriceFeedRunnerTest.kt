@@ -35,7 +35,9 @@ class PriceFeedRunnerTest {
     """.trimIndent()
 
     private val prices = FakeFuelPriceRepository(
-        listOf(FuelPrice("old", "bengaluru", PriceFuel.Petrol, today.minusDays(1), Money(10_292), FuelPriceOrigin.Feed)),
+        listOf(
+            FuelPrice("old", "bengaluru", PriceFuel.Petrol, today.minusDays(1), Money(10_292), FuelPriceOrigin.Feed),
+        ),
     )
     private val alerts = mutableListOf<Pair<PriceChange, String>>()
     private val fetched = mutableListOf<String>()
@@ -44,7 +46,10 @@ class PriceFeedRunnerTest {
         endpoint = PriceFeedEndpoint(url),
         settings = FakePriceSettingsRepository(settings),
         prices = prices,
-        fetcher = { fetched += it; feed },
+        fetcher = {
+            fetched += it
+            feed
+        },
         alerts = { change, city -> alerts += change to city },
         detect = DetectPriceAlerts(),
     )

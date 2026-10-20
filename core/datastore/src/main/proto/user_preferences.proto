@@ -28,6 +28,12 @@ message UserPreferences {
   // The user's own UPI ID and name for trip-split "pay me" links (PRD F-07.4, F-18). Empty until typed once.
   string upi_vpa = 14;
   string upi_name = 15;
+  // Fuel prices (PRD F-09), numbers 20-29. Up to 3 extra cities to compare (F-09.1), in pinned order.
+  repeated string pinned_city_ids = 20;
+  // Opt-in home-city price alerts (F-09.5). They fire only on a price feed update.
+  bool price_alerts = 21;
+  // UTC ms of the last successful price feed fetch (F-09.2): at most one a day. 0 = never.
+  int64 price_feed_last_fetch_at = 22;
   // Scanning (PRD F-15) uses field numbers 60–69. The pump/receipt photo is attached to the entry unless turned off.
   bool scan_photo_opt_out = 60;
   // Reports (PRD F-13.3) use field numbers 70–79.
@@ -114,4 +120,6 @@ message FeatureFlags {
   bool automatic_trips = 1;
   bool multi_device_sync = 2;
   bool trip_planner = 3;
+  // The price feed (PRD F-09.2). Off until a source and host are chosen (PRD D2, D3); no URL ships meanwhile.
+  bool price_feed = 10;
 }

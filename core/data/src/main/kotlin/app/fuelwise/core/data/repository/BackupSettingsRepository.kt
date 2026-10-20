@@ -109,6 +109,8 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
             KEY_VEHICLE_UNITS to p.vehicleUnitsMap.map { (id, units) -> "$id=${units.encode()}" },
             KEY_HOME_TARIFF to p.homeTariffPaise,
             KEY_DYNAMIC_COLOR to p.dynamicColor,
+            KEY_PINNED_CITIES to p.pinnedCityIdsList.toList(),
+            KEY_PRICE_ALERTS to p.priceAlerts,
         )
     }
 
@@ -132,6 +134,11 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         }
         (values[KEY_UPI_VPA] as? String)?.let { upiVpa = it }
         (values[KEY_UPI_NAME] as? String)?.let { upiName = it }
+        (values[KEY_PINNED_CITIES] as? List<*>)?.filterIsInstance<String>()?.let {
+            pinnedCityIds.clear()
+            pinnedCityIds.addAll(it)
+        }
+        (values[KEY_PRICE_ALERTS] as? Boolean)?.let { priceAlerts = it }
         importSettings(values)
     }
 
@@ -178,5 +185,7 @@ internal class DataStoreBackupSettingsRepository @Inject constructor(private val
         const val KEY_VEHICLE_UNITS = "vehicleUnits"
         const val KEY_HOME_TARIFF = "homeTariffPaise"
         const val KEY_DYNAMIC_COLOR = "dynamicColor"
+        const val KEY_PINNED_CITIES = "pinnedCityIds"
+        const val KEY_PRICE_ALERTS = "priceAlerts"
     }
 }

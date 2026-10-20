@@ -9,6 +9,8 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
+import app.fuelwise.core.testing.FakeFuelPriceRepository
+import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleEntries
@@ -35,6 +37,8 @@ class EntryDetailViewModelTest {
         vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari)),
         categories = FakeCategoryRepository(),
         lookupIntervals = LookupIntervals(ComputeConsumption()),
+        userData = FakeUserDataRepository(),
+        cityPrices = FakeFuelPriceRepository(),
     )
 
     @Test

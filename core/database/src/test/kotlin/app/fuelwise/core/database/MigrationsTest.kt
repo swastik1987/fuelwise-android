@@ -179,6 +179,40 @@ class MigrationsTest {
         }
     }
 
+    @Test
+    fun migrate6To7KeepsFillUpsAndAddsCityPrices() {
+        helper.createDatabase(dbPath, 6).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO refuel (id, vehicleId, tankId, dateTime, zoneId, odometerKm, quantity, unitPricePaise,
+                    totalPaise, discountPaise, paidPaise, isFull, missedPrevious, priceSource, createdAt, updatedAt, deviceId)
+                VALUES ('r1', 'swift', 't1', 12, 'Asia/Kolkata', 9870.0, 30.0, 10292, 308760, 0, 308760, 1, 0, 'Typed', 12, 12, 'd1')
+                """.trimIndent(),
+            )
+        }
+
+        helper.runMigrationsAndValidate(dbPath, 7, true, Migrations.MIGRATION_6_7).use { db ->
+            db.query("SELECT unitPricePaise FROM refuel WHERE id = 'r1'").use { c ->
+                assertThat(c.moveToFirst()).isTrue()
+                assertThat(c.getLong(0)).isEqualTo(10_292L)
+            }
+            val insert = """
+                INSERT OR IGNORE INTO fuel_price (id, cityId, fuel, epochDay, pricePaise, origin, createdAt, updatedAt,
+                    deviceId)
+                VALUES (?, 'bengaluru', 'Petrol', 20745, ?, 'Manual', 13, 13, 'd1')
+            """.trimIndent()
+            db.execSQL(insert, arrayOf<Any>("p1", 10_292))
+            // (cityId, fuel, epochDay) is unique: one price per city, fuel and day.
+            db.execSQL(insert, arrayOf<Any>("p2", 10_300))
+            db.query("SELECT id, pricePaise FROM fuel_price").use { c ->
+                assertThat(c.count).isEqualTo(1)
+                c.moveToFirst()
+                assertThat(c.getString(0)).isEqualTo("p1")
+                assertThat(c.getLong(1)).isEqualTo(10_292L)
+            }
+        }
+    }
+
     // An absolute path: on Windows the helper otherwise compares a bare name with the resolved path and refuses.
     private val dbPath: String =
         ApplicationProvider.getApplicationContext<android.content.Context>().getDatabasePath(DB).absolutePath

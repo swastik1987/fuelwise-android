@@ -64,6 +64,8 @@ import app.fuelwise.feature.onboarding.WelcomeRoute
 import app.fuelwise.feature.onboarding.historyScreen
 import app.fuelwise.feature.onboarding.privacyScreen
 import app.fuelwise.feature.onboarding.welcomeScreen
+import app.fuelwise.feature.prices.PricesRoute
+import app.fuelwise.feature.prices.pricesScreen
 import app.fuelwise.feature.refuel.RefuelRoute
 import app.fuelwise.feature.refuel.SCAN_RESULT_KEY
 import app.fuelwise.feature.refuel.refuelSheet
@@ -103,6 +105,8 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_FASTAG -> FastagRoute
 
             NotificationRoutes.OPEN_LIVE_TRIP -> LiveTripRoute
+
+            NotificationRoutes.OPEN_PRICES -> PricesRoute()
 
             NotificationRoutes.OPEN_TRIP_ODOMETER ->
                 openRequest.arg?.let { TripDetailRoute(it, editOdometer = true) } ?: return@LaunchedEffect
@@ -185,6 +189,7 @@ fun FuelwiseApp(
                     onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
                     onOpenTrips = { navController.navigate(TripsRoute()) },
                     onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
+                    onOpenPrices = { navController.navigate(PricesRoute()) },
                 ),
             )
             refuelSheet(
@@ -221,6 +226,7 @@ fun FuelwiseApp(
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
                     onTrips = { navController.navigate(TripsRoute()) },
+                    onPrices = { navController.navigate(PricesRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
                     onExport = { navController.navigate(ExportRoute) },
@@ -249,14 +255,13 @@ fun FuelwiseApp(
                 onRestored = { navController.navigate(HomeRoute) { popUpTo(0) { inclusive = true } } },
             )
             importScreen(onBack = navController::popBackStack)
+            pricesScreen(onBack = navController::popBackStack)
             exportScreen(onBack = navController::popBackStack)
             settingsScreens(
                 SettingsLinks(
                     onBack = navController::popBackStack,
                     onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
-                    // TODO(F-09): once :feature:prices is on main, wire
-                    //  onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) }. Null hides the row.
-                    onHomeCity = null,
+                    onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) },
                     onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },

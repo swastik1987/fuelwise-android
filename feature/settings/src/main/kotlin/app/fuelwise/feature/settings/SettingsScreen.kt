@@ -363,6 +363,11 @@ private fun NotificationsSection(state: SettingsUiState, actions: SettingsAction
         onClick = { actions.onChannel(NotificationChannels.REMINDERS) },
     )
     FwSettingsRow(
+        stringResource(R.string.settings_channel_price_alerts),
+        value = stringResource(R.string.settings_channel_system),
+        onClick = { actions.onChannel(NotificationChannels.PRICE_ALERTS) },
+    )
+    FwSettingsRow(
         stringResource(R.string.settings_channel_trips),
         value = stringResource(R.string.settings_channel_system),
         onClick = { actions.onChannel(NotificationChannels.TRIP_RECORDING) },

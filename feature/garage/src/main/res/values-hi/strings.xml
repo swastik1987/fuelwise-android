@@ -61,6 +61,7 @@
     <string name="garage_reminders">रिमाइंडर</string>
     <string name="garage_documents">कागज़ात</string>
     <string name="garage_fastag">FASTag</string>
+    <string name="garage_prices">ईंधन की कीमतें</string>
     <string name="garage_trips">यात्राएँ</string>
     <string name="garage_fastag_est">%1$s अनुमान</string>
     <plurals name="garage_reminders_due">

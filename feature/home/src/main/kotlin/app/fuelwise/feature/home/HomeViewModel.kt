@@ -58,6 +58,8 @@ sealed interface HomeUiState {
         val trips: MonthTrips = MonthTrips.NONE,
         /** This vehicle's display units (PRD F-18). */
         val units: DisplayUnits = DisplayUnits.INDIA,
+        /** The home city's prices for the strip; null without a home city (PRD F-09.1). */
+        val prices: HomePrices? = null,
     ) : HomeUiState
 }
 
@@ -77,6 +79,7 @@ class HomeViewModel @Inject constructor(
     lookupIntervals: LookupIntervals,
     milestones: ComputeMilestones,
     private val care: HomeCareSource,
+    private val homePrices: HomePricesSource,
     zoneId: ZoneId,
     clock: Clock,
 ) : ViewModel() {
@@ -97,7 +100,8 @@ class HomeViewModel @Inject constructor(
                 categories.observeCategories(),
                 logbook.recentEntries(selected.id, RECENT_COUNT),
                 care.observe(selected.id),
-            ) { (refuels, expenses, tripList), cats, recent, homeCare ->
+                homePrices.observe(),
+            ) { (refuels, expenses, tripList), cats, recent, homeCare, priceStrip ->
                 HomeUiState.Ready(
                     vehicle = selected,
                     vehicles = list,
@@ -115,6 +119,7 @@ class HomeViewModel @Inject constructor(
                     care = homeCare,
                     trips = monthTrips(tripList, selected.id, YearMonth.now(clock.withZone(zoneId)), zoneId),
                     units = data.units.forVehicle(selected.id),
+                    prices = priceStrip,
                 )
             }
         }

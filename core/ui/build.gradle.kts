@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(projects.core.designsystem)
     api(projects.core.model)
-    // Display-unit conversions (PRD F-18) live in core:domain; formatting them is this module's job.
+    // Display helpers for domain results: display units (PRD F-18) and the fair-price line (PRD F-09.3).
     implementation(projects.core.domain)
     // App lock (PRD F-18; approved 19 Oct 2026, PRD section 9).
     api(libs.androidx.biometric)

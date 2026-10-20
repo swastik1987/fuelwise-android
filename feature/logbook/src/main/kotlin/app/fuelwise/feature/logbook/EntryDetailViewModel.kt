@@ -6,15 +6,21 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.FuelPriceRepository
+import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.prices.priceFuelFor
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -38,6 +44,8 @@ sealed interface EntryDetailUiState {
         val result: IntervalResult?,
         /** km since the previous fill of the same tank. */
         val distanceSincePrevious: Double?,
+        /** "Did I pay fair?" against the home-city price that day (PRD F-09.3). */
+        val fairPrice: FairPrice? = null,
     ) : EntryDetailUiState
 
     data class Cost(val expense: Expense, val vehicle: Vehicle?, val category: Category?) : EntryDetailUiState
@@ -51,6 +59,8 @@ class EntryDetailViewModel @Inject constructor(
     vehicles: VehicleRepository,
     categories: CategoryRepository,
     lookupIntervals: LookupIntervals,
+    userData: UserDataRepository,
+    private val cityPrices: FuelPriceRepository,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<EntryDetailRoute>()
     private val source = EntrySource.valueOf(route.source)
@@ -60,10 +70,11 @@ class EntryDetailViewModel @Inject constructor(
             if (refuel == null) {
                 flowOf(EntryDetailUiState.Gone)
             } else {
-                combine(entries.observeRefuels(refuel.vehicleId), vehicles.observeVehicle(refuel.vehicleId)) {
-                        all,
-                        vehicle,
-                    ->
+                combine(
+                    entries.observeRefuels(refuel.vehicleId),
+                    vehicles.observeVehicle(refuel.vehicleId),
+                    userData.userData,
+                ) { all, vehicle, data ->
                     val tankFills = all.filter { it.tankId == refuel.tankId }
                     val previous = tankFills.filter { it.odometerKm < refuel.odometerKm }.maxByOrNull { it.odometerKm }
                     EntryDetailUiState.FillUp(
@@ -71,6 +82,7 @@ class EntryDetailViewModel @Inject constructor(
                         vehicle = vehicle,
                         result = lookupIntervals(tankFills)[refuel.id],
                         distanceSincePrevious = previous?.let { refuel.odometerKm - it.odometerKm },
+                        fairPrice = fairPrice(refuel, vehicle, data.homeCityId),
                     )
                 }
             }
@@ -86,6 +98,14 @@ class EntryDetailViewModel @Inject constructor(
             }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), EntryDetailUiState.Loading)
+
+    private suspend fun fairPrice(refuel: Refuel, vehicle: Vehicle?, homeCityId: String?): FairPrice? {
+        val tank = vehicle?.tanks?.firstOrNull { it.id == refuel.tankId } ?: return null
+        val fuel = priceFuelFor(tank.energyType, refuel.grade) ?: return null
+        val day = Instant.ofEpochMilli(refuel.dateTimeUtcMs).atZone(ZoneId.of(refuel.zoneId)).toLocalDate()
+        val history = cityPrices.history(homeCityId ?: return null, fuel, day.minusDays(FairPrice.MAX_AGE_DAYS), day)
+        return FairPrice.of(refuel.unitPrice, day, history)
+    }
 
     private val deletedChannel = Channel<Unit>(Channel.BUFFERED)
     val deleted = deletedChannel.receiveAsFlow()

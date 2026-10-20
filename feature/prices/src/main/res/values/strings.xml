@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prices_title">Fuel prices</string>
+    <string name="prices_back">Back</string>
+    <string name="prices_home_city">Home city</string>
+    <string name="prices_change_city">Change</string>
+    <string name="prices_change_city_cd">Change home city, now %1$s</string>
+    <string name="prices_no_city_title">Pick your city</string>
+    <string name="prices_no_city_body">Fuel prices differ a lot between states. Choose your city to keep track.</string>
+    <string name="prices_no_city_action">Choose city</string>
+    <string name="prices_per_unit">%1$s/%2$s</string>
+    <string name="prices_no_price">No price yet — add today\'s price</string>
+    <string name="prices_add">Add</string>
+    <string name="prices_row_cd">%1$s, %2$s per %3$s</string>
+    <string name="prices_row_empty_cd">%1$s, no price yet. Add today\'s price</string>
+    <string name="prices_change_since">%1$s since %2$s</string>
+    <string name="prices_no_change_since">No change since %1$s</string>
+    <string name="prices_source_manual">Prices you entered · updated %1$s</string>
+    <string name="prices_source_feed">Updated 06:30 IST · %1$s</string>
+    <string name="prices_find_pump">Find a petrol pump near me</string>
+    <string name="prices_find_cng">Find a CNG station near me</string>
+    <string name="prices_find_charger">Find a charging station near me</string>
+    <string name="prices_find_note">Opens Google Maps. Fuelwise doesn\'t send your location.</string>
+    <string name="prices_no_maps">No maps app or browser found.</string>
+    <string name="prices_compare">Compare cities</string>
+    <string name="prices_compare_body">Pin up to 3 cities, for trips or to compare states.</string>
+    <string name="prices_compare_add">Add a city</string>
+    <string name="prices_unpin_cd">Remove %1$s from compare</string>
+    <string name="prices_alerts_title">Price alerts</string>
+    <string name="prices_alerts_body">Tell me when a price in my home city moves by ₹1 or more.</string>
+    <string name="prices_alerts_no_feed">Alerts need the daily price feed, which isn\'t available yet. Your choice is saved.</string>
+    <string name="prices_sheet_title">%1$s · %2$s</string>
+    <string name="prices_sheet_amount">Price per %1$s</string>
+    <string name="prices_sheet_date">Date: %1$s</string>
+    <string name="prices_sheet_date_cd">Price date %1$s. Change date</string>
+    <string name="prices_sheet_hint">The pump\'s board price (RSP), not what you paid after discounts.</string>
+    <string name="prices_sheet_save">Save price</string>
+    <string name="prices_sheet_delete">Delete this price</string>
+    <string name="prices_picker_title">Choose a city</string>
+    <string name="prices_picker_search">Search city or state</string>
+    <string name="prices_picker_popular">Popular</string>
+    <string name="prices_picker_all">All cities</string>
+    <string name="prices_picker_none">No city matches. Try the state name.</string>
+</resources>

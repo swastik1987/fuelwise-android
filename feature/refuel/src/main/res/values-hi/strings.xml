@@ -18,6 +18,7 @@
     <string name="refuel_tariff">टैरिफ़ प्रति %1$s</string>
     <string name="refuel_price_last_paid">पिछली बार दिया दाम</string>
     <string name="refuel_price_home_tariff">सेटिंग्स में सेव घर का रेट</string>
+    <string name="refuel_price_city">शहर की कीमत</string>
     <string name="refuel_total">कुल ₹</string>
     <string name="refuel_cost">खर्च ₹</string>
     <string name="refuel_auto">ऑटो</string>

@@ -7,6 +7,7 @@ import app.fuelwise.core.database.dao.CategoryDao
 import app.fuelwise.core.database.dao.DocumentDao
 import app.fuelwise.core.database.dao.EntryDao
 import app.fuelwise.core.database.dao.FastagDao
+import app.fuelwise.core.database.dao.FuelPriceDao
 import app.fuelwise.core.database.dao.ImportDao
 import app.fuelwise.core.database.dao.LogbookDao
 import app.fuelwise.core.database.dao.RecurrenceDao
@@ -64,4 +65,7 @@ object DatabaseModule {
 
     @Provides
     fun tripDao(db: FuelwiseDatabase): TripDao = db.tripDao()
+
+    @Provides
+    fun fuelPriceDao(db: FuelwiseDatabase): FuelPriceDao = db.fuelPriceDao()
 }

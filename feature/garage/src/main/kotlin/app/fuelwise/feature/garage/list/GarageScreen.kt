@@ -271,13 +271,17 @@ data class GarageLinks(
     val onDocuments: () -> Unit = {},
     val onFastag: () -> Unit = {},
     val onTrips: () -> Unit = {},
+    val onPrices: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
     val onExport: () -> Unit = {},
     val onSettings: () -> Unit = {},
 )
 
-/** Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Trips (design.md screen 21). */
+/**
+ * Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Fuel prices · Trips (design.md
+ * screen 21).
+ */
 @Composable
 private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
     Column(Modifier.padding(top = FwTheme.spacing.l)) {
@@ -315,6 +319,7 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
             },
             links.onFastag,
         )
+        UtilityRow(FwIcons.Fuel, stringResource(R.string.garage_prices), null, links.onPrices)
         UtilityRow(FwIcons.Route, stringResource(R.string.garage_trips), null, links.onTrips)
         UtilityRow(
             FwIcons.CloudDone,

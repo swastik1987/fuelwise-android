@@ -68,6 +68,7 @@
     <string name="settings_monthly_recap">Monthly recap</string>
     <string name="settings_monthly_recap_body">On the 1st: what last month cost, in one card.</string>
     <string name="settings_channel_reminders">Reminders</string>
+    <string name="settings_channel_price_alerts">Price alerts</string>
     <string name="settings_channel_trips">Trip recording</string>
     <string name="settings_channel_system">Sound and style in phone settings</string>
 

@@ -22,6 +22,8 @@
     <string name="home_mileage_avg">औसत %1$s</string>
     <string name="home_spent">खर्च</string>
     <string name="home_spent_km">इस महीने %1$s km</string>
+    <string name="home_prices_today">आज की ईंधन कीमतें</string>
+    <string name="home_prices_empty">%1$s · आज की कीमतें जोड़ें</string>
     <string name="home_trips">यात्राएँ</string>
     <string name="home_start_trip">यात्रा शुरू करें</string>
     <string name="home_start_trip_caption">GPS से रिकॉर्ड करें</string>

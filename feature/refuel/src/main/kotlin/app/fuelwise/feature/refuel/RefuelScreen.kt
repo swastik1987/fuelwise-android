@@ -61,6 +61,7 @@ import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.entryDateTimeLabel
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.MoneyInput
+import app.fuelwise.core.ui.price.fairPriceText
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.ZoneId
@@ -216,6 +217,7 @@ internal fun RefuelContent(
             vehicleName = state.vehicle?.name.orEmpty(),
             unit = unitLabel(state),
             onDismiss = onClose,
+            fairPriceLine = state.fairPrice?.let { fairPriceText(it) },
         )
     }
 }
@@ -303,6 +305,7 @@ private fun TriangleSection(state: RefuelFormState, actions: RefuelActions) {
                 state.computedField == Field.UnitPrice -> null
                 state.homeTariffPrice -> stringResource(R.string.refuel_price_home_tariff)
                 state.priceSource == PriceSource.LastPaid -> stringResource(R.string.refuel_price_last_paid)
+                state.priceSource == PriceSource.CityPrice -> stringResource(R.string.refuel_price_city)
                 else -> null
             },
         )

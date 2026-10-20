@@ -63,6 +63,7 @@
     <string name="settings_monthly_recap">महीने का हिसाब</string>
     <string name="settings_monthly_recap_body">हर 1 तारीख़ को: पिछले महीने का खर्च, एक कार्ड में।</string>
     <string name="settings_channel_reminders">रिमाइंडर</string>
+    <string name="settings_channel_price_alerts">कीमत अलर्ट</string>
     <string name="settings_channel_trips">ट्रिप रिकॉर्डिंग</string>
     <string name="settings_channel_system">आवाज़ और स्टाइल फ़ोन की सेटिंग्स में</string>
 

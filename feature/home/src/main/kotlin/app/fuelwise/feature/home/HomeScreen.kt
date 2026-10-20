@@ -68,6 +68,7 @@ import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.format.efficiencyUnit
 import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.format.quantityText
+import app.fuelwise.core.ui.price.PriceLabels
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
@@ -87,6 +88,7 @@ data class HomeActions(
     val onOpenTrips: () -> Unit = {},
     /** Starts a GPS trip, asking for location first if needed; opens the live trip if one is already recording. */
     val onStartTrip: () -> Unit = {},
+    val onOpenPrices: () -> Unit = {},
 )
 
 @Composable
@@ -158,6 +160,7 @@ internal fun HomeContent(
                         TripTiles(state.trips, actions)
                     }
                     CareCards(state, actions, onConfirmAuto)
+                    state.prices?.let { PriceStrip(it, actions.onOpenPrices) }
                     if (state.recent.isNotEmpty()) Recent(state, actions)
                 }
                 if (switcherOpen) {
@@ -326,6 +329,38 @@ private fun TripTiles(trips: MonthTrips, actions: HomeActions) {
                 stringResource(R.string.home_start_trip_caption),
                 style = FwTheme.type.caption,
                 color = FwTheme.colors.ink2,
+            )
+        }
+    }
+}
+
+/** "Bengaluru · Petrol ₹102.92 ▲ · Diesel ₹88.95 · CNG ₹89.00" (design.md screen 5). Tap → Prices. */
+@Composable
+private fun PriceStrip(prices: HomePrices, onOpen: () -> Unit) {
+    val parts = prices.summary.rows.mapNotNull { row ->
+        val latest = row.latest ?: return@mapNotNull null
+        val change = row.change?.paise ?: 0L
+        val arrow = when {
+            change > 0 -> " ▲"
+            change < 0 -> " ▼"
+            else -> ""
+        }
+        stringResource(PriceLabels.fuel(row.fuel)) + " " + IndianNumberFormat.rupees(latest.price) + arrow
+    }
+    val line = if (parts.isEmpty()) {
+        stringResource(R.string.home_prices_empty, prices.cityName)
+    } else {
+        (listOf(prices.cityName) + parts).joinToString(" · ")
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        FwOverline(stringResource(R.string.home_prices_today))
+        FwCard(onClick = onOpen, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) {
+            Text(
+                line,
+                style = FwTheme.type.label,
+                color = FwTheme.colors.ink,
+                maxLines = 1,
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
             )
         }
     }

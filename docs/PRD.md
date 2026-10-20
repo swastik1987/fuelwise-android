@@ -176,7 +176,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Rounding: quantity to 2 dp, price to 2 dp, total to 2 dp. Display ₹ with lakh grouping.
 - Discount reduces **amount paid**, not price/unit. Both "pump price" and "paid" are stored.
 
-**F-02.3 Smart defaults.** ✅ built (city price waits for F-09; station auto-detect for F-21.1)
+**F-02.3 Smart defaults.** ✅ built (station auto-detect waits for F-21.1)
 - Price/unit = last price paid for that tank's grade. If a city price is available (F-09) and newer, use it and tag the source.
 - Odometer field pre-filled with the **predicted** odometer (last odo + avg km/day × days since). Shown as a placeholder hint, not a value. The user must confirm or type it.
 - Station = auto-detected from the current location when the sheet opens (F-21.1), if location permission is granted.
@@ -196,7 +196,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - **Short-fill guard:** if quantity > tank capacity × 1.03, warn "That's more than your tank holds (45 L). Check the pump reading or your tank size."
 - **Anomaly flag:** on a full fill, if the computed consumption deviates more than 25% from the rolling average of the last 5 valid intervals, show a soft info chip ("Unusual — tap to review"). It never blocks saving.
 
-**F-02.7 Post-save reward.** ✅ built (city-price delta waits for F-09) After saving a full fill that closes an interval, show a toast/sheet: "This tank: **16.8 km/L**, ▲ 4% vs your average. ₹5.92/km." Hold for 3 s, swipe to dismiss.
+**F-02.7 Post-save reward.** ✅ built After saving a full fill that closes an interval, show a toast/sheet: "This tank: **16.8 km/L**, ▲ 4% vs your average. ₹5.92/km." Hold for 3 s, swipe to dismiss.
 
 **AC**
 - From the Home screen, a returning user can save a fill-up with 3 inputs (odometer, total, quantity or price) and 3 taps beyond typing.
@@ -382,7 +382,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-09 Fuel prices (India) — FREE · R1
+### F-09 Fuel prices (India) — FREE · R1 ✅ built (F-09.1 typed city prices, F-09.3, F-09.4; F-09.2 feed client and F-09.5 alerts built but off: no price source or host yet, D2/D3, so no feed URL ships; format in docs/price-feed.md. Insights city-price overlay still open)
 
 **F-09.1 City prices.**
 - Petrol, diesel and CNG (and premium petrol where available) for the user's home city, with day change and a 30-day sparkline.
@@ -579,7 +579,7 @@ Built with Jetpack Glance.
 
 ---
 
-### F-18 Settings, units and localisation — R1 ✅ built (Home city row links to Fuel prices once F-09 merges; units not yet converted in entry forms, trips, Insights charts/recap, distance strings on Home; weekly digest toggle is stored but no digest is sent yet; R2 location settings and crash reports not shown)
+### F-18 Settings, units and localisation — R1 ✅ built (units not yet converted in entry forms, trips, Insights charts/recap, distance strings on Home; weekly digest toggle is stored but no digest is sent yet; R2 location settings and crash reports not shown)
 
 - **Units:**
   - Defaults: km, L, kg (CNG), kWh, km/L, km/kg, km/kWh.

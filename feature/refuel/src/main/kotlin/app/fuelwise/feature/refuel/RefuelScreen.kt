@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -88,6 +89,7 @@ internal data class RefuelActions(
     val onToggleMore: () -> Unit = {},
     val onGrade: (FuelGrade) -> Unit = {},
     val onPayment: (PaymentMethod) -> Unit = {},
+    val onDiscountUnit: (percent: Boolean) -> Unit = {},
     val onStation: (String) -> Unit = {},
     val onNotes: (String) -> Unit = {},
     val onOperator: (String) -> Unit = {},
@@ -111,6 +113,7 @@ private fun RefuelViewModel.actions() = RefuelActions(
     onToggleMore = ::onToggleMore,
     onGrade = ::onGrade,
     onPayment = ::onPayment,
+    onDiscountUnit = ::onDiscountUnit,
     onStation = ::onStation,
     onNotes = ::onNotes,
     onOperator = ::onOperator,
@@ -351,15 +354,32 @@ private fun FuelSection(state: RefuelFormState, actions: RefuelActions) {
             }
         }
         PaymentChips(state.payment, actions.onPayment)
-        FwTriangleRow(
-            label = stringResource(R.string.refuel_discount),
-            value = state.discount.takeIf { it.isNotEmpty() }?.let { "₹" + MoneyInput.groupTyped(it) }.orEmpty(),
-            unit = null,
-            isComputed = false,
-            focused = state.focus == NumericField.Discount,
-            onClick = { actions.onFocus(NumericField.Discount) },
-            autoLabel = "",
-        )
+        // Discount in ₹ or % (PRD F-02.2); a percentage shows the rupees it comes to, which is what's stored.
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FwTriangleRow(
+                label = stringResource(R.string.refuel_discount),
+                value = when {
+                    state.discount.isEmpty() -> ""
+                    state.discountPercent -> state.discount + "%"
+                    else -> "₹" + MoneyInput.groupTyped(state.discount)
+                },
+                unit = null,
+                isComputed = false,
+                focused = state.focus == NumericField.Discount,
+                onClick = { actions.onFocus(NumericField.Discount) },
+                autoLabel = "",
+                caption = state.takeIf { it.discountPercent }
+                    ?.discountMoney(MoneyInput.parse(state.total))
+                    ?.let { stringResource(R.string.refuel_discount_comes_to, IndianNumberFormat.rupees(it)) },
+                modifier = Modifier.weight(1f),
+            )
+            FwSegmentedControl(
+                options = listOf("₹", "%"),
+                selectedIndex = if (state.discountPercent) 1 else 0,
+                onSelect = { actions.onDiscountUnit(it == 1) },
+                modifier = Modifier.width(DISCOUNT_UNIT_WIDTH),
+            )
+        }
         FwTextField(
             value = state.station,
             onValueChange = actions.onStation,
@@ -532,6 +552,7 @@ internal fun localDate(utcMs: Long) = java.time.Instant.ofEpochMilli(utcMs).atZo
 
 private const val EXPANDED_ROTATION = 180f
 private const val BANNER_ALPHA = 0.16f
+private val DISCOUNT_UNIT_WIDTH = 104.dp
 
 /** Slim "Scan pump meter" banner at the top of Add fuel (design.md screen 6 → screen 9, PRD F-15). */
 @Composable

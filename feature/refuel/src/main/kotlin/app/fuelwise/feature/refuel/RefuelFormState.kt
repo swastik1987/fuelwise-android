@@ -8,10 +8,13 @@ import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.model.Tank
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.ui.format.MoneyInput
+import app.fuelwise.core.ui.format.NumberInput
 
 /** Numeric fields driven by the in-sheet keypad. Text fields (station, notes, operator) use the system keyboard. */
 enum class NumericField { Odometer, Quantity, UnitPrice, Total, Discount, Duration }
@@ -47,6 +50,8 @@ data class RefuelFormState(
     val grade: FuelGrade? = null,
     val payment: PaymentMethod? = null,
     val discount: String = "",
+    /** The discount is typed as a percentage of the total rather than in rupees (PRD F-02.2). Stored as rupees. */
+    val discountPercent: Boolean = false,
     val station: String = "",
     val notes: String = "",
     val missedPrevious: Boolean = false,
@@ -73,4 +78,11 @@ data class RefuelFormState(
         const val DEFAULT_SOC_START = 20f
         const val DEFAULT_SOC_END = 80f
     }
+}
+
+/** The discount in rupees: as typed, or worked out from a percentage of [total] (PRD F-02.2). */
+internal fun RefuelFormState.discountMoney(total: Money?): Money? = if (discountPercent) {
+    PriceTriangle.discountOf(total, NumberInput.parseDecimal(discount))
+} else {
+    MoneyInput.parse(discount)
 }

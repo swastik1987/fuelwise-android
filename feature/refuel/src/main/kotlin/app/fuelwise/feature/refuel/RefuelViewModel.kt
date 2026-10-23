@@ -284,6 +284,11 @@ class RefuelViewModel @Inject constructor(
 
     fun onGrade(grade: FuelGrade) = _state.update { it.copy(grade = if (it.grade == grade) null else grade) }
 
+    /** ₹ or %: switching clears what was typed, since the same number means something else. */
+    fun onDiscountUnit(percent: Boolean) = _state.update {
+        if (it.discountPercent == percent) it else it.copy(discountPercent = percent, discount = "")
+    }
+
     fun onPayment(method: PaymentMethod) = _state.update {
         it.copy(
             payment = if (it.payment ==
@@ -461,7 +466,7 @@ class RefuelViewModel @Inject constructor(
         val qty = NumberInput.parseDecimal(quantity) ?: return null
         val totalMoney = MoneyInput.parse(total) ?: return null
         val price = MoneyInput.parse(unitPrice) ?: PriceTriangle.unitPriceOf(qty, totalMoney) ?: return null
-        val discountMoney = MoneyInput.parse(discount)?.takeIf { it <= totalMoney } ?: Money.ZERO
+        val discountMoney = discountMoney(totalMoney)?.takeIf { it <= totalMoney } ?: Money.ZERO
         return Refuel(
             id = editing?.id.orEmpty(),
             vehicleId = vehicle.id,

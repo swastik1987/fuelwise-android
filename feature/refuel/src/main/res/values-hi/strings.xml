@@ -28,7 +28,8 @@
     <string name="refuel_more">और</string>
     <string name="refuel_grade">फ़्यूल ग्रेड</string>
     <string name="refuel_payment">भुगतान</string>
-    <string name="refuel_discount">छूट ₹</string>
+    <string name="refuel_discount">छूट</string>
+    <string name="refuel_discount_comes_to">= %1$s की छूट</string>
     <string name="refuel_station">पंप</string>
     <string name="refuel_station_placeholder">जैसे HP, इंदिरानगर</string>
     <string name="refuel_notes">नोट</string>

@@ -131,6 +131,23 @@ class RefuelViewModelTest {
     }
 
     @Test
+    fun aPercentageDiscountIsSavedAsRupees() = runTest {
+        val vm = viewModel()
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "40")
+        vm.type(NumericField.Total, "3558")
+        vm.type(NumericField.Discount, "100")
+        // Switching to % clears the ₹ figure: the same digits would mean something else.
+        vm.onDiscountUnit(percent = true)
+        assertThat(vm.state.value.discount).isEmpty()
+        vm.type(NumericField.Discount, "2")
+        vm.save()
+        vm.state.first { it.reward != null }
+        // 2% of ₹3,558 = ₹71.16, stored in paise like any discount (CLAUDE.md rule 1).
+        assertThat(entries.observeAllRefuels().first().single().discount).isEqualTo(Money(7_116))
+    }
+
+    @Test
     fun withoutAHomeCityThereIsNoFairPriceLine() = runTest {
         val vm = viewModel(
             cityPrices = FakeFuelPriceRepository(

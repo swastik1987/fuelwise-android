@@ -53,5 +53,17 @@ object PriceTriangle {
             .toDouble()
     }
 
+    /**
+     * A discount typed as a percentage of the total (PRD F-02.2: "discount (₹ or %)"), in paise, rounded half-up.
+     * Null when either is missing or the percentage is outside 0–100. Stored as rupees like any other discount.
+     */
+    fun discountOf(total: Money?, percent: Double?): Money? {
+        if (total == null || percent == null || percent !in 0.0..MAX_PERCENT) return null
+        val paise = BigDecimal.valueOf(total.paise).multiply(BigDecimal.valueOf(percent))
+            .divide(BigDecimal.valueOf(MAX_PERCENT), 0, RoundingMode.HALF_UP)
+        return Money(paise.longValueExact())
+    }
+
     const val QUANTITY_DECIMALS = 2
+    private const val MAX_PERCENT = 100.0
 }

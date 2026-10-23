@@ -172,7 +172,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Missed previous fill-up? (hidden under "More")
 - Fuel grade, station name/brand, payment method (UPI/card/cash/FASTag-wallet/fleet card), discount (₹ or %), location (auto, editable), notes, attachments (receipt/meter photos)
 
-**F-02.2 Price triangle.** ✅ built (discount in ₹; % option not yet) The user enters any two of {quantity, price/unit, total}; the third is computed live.
+**F-02.2 Price triangle.** ✅ built (discount in ₹ or % ✅ 23 Oct 2026; a percentage is stored as rupees) The user enters any two of {quantity, price/unit, total}; the third is computed live.
 - Last-edited two fields are "locked"; the third shows as computed (lighter text, "=" prefix).
 - Rounding: quantity to 2 dp, price to 2 dp, total to 2 dp. Display ₹ with lakh grouping.
 - Discount reduces **amount paid**, not price/unit. Both "pump price" and "paid" are stored.

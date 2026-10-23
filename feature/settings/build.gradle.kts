@@ -7,4 +7,6 @@ dependencies {
     implementation(projects.sync.drive)
     // Channel ids for the per-channel system notification settings.
     implementation(projects.core.notifications)
+    // A single fix to mark a private place (PRD F-21.6).
+    implementation(projects.core.location)
 }

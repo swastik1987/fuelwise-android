@@ -21,10 +21,14 @@ import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.trip.PrivatePlace
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.domain.units.EfficiencyUnit
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.feature.settings.privacy.PrivatePlacesActions
+import app.fuelwise.feature.settings.privacy.PrivatePlacesContent
+import app.fuelwise.feature.settings.privacy.PrivatePlacesUiState
 import app.fuelwise.feature.settings.units.UnitsActions
 import app.fuelwise.feature.settings.units.UnitsContent
 import app.fuelwise.feature.settings.units.UnitsUiState
@@ -155,6 +159,20 @@ class SettingsScreensTest {
         ),
         UnitsActions(),
     )
+
+    @Test fun privatePlacesLight() = capture("private_places_light", false) {
+        PrivatePlacesContent(
+            PrivatePlacesUiState(
+                loading = false,
+                places = listOf(PrivatePlace("p1", "Home", 12.91, 77.64), PrivatePlace("p2", "Office", 12.97, 77.75)),
+            ),
+            PrivatePlacesActions(),
+        )
+    }
+
+    @Test fun privatePlacesEmptyDark() = capture("private_places_empty_dark", true) {
+        PrivatePlacesContent(PrivatePlacesUiState(loading = false), PrivatePlacesActions())
+    }
 
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
         compose.setContent { FuelwiseTheme(darkTheme = dark) { content() } }

@@ -123,4 +123,33 @@
     <string name="units_same_as_default">Same as default</string>
     <string name="units_own">Own units for this vehicle</string>
     <string name="units_own_body">Off follows the default units.</string>
+    <!-- Location privacy and retention (PRD F-21.6). -->
+    <string name="settings_route_retention">Keep routes for</string>
+    <string name="settings_route_retention_body">After this, a trip keeps its distance, time and cost, but not its map.</string>
+    <string name="settings_route_retention_30">30 days</string>
+    <string name="settings_route_retention_90">90 days</string>
+    <string name="settings_route_retention_year">1 year</string>
+    <string name="settings_route_retention_forever">Forever</string>
+    <string name="settings_private_places">Private places</string>
+    <string name="settings_private_places_none">None</string>
+    <plurals name="settings_private_places_count">
+        <item quantity="one">%d place</item>
+        <item quantity="other">%d places</item>
+    </plurals>
+    <string name="settings_delete_location">Delete all location history</string>
+    <string name="settings_delete_location_title">Delete all location history?</string>
+    <string name="settings_delete_location_body">Every saved route and your private places are removed from this phone. Trips keep their distance, time and cost. This can\'t be undone.</string>
+    <string name="settings_delete_location_confirm">Delete routes and private places</string>
+    <string name="private_places_title">Private places</string>
+    <string name="private_places_body">Route ends within 200 m of these spots are never saved, so a shared map or GPX doesn\'t show where you live or work. Places stay on this phone, encrypted.</string>
+    <string name="private_places_empty">No private places yet. Stand at home and add it here.</string>
+    <string name="private_places_list">Your places</string>
+    <string name="private_places_name">Name</string>
+    <string name="private_places_name_placeholder">Home</string>
+    <string name="private_places_default_name">Home</string>
+    <string name="private_places_add">Add where I am now</string>
+    <string name="private_places_locating">Finding your location…</string>
+    <string name="private_places_added">%1$s added</string>
+    <string name="private_places_no_fix">Couldn\'t get your location. Check that location is on, then try again.</string>
+    <string name="private_places_remove">Remove %1$s</string>
 </resources>

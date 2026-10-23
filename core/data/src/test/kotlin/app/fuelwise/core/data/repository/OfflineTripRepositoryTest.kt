@@ -1,5 +1,6 @@
 package app.fuelwise.core.data.repository
 
+import androidx.datastore.core.DataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -7,7 +8,10 @@ import app.fuelwise.core.data.mapper.toEntity
 import app.fuelwise.core.data.vault.AttachmentStore
 import app.fuelwise.core.data.vault.VaultCipher
 import app.fuelwise.core.database.FuelwiseDatabase
+import app.fuelwise.core.datastore.PreferencesDataSource
+import app.fuelwise.core.datastore.UserPreferencesSerializer
 import app.fuelwise.core.domain.id.UuidV7Generator
+import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.SystemCategory
@@ -17,10 +21,15 @@ import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.TripStatus
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.nio.file.Files
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -64,6 +73,14 @@ class OfflineTripRepositoryTest {
             return ciphertext.drop(associatedData.size + 1).toByteArray().reversedArray()
         }
     }
+    private val prefsScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+    private val prefs = PreferencesDataSource(
+        DataStoreFactory.create(UserPreferencesSerializer(), scope = prefsScope) {
+            File(Files.createTempDirectory("trip-prefs").toFile(), "prefs.pb")
+        },
+        ids,
+    )
+    private val places = PrivatePlacesStore(prefs, cipher)
     private val trips = OfflineTripRepository(
         db.tripDao(),
         db.documentDao(),
@@ -71,12 +88,17 @@ class OfflineTripRepositoryTest {
         cipher,
         ids,
         SyncStamper(clock) { "device-a" },
+        places,
         Dispatchers.Unconfined,
     )
+    private val privacy = DataStoreLocationPrivacyRepository(prefs, places, trips, ids)
     private val entries = OfflineEntryRepository(db.entryDao(), ids, clock) { "device-a" }
 
     @After
-    fun tearDown() = db.close()
+    fun tearDown() {
+        db.close()
+        prefsScope.cancel()
+    }
 
     @Test
     fun saveEditDeleteAndUndo() = runTest {
@@ -142,6 +164,55 @@ class OfflineTripRepositoryTest {
         assertThat(trips.route(id)).containsExactly(first.first(), second.last()).inOrder()
         assertThat(trips.observeUnfinished().first()).isEmpty()
         assertThat(trips.observeTrip(id).first()?.recordedSeconds).isEqualTo(10)
+    }
+
+    @Test
+    fun privatePlacesAreEncryptedAndTrimRouteEnds() = runTest {
+        privacy.addPrivatePlace("Home\tHSR", 12.900, 77.6)
+        val place = privacy.privatePlaces.first().single()
+        assertThat(place.name).isEqualTo("Home HSR")
+        // Never in the clear in preferences (CLAUDE.md rule 5).
+        assertThat(prefs.preferences.first().privatePlaces.toByteArray().decodeToString()).doesNotContain("Home")
+
+        val id = trips.save(trip().copy(source = TripSource.Gps, status = TripStatus.Recording))
+        val route = listOf(point(0, 12.900), point(5, 12.901), point(10, 12.905), point(15, 12.910))
+        trips.finishRecording(trips.observeTrip(id).first()!!.copy(status = TripStatus.Done), route)
+        // 0 m and 111 m from home are inside 200 m: trimmed.
+        assertThat(trips.route(id)).containsExactly(route[2], route[3]).inOrder()
+
+        privacy.removePrivatePlace(place.id)
+        assertThat(privacy.privatePlaces.first()).isEmpty()
+    }
+
+    @Test
+    fun retentionDropsOldRoutesButKeepsTheTrips() = runTest {
+        val day = 24L * 60 * 60 * 1_000
+        val old = trips.save(trip().copy(source = TripSource.Gps, status = TripStatus.Recording))
+        trips.finishRecording(
+            trips.observeTrip(old).first()!!.copy(status = TripStatus.Done, endUtcMs = clock.millis() - 40 * day),
+            listOf(point(0, 12.95), point(5, 12.96)),
+        )
+        val recent = trips.save(trip().copy(source = TripSource.Gps, status = TripStatus.Recording))
+        trips.finishRecording(
+            trips.observeTrip(recent).first()!!.copy(status = TripStatus.Done, endUtcMs = clock.millis() - day),
+            listOf(point(0, 12.95), point(5, 12.96)),
+        )
+        val oldRoute = db.tripDao().trip(old)!!.polylineAttachmentId!!
+        privacy.setRetention(RouteRetention.Days30)
+
+        assertThat(privacy.pruneExpiredRoutes(clock.millis())).isEqualTo(1)
+        assertThat(trips.route(old)).isEmpty()
+        assertThat(db.documentDao().attachment(oldRoute)).isNull()
+        assertThat(files.keys).doesNotContain("$oldRoute.bin")
+        // The summary stays.
+        assertThat(trips.observeTrip(old).first()?.distanceKm).isEqualTo(146.0)
+        assertThat(trips.route(recent)).isNotEmpty()
+
+        privacy.addPrivatePlace("Office", 12.97, 77.6)
+        privacy.deleteAllLocationHistory()
+        assertThat(trips.route(recent)).isEmpty()
+        assertThat(privacy.privatePlaces.first()).isEmpty()
+        assertThat(trips.observeTrips().first()).hasSize(2)
     }
 
     @Test

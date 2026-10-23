@@ -7,12 +7,14 @@ import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.LocalDataReset
 import app.fuelwise.core.data.repository.ThemeMode
 import app.fuelwise.core.domain.trip.AutoTripPause
+import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.domain.units.EfficiencyUnit
 import app.fuelwise.core.model.BackupError
 import app.fuelwise.core.model.BackupSettings
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
+import app.fuelwise.core.testing.FakeLocationPrivacyRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -49,8 +51,22 @@ class SettingsViewModelTest {
     private val now = LocalDateTime.of(2026, 10, 23, 18, 30).atZone(zone).toInstant()
     private val clock = Clock.fixed(now, zone)
 
+    private val privacy = FakeLocationPrivacyRepository()
+
     private fun viewModel() =
-        SettingsViewModel(userData, vehicles, backupSettings, eraser, reset, autoTrips, clock, zone)
+        SettingsViewModel(userData, vehicles, backupSettings, eraser, reset, autoTrips, privacy, clock, zone)
+
+    @Test
+    fun routeRetentionAndLocationHistory() = runTest {
+        val vm = viewModel()
+        privacy.addPrivatePlace("Home", 12.91, 77.64)
+        vm.setRouteRetention(RouteRetention.Days30)
+        val state = vm.state.first { !it.loading && it.privatePlaceCount == 1 }
+        assertThat(state.routeRetention).isEqualTo(RouteRetention.Days30)
+        vm.deleteLocationHistory()
+        assertThat(privacy.historyDeletes).isEqualTo(1)
+        assertThat(vm.state.first { !it.loading && it.privatePlaceCount == 0 }.privatePlaceCount).isEqualTo(0)
+    }
 
     @Test
     fun automaticTripsPauseResumeAndTurnOff() = runTest {

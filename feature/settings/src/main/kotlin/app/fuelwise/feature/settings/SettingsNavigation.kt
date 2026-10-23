@@ -2,6 +2,7 @@ package app.fuelwise.feature.settings
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import app.fuelwise.feature.settings.privacy.PrivatePlacesScreen
 import app.fuelwise.feature.settings.units.UnitsScreen
 import kotlinx.serialization.Serializable
 
@@ -13,6 +14,10 @@ data object SettingsRoute
 @Serializable
 data class UnitsRoute(val vehicleId: String? = null)
 
+/** Private places trimmed from route ends (PRD F-21.6). */
+@Serializable
+data object PrivatePlacesRoute
+
 /**
  * Where Settings rows lead outside this module; the app shell wires them. A null link hides its row, for screens that
  * other features haven't shipped yet.
@@ -20,6 +25,7 @@ data class UnitsRoute(val vehicleId: String? = null)
 data class SettingsLinks(
     val onBack: () -> Unit = {},
     val onUnits: (vehicleId: String?) -> Unit = {},
+    val onPrivatePlaces: () -> Unit = {},
     /** "Home city" → the Fuel prices screen (PRD F-09). */
     val onHomeCity: (() -> Unit)? = null,
     /** "Export & reports" (PRD F-13). */
@@ -34,5 +40,6 @@ data class SettingsLinks(
 
 fun NavGraphBuilder.settingsScreens(links: SettingsLinks) {
     composable<SettingsRoute> { SettingsScreen(links) }
+    composable<PrivatePlacesRoute> { PrivatePlacesScreen(onBack = links.onBack) }
     composable<UnitsRoute> { UnitsScreen(onBack = links.onBack, onOpenVehicle = { links.onUnits(it) }) }
 }

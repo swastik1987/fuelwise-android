@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.LocalDataReset
+import app.fuelwise.core.data.repository.LocationPrivacyRepository
 import app.fuelwise.core.data.repository.ThemeMode
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.trip.AutoTripPause
+import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.domain.trip.autoTripPauseEnd
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.BackupError
@@ -47,6 +49,9 @@ data class SettingsUiState(
     val deleting: Boolean = false,
     /** Automatic trips on this phone (PRD F-21.3); null when the feature isn't offered. */
     val autoTrips: AutoTripsUi? = null,
+    /** Location privacy (PRD F-21.6). */
+    val routeRetention: RouteRetention = RouteRetention.DEFAULT,
+    val privatePlaceCount: Int = 0,
 )
 
 /** The "Automatic trips" row: off, on, one-tap, or paused until [pausedUntilUtcMs] ([Long.MAX_VALUE] = until on). */
@@ -69,6 +74,7 @@ class SettingsViewModel @Inject constructor(
     private val backups: BackupEraser,
     private val reset: LocalDataReset,
     private val autoTrips: AutoTripSettingsRepository,
+    private val privacy: LocationPrivacyRepository,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -79,8 +85,8 @@ class SettingsViewModel @Inject constructor(
         vehicles.observeVehicles(),
         backupSettings.settings,
         deleting,
-        autoTrips.settings,
-    ) { data, list, backup, isDeleting, auto ->
+        combine(autoTrips.settings, privacy.retention, privacy.privatePlaces, ::Triple),
+    ) { data, list, backup, isDeleting, (auto, retention, places) ->
         val ids = list.map { it.id }.toSet()
         SettingsUiState(
             loading = false,
@@ -106,6 +112,8 @@ class SettingsViewModel @Inject constructor(
                     pausedUntilUtcMs = s.pausedUntilUtcMs?.takeIf { it > clock.millis() },
                 )
             },
+            routeRetention = retention,
+            privatePlaceCount = places.size,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
 
@@ -138,6 +146,11 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun resumeAutoTrips() = launch { autoTrips.pauseUntil(null) }
+
+    fun setRouteRetention(retention: RouteRetention) = launch { privacy.setRetention(retention) }
+
+    /** "Delete all location history" (PRD F-21.6): saved routes and private places; trips and everything else stay. */
+    fun deleteLocationHistory() = launch { privacy.deleteAllLocationHistory() }
 
     /** Off: driving detection is unregistered at once (AutoTrips follows the setting). */
     fun turnOffAutoTrips() = launch { autoTrips.setEnabled(false) }

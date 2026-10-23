@@ -36,6 +36,7 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.designsystem.theme.supportsDynamicColor
 import app.fuelwise.core.domain.privacy.AppLockPolicy
 import app.fuelwise.core.domain.trip.AutoTripPause
+import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.notifications.NotificationChannels
 import app.fuelwise.core.ui.format.IndianNumberFormat
@@ -85,6 +86,9 @@ internal data class SettingsActions(
     val onPauseAutoTrips: (AutoTripPause) -> Unit = {},
     val onResumeAutoTrips: () -> Unit = {},
     val onTurnOffAutoTrips: () -> Unit = {},
+    val onRouteRetention: (RouteRetention) -> Unit = {},
+    val onPrivatePlaces: () -> Unit = {},
+    val onDeleteLocationHistory: () -> Unit = {},
 )
 
 @Composable
@@ -160,12 +164,25 @@ internal fun SettingsScreen(links: SettingsLinks, viewModel: SettingsViewModel =
             onPauseAutoTrips = viewModel::pauseAutoTrips,
             onResumeAutoTrips = viewModel::resumeAutoTrips,
             onTurnOffAutoTrips = viewModel::turnOffAutoTrips,
+            onRouteRetention = viewModel::setRouteRetention,
+            onPrivatePlaces = links.onPrivatePlaces,
+            onDeleteLocationHistory = viewModel::deleteLocationHistory,
         ),
     )
 }
 
 /** Which sheet or dialog is open; one at a time. */
-private enum class SettingsSheet { Tariff, Upi, Language, Theme, LockTimeout, Delete, AutoTrips }
+internal enum class SettingsSheet {
+    Tariff,
+    Upi,
+    Language,
+    Theme,
+    LockTimeout,
+    Delete,
+    AutoTrips,
+    Retention,
+    DeleteLocation,
+}
 
 @Composable
 internal fun SettingsContent(
@@ -192,11 +209,7 @@ internal fun SettingsContent(
             AppearanceSection(state, chrome, actions) { sheet = it }
             PrivacySection(state, chrome, actions) { sheet = it }
             NotificationsSection(state, actions)
-            if (state.autoTrips != null &&
-                chrome.showAutoTrips
-            ) {
-                LocationSection(state.autoTrips, actions) { sheet = it }
-            }
+            LocationSection(state, chrome, actions) { sheet = it }
             DataSection(chrome, actions) { sheet = it }
             Header(R.string.settings_section_about)
             FwSettingsRow(stringResource(R.string.settings_version), value = chrome.versionName)
@@ -241,6 +254,30 @@ internal fun SettingsContent(
         )
 
         SettingsSheet.AutoTrips -> AutoTripsSheet(state.autoTrips, actions) { sheet = null }
+
+        SettingsSheet.Retention -> FwChoiceSheet(
+            title = stringResource(R.string.settings_route_retention),
+            options = RouteRetention.entries.map { stringResource(retentionLabel(it)) },
+            selectedIndex = state.routeRetention.ordinal,
+            onSelect = {
+                sheet = null
+                actions.onRouteRetention(RouteRetention.entries[it])
+            },
+            onDismiss = { sheet = null },
+            subtitle = stringResource(R.string.settings_route_retention_body),
+        )
+
+        SettingsSheet.DeleteLocation -> FwChoiceSheet(
+            title = stringResource(R.string.settings_delete_location_title),
+            options = listOf(stringResource(R.string.settings_delete_location_confirm)),
+            selectedIndex = -1,
+            onSelect = {
+                sheet = null
+                actions.onDeleteLocationHistory()
+            },
+            onDismiss = { sheet = null },
+            subtitle = stringResource(R.string.settings_delete_location_body),
+        )
 
         SettingsSheet.Delete -> DeleteAllDialog(
             driveConnected = state.driveConnected,
@@ -404,65 +441,6 @@ private fun NotificationsSection(state: SettingsUiState, actions: SettingsAction
     }
 }
 
-/**
- * Location & trips (design.md screen 29, PRD F-21.3). Off leads to setup; on opens pause and turn-off choices. Route
- * retention and private places arrive with F-21.6.
- */
-@Composable
-private fun LocationSection(auto: AutoTripsUi, actions: SettingsActions, open: (SettingsSheet) -> Unit) {
-    Header(R.string.settings_section_location)
-    FwSettingsRow(
-        stringResource(R.string.settings_auto_trips),
-        value = autoTripsValue(auto),
-        onClick = { if (auto.enabled) open(SettingsSheet.AutoTrips) else actions.onAutoTripSetup() },
-    )
-}
-
-@Composable
-private fun autoTripsValue(auto: AutoTripsUi): String {
-    val until = auto.pausedUntilUtcMs
-    return when {
-        !auto.enabled -> stringResource(R.string.settings_auto_trips_off)
-        until == Long.MAX_VALUE -> stringResource(R.string.settings_auto_trips_paused)
-        until != null -> stringResource(R.string.settings_auto_trips_paused_until, pauseEnd(until))
-        auto.oneTap -> stringResource(R.string.settings_auto_trips_one_tap)
-        else -> stringResource(R.string.settings_auto_trips_on)
-    }
-}
-
-/** "18:00" today, otherwise "24 Oct, 05:00". */
-private fun pauseEnd(utcMs: Long, zone: ZoneId = ZoneId.systemDefault()): String {
-    val at = Instant.ofEpochMilli(utcMs).atZone(zone)
-    val today = LocalDate.now(zone)
-    return if (at.toLocalDate() == today) at.format(PAUSE_TIME) else at.format(PAUSE_DAY_TIME)
-}
-
-private val PAUSE_TIME = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
-private val PAUSE_DAY_TIME = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.ENGLISH)
-
-/** Pause for a while, resume, or turn automatic trips off. */
-@Composable
-private fun AutoTripsSheet(auto: AutoTripsUi?, actions: SettingsActions, onDismiss: () -> Unit) {
-    val paused = auto?.pausedUntilUtcMs != null
-    val choices = buildList {
-        if (paused) add(R.string.settings_auto_trips_resume to actions.onResumeAutoTrips)
-        add(R.string.settings_auto_trips_pause_hour to { actions.onPauseAutoTrips(AutoTripPause.OneHour) })
-        add(R.string.settings_auto_trips_pause_tomorrow to { actions.onPauseAutoTrips(AutoTripPause.UntilTomorrow) })
-        add(R.string.settings_auto_trips_pause_until_on to { actions.onPauseAutoTrips(AutoTripPause.UntilTurnedOn) })
-        add(R.string.settings_auto_trips_turn_off to actions.onTurnOffAutoTrips)
-    }
-    FwChoiceSheet(
-        title = stringResource(R.string.settings_auto_trips),
-        options = choices.map { stringResource(it.first) },
-        selectedIndex = -1,
-        onSelect = {
-            onDismiss()
-            choices[it].second()
-        },
-        onDismiss = onDismiss,
-    )
-}
-
 @Composable
 private fun DataSection(chrome: SettingsChrome, actions: SettingsActions, open: (SettingsSheet) -> Unit) {
     Header(R.string.settings_section_data)
@@ -487,7 +465,7 @@ private fun DataSection(chrome: SettingsChrome, actions: SettingsActions, open: 
 }
 
 @Composable
-private fun Header(title: Int, first: Boolean = false) {
+internal fun Header(title: Int, first: Boolean = false) {
     FwSectionHeader(
         stringResource(title),
         Modifier.padding(top = if (first) FwTheme.spacing.s else FwTheme.spacing.xl, bottom = FwTheme.spacing.xxs),

@@ -71,6 +71,7 @@
     <string name="settings_channel_price_alerts">Price alerts</string>
     <string name="settings_channel_trips">Trip recording</string>
     <string name="settings_channel_auto_trips">Automatic trips</string>
+    <string name="settings_channel_fill_up_prompts">Fill-up prompts</string>
     <!-- Location &amp; trips (PRD F-21.3). -->
     <string name="settings_section_location">Location &amp; trips</string>
     <string name="settings_auto_trips">Automatic trips</string>

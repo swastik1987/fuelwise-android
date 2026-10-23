@@ -22,6 +22,7 @@ import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
 import app.fuelwise.core.domain.trip.TripSplit
+import app.fuelwise.core.location.FillUpCheck
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripLocationSource
@@ -643,6 +644,9 @@ class TripsTest {
             override fun odometerAfterTrip(tripId: String, distanceKm: Double) = Unit
 
             override fun startTripPrompt() = Unit
+        },
+        object : FillUpCheck {
+            override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) = Unit
         },
         clock,
         zone,

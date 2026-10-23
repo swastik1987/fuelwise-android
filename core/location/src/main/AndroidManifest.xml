@@ -59,6 +59,11 @@
             </intent-filter>
         </service>
 
+        <!-- "Not a fill-up" from a fill-up prompt (PRD F-21.4). Not exported. -->
+        <receiver
+            android:name=".FillUpActionReceiver"
+            android:exported="false" />
+
         <!-- Re-registers activity detection after a reboot or an app update, if automatic trips are on. -->
         <receiver
             android:name=".DriveDetectionRestoreReceiver"

@@ -22,6 +22,7 @@ import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.PriceDefault
 import app.fuelwise.core.domain.prices.choosePriceDefault
 import app.fuelwise.core.domain.prices.priceFuelFor
+import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -78,11 +79,15 @@ class RefuelViewModel @Inject constructor(
     private var homeTariff: Money? = null
     private var attemptedSave = false
 
+    // From a fill-up prompt (PRD F-21.4): the stop's time and station. The odometer stays a hint (F-21.5).
+    private val prompt = FillUpPrefill.decode(route.prompt)
+
     private val _state = MutableStateFlow(
         RefuelFormState(
-            dateTimeUtcMs = clock.millis(),
-            isEdit =
-                route.refuelId != null,
+            dateTimeUtcMs = prompt?.atUtcMs ?: clock.millis(),
+            isEdit = route.refuelId != null,
+            station = prompt?.station?.take(MAX_TEXT).orEmpty(),
+            moreExpanded = prompt?.station != null,
         ),
     )
     val state: StateFlow<RefuelFormState> = _state.asStateFlow()

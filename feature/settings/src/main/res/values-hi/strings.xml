@@ -66,6 +66,7 @@
     <string name="settings_channel_price_alerts">कीमत अलर्ट</string>
     <string name="settings_channel_trips">ट्रिप रिकॉर्डिंग</string>
     <string name="settings_channel_auto_trips">अपने-आप यात्राएँ</string>
+    <string name="settings_channel_fill_up_prompts">फ़िल-अप की याद</string>
     <string name="settings_section_location">लोकेशन और यात्राएँ</string>
     <string name="settings_auto_trips">अपने-आप यात्राएँ</string>
     <string name="settings_auto_trips_off">बंद</string>

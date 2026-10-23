@@ -23,6 +23,7 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
@@ -118,6 +119,11 @@ fun FuelwiseApp(
 
             // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
             NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
+
+            NotificationRoutes.OPEN_ADD_FUEL_PROMPT -> RefuelRoute(
+                vehicleId = FillUpPrefill.decode(openRequest.arg)?.vehicleId,
+                prompt = openRequest.arg,
+            )
 
             NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
 

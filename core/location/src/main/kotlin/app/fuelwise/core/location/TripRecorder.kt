@@ -82,6 +82,7 @@ class TripRecorder @Inject constructor(
     private val source: TripLocationSource,
     private val host: RecordingHost,
     private val prompts: TripPrompts,
+    private val fillUps: FillUpCheck,
     private val clock: Clock,
     private val zoneId: ZoneId,
     @param:RecorderScope private val scope: CoroutineScope,
@@ -327,18 +328,18 @@ class TripRecorder @Inject constructor(
         }
         val vehicle = vehicles.observeVehicles().first().firstOrNull { it.id == trip.vehicleId }
         val estimate = vehicle?.let { estimateCost(it, entries.observeAllRefuels().first(), summary.distanceKm) }
-        trips.finishRecording(
-            trip.copy(
-                endUtcMs = endUtcMs,
-                distanceKm = summary.distanceKm,
-                recordedSeconds = summary.recordedSeconds,
-                idleSeconds = summary.idleSeconds,
-                maxSpeedKmh = summary.maxSpeedKmh,
-                estimatedFuelCost = estimate?.fuelCost,
-                status = TripStatus.Done,
-            ),
-            simplifyTrack(recorded),
+        val done = trip.copy(
+            endUtcMs = endUtcMs,
+            distanceKm = summary.distanceKm,
+            recordedSeconds = summary.recordedSeconds,
+            idleSeconds = summary.idleSeconds,
+            maxSpeedKmh = summary.maxSpeedKmh,
+            estimatedFuelCost = estimate?.fuelCost,
+            status = TripStatus.Done,
         )
+        trips.finishRecording(done, simplifyTrack(recorded))
+        // "Filled up at …?" (PRD F-21.4) looks at the full track, which is gone from storage now; not waited for.
+        scope.launch { fillUps.afterTrip(done, recorded) }
         return tripId
     }
 

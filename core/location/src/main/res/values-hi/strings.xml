@@ -14,4 +14,9 @@
     <string name="auto_notif_not_my_drive">मेरी ड्राइव नहीं</string>
     <string name="auto_notif_start_title">ड्राइव कर रहे हैं?</string>
     <string name="auto_notif_start_body">यह यात्रा रिकॉर्ड करने के लिए टैप करें।</string>
+    <string name="fillup_title">%1$s पर फ़्यूल भरवाया?</string>
+    <string name="fillup_body">%1$s के लिए दर्ज करने को टैप करें।</string>
+    <string name="fillup_log">दर्ज करें</string>
+    <string name="fillup_not_one">फ़िल-अप नहीं था</string>
+    <string name="fillup_station_unnamed">एक ईंधन स्टेशन</string>
 </resources>

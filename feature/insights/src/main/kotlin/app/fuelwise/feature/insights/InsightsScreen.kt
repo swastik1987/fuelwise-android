@@ -73,6 +73,8 @@ internal data class InsightsActions(
     val onSelectVehicle: (String?) -> Unit = {},
     /** A picked range (PRD F-06 custom period). */
     val onCustom: (from: LocalDate, to: LocalDate) -> Unit = { _, _ -> },
+    /** Years the purchase price is spread over (PRD F-03.5). */
+    val onOwnershipYears: (Int) -> Unit = {},
 )
 
 @Composable
@@ -92,6 +94,7 @@ internal fun InsightsScreen(
             viewModel::selectPeriod,
             viewModel::selectVehicle,
             viewModel::selectCustom,
+            viewModel::setOwnershipYears,
         ),
     )
 }
@@ -262,6 +265,7 @@ private fun Overview(
                 }
             }
         }
+        report.ownership?.let { OwnershipCard(it, actions.onOwnershipYears) }
         if (report.cards.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 FwOverline(stringResource(R.string.insights_cards))

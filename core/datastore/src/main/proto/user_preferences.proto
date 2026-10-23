@@ -52,6 +52,8 @@ message UserPreferences {
   bool app_lock = 34;
   // Lock again after this long in the background; 0 = as soon as the app leaves the screen.
   int32 app_lock_timeout_minutes = 35;
+  // Total cost of ownership (PRD F-03.5): years the purchase price is spread over; 0 = 5, the default.
+  int32 ownership_years = 36;
 
   // Location & trips (PRD F-21) use field numbers 80–89.
   // Automatic trips on this phone. Device-specific (it rests on this phone's permissions): never in a backup.

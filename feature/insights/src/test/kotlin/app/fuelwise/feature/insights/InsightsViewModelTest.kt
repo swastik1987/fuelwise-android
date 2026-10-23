@@ -93,6 +93,24 @@ class InsightsViewModelTest {
     }
 
     @Test
+    fun costOfOwnershipSpreadsThePriceOverTheChosenYears() = runTest {
+        val bought = SampleVehicles.safari.copy(
+            purchaseDate = LocalDate.of(2024, 3, 9),
+            purchasePrice = Money(215_000_000),
+        )
+        val vm = viewModel(vehicles = listOf(bought))
+        vm.selectPeriod(InsightPeriod.TwelveMonths)
+        val five = vm.state.first { it?.report?.ownership != null }!!.report!!.ownership!!
+        assertThat(five.years).isEqualTo(5)
+        vm.setOwnershipYears(10)
+        val ten = vm.state.first { it?.report?.ownership?.years == 10 }!!.report!!.ownership!!
+        assertThat(ten.purchaseShare.paise).isLessThan(five.purchaseShare.paise)
+        assertThat(ten.running).isEqualTo(five.running)
+        // Without a price there is nothing to spread.
+        assertThat(viewModel().state.first { it?.report != null }!!.report!!.ownership).isNull()
+    }
+
+    @Test
     fun allTimeShowsEveryInterval() = runTest {
         val vm = viewModel()
         vm.selectPeriod(InsightPeriod.All)

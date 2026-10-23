@@ -47,6 +47,10 @@ class InsightsViewModel @Inject constructor(private val source: InsightsSource) 
         if (id != null) viewModelScope.launch { source.select(id) }
     }
 
+    fun setOwnershipYears(years: Int) {
+        viewModelScope.launch { source.setOwnershipYears(years) }
+    }
+
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
     }

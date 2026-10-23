@@ -26,6 +26,19 @@
     <string name="insights_fill_ups">फ़्यूल एंट्री</string>
     <string name="insights_cost_per_day">रोज़ का खर्च</string>
     <string name="insights_cards">सुझाव</string>
+    <string name="insights_tco">मालिकाना ख़र्च</string>
+    <string name="insights_tco_per_month"> / महीना</string>
+    <string name="insights_tco_per_km">%1$s/km</string>
+    <string name="insights_tco_running">चलाने का ख़र्च, EMI और बीमा</string>
+    <string name="insights_tco_purchase">%2$s में %1$s का हिस्सा</string>
+    <string name="insights_tco_total">इस अवधि का कुल</string>
+    <string name="insights_tco_spread">%1$s में बाँटें</string>
+    <string name="insights_tco_spread_title">ख़रीद की क़ीमत इतने में बाँटें</string>
+    <string name="insights_tco_spread_hint">सभी गाड़ियों के लिए एक ही सेटिंग। उसके बाद क़ीमत नहीं गिनी जाती।</string>
+    <plurals name="insights_tco_years">
+        <item quantity="one">%d साल</item>
+        <item quantity="other">%d साल</item>
+    </plurals>
     <string name="insights_charts">चार्ट</string>
     <string name="insights_how_calculated">यह कैसे निकलता है</string>
     <string name="insights_info_cpk_title">इस अवधि में प्रति km खर्च</string>

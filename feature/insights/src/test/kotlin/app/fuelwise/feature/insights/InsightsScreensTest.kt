@@ -83,6 +83,25 @@ class InsightsScreensTest {
         )
     }
 
+    // Tall enough to reach the cost of ownership card below the tiles.
+    @Test
+    @Config(qualifiers = "w412dp-h1600dp-xxhdpi")
+    fun ownershipLight() = capture("insights_tco_light", false) {
+        val bought = history.copy(
+            vehicle = SampleVehicles.safari.copy(
+                purchaseDate = java.time.LocalDate.of(2024, 3, 9),
+                purchasePrice = app.fuelwise.core.model.Money(215_000_000),
+            ),
+        )
+        val report = ComputeInsights(ComputeConsumption(), ComputeCostMetrics(), clock)(
+            listOf(bought),
+            categories,
+            InsightPeriod.TwelveMonths,
+            zone,
+        )
+        InsightsContent(snapshot(InsightPeriod.TwelveMonths).copy(report = report), InsightsActions())
+    }
+
     @Test fun overviewDark() = capture("insights_dark", true) {
         InsightsContent(snapshot(InsightPeriod.All), InsightsActions())
     }

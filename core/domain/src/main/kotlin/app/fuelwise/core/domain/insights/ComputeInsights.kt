@@ -77,6 +77,8 @@ data class InsightsReport(
     val odometer: List<OdometerReading>,
     val spendByCategory: List<CategorySpend>,
     val cards: List<InsightCard>,
+    /** Total cost of ownership (PRD F-03.5); null when no vehicle has a purchase price. */
+    val ownership: OwnershipCost? = null,
 ) {
     val isEmpty: Boolean get() = metrics.totalSpend == Money.ZERO && fillCount == 0
 }
@@ -97,6 +99,7 @@ class ComputeInsights @Inject constructor(
         zone: ZoneId,
         vehicleCount: Int = histories.size,
         custom: CustomRange? = null,
+        ownershipYears: Int = DEFAULT_OWNERSHIP_YEARS,
     ): InsightsReport {
         val earliest = histories.flatMap { h ->
             h.refuels.map { it.dateTimeUtcMs } + h.expenses.map { it.dateTimeUtcMs }
@@ -155,6 +158,7 @@ class ComputeInsights @Inject constructor(
             odometer = single?.readings?.filter { it.atUtcMs in period }?.sortedBy { it.atUtcMs }.orEmpty(),
             spendByCategory = spendByCategory(allRefuels, allExpenses),
             cards = cards(vehicle, report, average, vehicleCount),
+            ownership = ownershipCost(histories, period, metrics.distance?.km, ownershipYears, zone),
         )
     }
 
@@ -262,5 +266,6 @@ class ComputeInsights @Inject constructor(
     private companion object {
         const val ROLLING_WINDOW = 3
         const val DAYS_PER_MONTH = 30.4375
+        const val DEFAULT_OWNERSHIP_YEARS = 5
     }
 }

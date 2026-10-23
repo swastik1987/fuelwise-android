@@ -103,7 +103,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Logbook map mode (Maps Compose).
 - Field test: 20 km drive within ±3 % → `docs/perf.md`.
 
-### M9 — Offline station list, F-21.2 (R1, bundled) — needs L6 — ⏳ not started; F-21.1 station chip ➡ R2 (PRD D15, D16, 23 Oct 2026)
+### M9 — Offline station list, F-21.2 (R1, bundled) — ✅ R1 part built 23 Oct 2026 (L6 audit still open: docs/osm-coverage.md); F-21.1 station chip ➡ R2 (PRD D15, D16)
 - R1: build script to turn an India OSM extract into a compact bundled file (< 3 MB target); `station_osm` read-only + `station_user`; offline nearest-station matcher (distance → fuel fit, personal stations boosted) used by F-21.4; ODbL attribution in Settings → About. Refreshed only with app updates. Ask before adding any tool or dependency for the build script.
 - R2: single-fix request (balanced, 10 s, 2 min max age), station chip states, picker sheet with ODbL attribution, learning from corrections (F-21.1), monthly refresh through the feed (needs D3).
 

@@ -647,7 +647,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - The correct station is pre-selected in ≥80% of cases on a 30-fill test in Bengaluru, and is within the 3 shown options in ≥95%.
 - Works with mobile data off (offline list).
 
-**F-21.2 Offline station list (R1, bundled; D16)**
+**F-21.2 Offline station list (R1, bundled; D16)** ✅ built 23 Oct 2026 (19,956 stations, 297 KB gzip, from `tools:stations` via Overpass; in-memory grid lookup on the phone; ODbL attribution in Settings → About and `assets/licenses/`; D14 audit template in docs/osm-coverage.md, results still to record)
 - **R1 scope:** the list ships inside the APK and is refreshed only with app updates. In R1 its only user is F-21.4 fill-up detection, offline, on the device. The feed refresh below waits for D3 and comes in R2, with the station chip (F-21.1).
 - **Source:**
   - OpenStreetMap features tagged `amenity=fuel` and `amenity=charging_station` within India.

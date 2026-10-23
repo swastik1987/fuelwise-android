@@ -24,7 +24,7 @@ Read the relevant PRD section **before** implementing a feature. When a PRD and 
 | Background | WorkManager (backup, reminders, recurring expenses, price feed) |
 | Charts | Vico (Compose) |
 | Maps | Maps Compose (Google Maps SDK) for display only. **No Google Places API** (PRD D12). |
-| Location | Fused Location Provider + Activity Recognition Transition API (play-services-location); Companion Device Manager for car Bluetooth (R2) |
+| Location | Fused Location Provider + Activity Recognition Transition API (play-services-location); Companion Device Manager for car Bluetooth (R1, automatic trips) |
 | Station data | Bundled OpenStreetMap extract (`amenity=fuel`, `amenity=charging_station`, India), refreshed via the public feed; ODbL attribution required |
 | OCR | ML Kit Text Recognition, bundled model, offline |
 | Camera | CameraX |
@@ -86,7 +86,7 @@ Feature modules depend only on `core:*`. They never depend on other feature modu
    - `SYSTEM_ALERT_WINDOW`
    - `SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`
    - `MANAGE_EXTERNAL_STORAGE` / `READ_EXTERNAL_STORAGE`
-   - `ACCESS_BACKGROUND_LOCATION` and `ACTIVITY_RECOGNITION` are R2 only, behind a feature flag, and used **only** by automatic trips + fill-up detection (PRD F-21.3/21.4, D13). No other code path may read location in the background.
+   - `ACCESS_BACKGROUND_LOCATION` and `ACTIVITY_RECOGNITION` are allowed from R1 (PRD D15), behind a feature flag, and used **only** by automatic trips + fill-up detection (F-21.3/21.4, both R1) (D13). No other code path may read location in the background.
    - `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`: don't declare. Open the system settings screen via intent instead.
 7. **Any new permission, network endpoint or dependency → ask first** and update PRD §9.
 8. **Never hard-code legal rules** (PUC validity, renewal periods). They live in `assets/rules/india.json` (versioned) and are always user-editable.

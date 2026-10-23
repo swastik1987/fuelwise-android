@@ -41,7 +41,14 @@ data class UserData(
     /** App lock (PRD F-18) and how long the app may stay in the background before asking again. */
     val appLock: Boolean = false,
     val appLockTimeoutMinutes: Int = 0,
-)
+    /** Years the purchase price is spread over in the cost of ownership (PRD F-03.5). */
+    val ownershipYears: Int = DEFAULT_OWNERSHIP_YEARS,
+) {
+    companion object {
+        const val DEFAULT_OWNERSHIP_YEARS = 5
+        val OWNERSHIP_YEAR_CHOICES = listOf(3, 5, 7, 10)
+    }
+}
 
 enum class ThemeMode { System, Light, Dark }
 
@@ -75,6 +82,8 @@ interface UserDataRepository {
     suspend fun setDynamicColor(enabled: Boolean)
 
     suspend fun setAppLock(enabled: Boolean, timeoutMinutes: Int)
+
+    suspend fun setOwnershipYears(years: Int)
 }
 
 internal class DataStoreUserDataRepository @Inject constructor(private val source: PreferencesDataSource) :
@@ -108,6 +117,7 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
             dynamicColor = p.dynamicColor,
             appLock = p.appLock,
             appLockTimeoutMinutes = p.appLockTimeoutMinutes,
+            ownershipYears = p.ownershipYears.takeIf { it > 0 } ?: UserData.DEFAULT_OWNERSHIP_YEARS,
         )
     }
 
@@ -161,6 +171,15 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
     override suspend fun setAppLock(enabled: Boolean, timeoutMinutes: Int) = source.update {
         appLock = enabled
         appLockTimeoutMinutes = timeoutMinutes.coerceAtLeast(0)
+    }
+
+    override suspend fun setOwnershipYears(years: Int) = source.update {
+        ownershipYears =
+            years.coerceIn(1, MAX_OWNERSHIP_YEARS)
+    }
+
+    private companion object {
+        const val MAX_OWNERSHIP_YEARS = 30
     }
 }
 

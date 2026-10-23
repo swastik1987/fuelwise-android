@@ -62,6 +62,8 @@ class FakeUserDataRepository(initial: UserData = DEFAULT) : UserDataRepository {
         it.copy(appLock = enabled, appLockTimeoutMinutes = timeoutMinutes)
     }
 
+    override suspend fun setOwnershipYears(years: Int) = state.update { it.copy(ownershipYears = years) }
+
     companion object {
         val DEFAULT = UserData(
             onboardingCompleted = false,

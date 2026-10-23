@@ -26,6 +26,27 @@
     <string name="insights_fill_ups">Fill-ups</string>
     <string name="insights_cost_per_day">Cost per day</string>
     <string name="insights_cards">Insights</string>
+    <!-- Total cost of ownership (PRD F-03.5) -->
+    <string name="insights_tco">Cost of ownership</string>
+    <string name="insights_tco_per_month"> / month</string>
+    <!-- 1: rupees per km -->
+    <string name="insights_tco_per_km">%1$s/km</string>
+    <string name="insights_tco_running">Running costs, EMI and insurance</string>
+    <!-- 1: purchase price, 2: "5 years" -->
+    <string name="insights_tco_purchase">Share of %1$s over %2$s</string>
+    <string name="insights_tco_total">Total for the period</string>
+    <!-- 1: "5 years" -->
+    <string name="insights_tco_spread">Spread over %1$s</string>
+    <string name="insights_tco_spread_title">Spread the purchase price over</string>
+    <string name="insights_tco_spread_hint">One setting for every vehicle. After that, the price no longer counts.</string>
+    <plurals name="insights_tco_financed">
+        <item quantity="one">On a loan: its EMI counts instead of the purchase price.</item>
+        <item quantity="other">%d vehicles on a loan: their EMI counts instead of the purchase price.</item>
+    </plurals>
+    <plurals name="insights_tco_years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
     <string name="insights_charts">Charts</string>
     <string name="insights_how_calculated">How this is calculated</string>
     <string name="insights_info_cpk_title">Cost per km for this period</string>

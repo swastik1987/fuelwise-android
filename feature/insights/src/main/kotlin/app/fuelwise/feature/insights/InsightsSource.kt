@@ -74,7 +74,15 @@ class InsightsSource @Inject constructor(
             val report = if (histories.isEmpty()) {
                 null
             } else {
-                compute(histories, cats, period, zoneId, vehicleCount = list.size, custom = custom)
+                compute(
+                    histories,
+                    cats,
+                    period,
+                    zoneId,
+                    vehicleCount = list.size,
+                    custom = custom,
+                    ownershipYears = data.ownershipYears,
+                )
             }
             val fuel = selected?.primaryTank?.energyType?.let { priceFuelFor(it) }
             InsightsSnapshot(
@@ -95,6 +103,9 @@ class InsightsSource @Inject constructor(
         }
 
     suspend fun select(vehicleId: String) = userData.setSelectedVehicle(vehicleId)
+
+    /** Years the purchase price is spread over (PRD F-03.5), one setting for every vehicle. */
+    suspend fun setOwnershipYears(years: Int) = userData.setOwnershipYears(years)
 
     // Every stored price for the home city; the table holds a few rows per day at most.
     @OptIn(ExperimentalCoroutinesApi::class)

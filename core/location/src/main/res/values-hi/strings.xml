@@ -9,4 +9,9 @@
     <string name="trip_notif_saved">यात्रा सेव हुई · %1$s किमी</string>
     <string name="trip_notif_odometer_body">ओडोमीटर रीडिंग जोड़ें ताकि अनुमान और रिमाइंडर सही रहें।</string>
     <string name="trip_notif_update_odometer">ओडोमीटर अपडेट करें</string>
+    <string name="auto_notif_recording">ड्राइव रिकॉर्ड हो रही है · %1$s</string>
+    <string name="auto_notif_recording_no_vehicle">ड्राइव रिकॉर्ड हो रही है</string>
+    <string name="auto_notif_not_my_drive">मेरी ड्राइव नहीं</string>
+    <string name="auto_notif_start_title">ड्राइव कर रहे हैं?</string>
+    <string name="auto_notif_start_body">यह यात्रा रिकॉर्ड करने के लिए टैप करें।</string>
 </resources>

@@ -71,7 +71,7 @@ class FakeUserDataRepository(initial: UserData = DEFAULT) : UserDataRepository {
             monthlyRecap = true,
             themeMode = ThemeMode.System,
             hideAmounts = false,
-            flags = FeatureFlags(automaticTrips = false, multiDeviceSync = false, tripPlanner = false),
+            flags = FeatureFlags(automaticTrips = true, multiDeviceSync = false, tripPlanner = false),
         )
     }
 }

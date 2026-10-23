@@ -532,6 +532,8 @@ class TripsTest {
         },
         object : TripPrompts {
             override fun odometerAfterTrip(tripId: String, distanceKm: Double) = Unit
+
+            override fun startTripPrompt() = Unit
         },
         clock,
         zone,

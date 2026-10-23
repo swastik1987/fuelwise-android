@@ -54,4 +54,18 @@
         <item quantity="one">%1$d एंट्री वाला नक्शा</item>
         <item quantity="other">%1$d एंट्री वाला नक्शा</item>
     </plurals>
+    <string name="logbook_filters">फ़िल्टर</string>
+    <string name="logbook_filters_count">फ़िल्टर · %1$d</string>
+    <string name="logbook_filters_title">एंट्री फ़िल्टर करें</string>
+    <string name="logbook_filters_dates">तारीख़ें</string>
+    <string name="logbook_filters_categories">खर्च की श्रेणी</string>
+    <string name="logbook_filters_payment">भुगतान का तरीका</string>
+    <string name="logbook_filters_clear">हटाएँ</string>
+    <string name="logbook_filters_apply">नतीजे दिखाएँ</string>
+    <string name="logbook_filters_custom_range">%1$s – %2$s</string>
+    <string name="logbook_range_all">पूरा समय</string>
+    <string name="logbook_range_month">इस महीने</string>
+    <string name="logbook_range_three_months">पिछले 3 महीने</string>
+    <string name="logbook_range_year">इस साल</string>
+    <string name="logbook_range_custom">तारीख़ें चुनें…</string>
 </resources>

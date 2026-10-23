@@ -19,7 +19,13 @@ class FakeLogbookRepository(
 ) : LogbookRepository {
     private fun all(filter: LogbookFilter): Flow<List<LogbookEntry>> =
         combine(entries.observeAllRefuels(), entries.observeAllExpenses()) { refuels, expenses ->
+            val payments =
+                refuels.associate { it.id to it.paymentMethod } + expenses.associate { it.id to it.paymentMethod }
             (refuels.map(LogbookEntry::of) + expenses.map(LogbookEntry::of))
+                .filter { filter.categoryIds.isEmpty() || it.categoryId in filter.categoryIds }
+                .filter { filter.payments.isEmpty() || payments[it.id] in filter.payments }
+                .filter { e -> filter.fromUtcMs?.let { e.dateTimeUtcMs >= it } ?: true }
+                .filter { e -> filter.toUtcMs?.let { e.dateTimeUtcMs < it } ?: true }
                 .filter { filter.vehicleId == null || it.vehicleId == filter.vehicleId }
                 .filter { filter.kinds.isEmpty() || it.kind in filter.kinds }
                 .filter { e ->

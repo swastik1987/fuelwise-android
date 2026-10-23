@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
+import app.fuelwise.core.domain.entry.EntryRangePreset
 import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
@@ -72,6 +73,28 @@ class LogbookViewModelTest {
         assertThat(vm.chrome.first { it.kinds.isNotEmpty() }.filtering).isTrue()
         vm.clearKinds()
         assertThat(vm.chrome.first { it.kinds.isEmpty() }.filtering).isFalse()
+    }
+
+    @Test
+    fun sheetFiltersNarrowTheListAndTotals() = runTest {
+        val vm = viewModel()
+        vm.chrome.first { it.monthTotals.size == 3 }
+        // "This month" on 16 Oct 2026: only October's entries.
+        vm.setSheetFilters(LogbookSheetFilters(range = EntryRangePreset.ThisMonth))
+        val month = vm.chrome.first { it.monthTotals.keys == setOf("2026-10") }
+        assertThat(month.sheet.count).isEqualTo(1)
+        assertThat(month.filtering).isTrue()
+        // Plus a category: the service only, fill-ups drop out.
+        vm.setSheetFilters(
+            LogbookSheetFilters(
+                range = EntryRangePreset.ThisMonth,
+                categoryIds = setOf(SampleEntries.safariService.categoryId),
+            ),
+        )
+        val service = vm.chrome.first { it.sheet.count == 2 }
+        assertThat(service.monthTotals).containsExactly("2026-10", SampleEntries.safariService.amount)
+        vm.setSheetFilters(LogbookSheetFilters())
+        assertThat(vm.chrome.first { it.sheet.count == 0 && it.monthTotals.size == 3 }.filtering).isFalse()
     }
 
     @Test

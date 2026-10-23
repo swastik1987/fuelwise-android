@@ -281,7 +281,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters, the 5,000-entry scroll benchmark are still open); map mode ✅ M8 slice 3: list ⇄ map with energy-coloured pins under the same filters, tap for the entry. Entries get coordinates from station auto-detect, F-21.1, so the map stays empty until it ships in R2)
+### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters ✅ 23 Oct 2026 in a Filters sheet; the 5,000-entry scroll benchmark is still open: it needs a device run); map mode ✅ M8 slice 3: list ⇄ map with energy-coloured pins under the same filters, tap for the entry. Entries get coordinates from station auto-detect, F-21.1, so the map stays empty until it ships in R2)
 
 - Unified reverse-chronological list of fill-ups, charges, expenses, trips and reminder completions, grouped by month with a month total.
 - Filters: vehicle, type, category, date range, payment method. Search on notes, station and plaza.

@@ -67,6 +67,17 @@ class LogbookScreensTest {
 
     @Test fun logbookDark() = capture("logbook_dark", true) { Logbook() }
 
+    @Test fun logbookFilteredDark() = capture("logbook_filtered_dark", true) {
+        Logbook(
+            chrome.copy(
+                sheet = LogbookSheetFilters(
+                    range = app.fuelwise.core.domain.entry.EntryRangePreset.ThisMonth,
+                    payments = setOf(app.fuelwise.core.model.PaymentMethod.Upi),
+                ),
+            ),
+        )
+    }
+
     @Test fun logbookMapLight() = capture("logbook_map_light", false) { Logbook(mapChrome()) }
 
     @Test fun logbookMapDark() = capture("logbook_map_dark", true) { Logbook(mapChrome()) }

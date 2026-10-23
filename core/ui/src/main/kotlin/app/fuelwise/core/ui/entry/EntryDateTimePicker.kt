@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -108,4 +110,37 @@ fun EntryDatePicker(initialUtcMs: Long, zone: ZoneId, onPicked: (Long) -> Unit, 
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.picker_cancel), color = FwTheme.colors.ink) }
         },
     ) { DatePicker(state = state) }
+}
+
+/** A from–to date range (Logbook filter, PRD F-05). Hands back both days, or nothing if the user hasn't picked two. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EntryDateRangePicker(
+    initialFrom: LocalDate?,
+    initialTo: LocalDate?,
+    onPicked: (from: LocalDate, to: LocalDate) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    // DateRangePicker works in UTC midnights, like DatePicker.
+    fun LocalDate.utc() = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    fun Long.date() = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
+    val state = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = initialFrom?.utc(),
+        initialSelectedEndDateMillis = initialTo?.utc(),
+    )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val from = state.selectedStartDateMillis?.date()
+                    val to = state.selectedEndDateMillis?.date() ?: from
+                    if (from != null && to != null) onPicked(from, to) else onDismiss()
+                },
+            ) { Text(stringResource(R.string.picker_done), color = FwTheme.colors.ink) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.picker_cancel), color = FwTheme.colors.ink) }
+        },
+    ) { DateRangePicker(state = state, modifier = Modifier.weight(1f)) }
 }

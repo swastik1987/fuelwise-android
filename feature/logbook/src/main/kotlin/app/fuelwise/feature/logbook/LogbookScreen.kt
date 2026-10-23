@@ -119,6 +119,7 @@ internal fun LogbookScreen(
                 onSelectVehicle = viewModel::selectVehicle,
                 onToggleMap = viewModel::toggleMap,
                 onSelectPin = viewModel::selectPin,
+                onSheetFilters = viewModel::setSheetFilters,
             ),
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
@@ -137,6 +138,7 @@ internal data class LogbookActions(
     val onSelectVehicle: (String?) -> Unit = {},
     val onToggleMap: () -> Unit = {},
     val onSelectPin: (String?) -> Unit = {},
+    val onSheetFilters: (LogbookSheetFilters) -> Unit = {},
 )
 
 @Composable
@@ -276,14 +278,39 @@ private fun LogbookMap(chrome: LogbookChrome, actions: LogbookActions) {
 
 @Composable
 private fun FilterRow(chrome: LogbookChrome, actions: LogbookActions) {
+    var sheetOpen by rememberSaveable { mutableStateOf(false) }
     Row(
         Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = FwTheme.spacing.gutter, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // Date range, category and payment (PRD F-05) live in a sheet; the chip shows how many are set.
+        val count = chrome.sheet.count
+        FwFilterChip(
+            if (count ==
+                0
+            ) {
+                stringResource(R.string.logbook_filters)
+            } else {
+                stringResource(R.string.logbook_filters_count, count)
+            },
+            count > 0,
+            { sheetOpen = true },
+        )
         FwFilterChip(stringResource(R.string.logbook_filter_all), chrome.kinds.isEmpty(), actions.onClearKinds)
         LogbookKind.entries.forEach { kind ->
             FwFilterChip(stringResource(kindLabel(kind)), kind in chrome.kinds, { actions.onToggleKind(kind) })
         }
+    }
+    if (sheetOpen) {
+        LogbookFilterSheet(
+            current = chrome.sheet,
+            categories = chrome.categories.values.sortedBy { it.sortOrder },
+            onApply = {
+                actions.onSheetFilters(it)
+                sheetOpen = false
+            },
+            onDismiss = { sheetOpen = false },
+        )
     }
 }
 

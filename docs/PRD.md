@@ -293,7 +293,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards show "Coming soon" (✅ 23 Oct 2026, D15); custom date range still open. City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
+### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards show "Coming soon" (✅ 23 Oct 2026, D15); custom date range ✅ 23 Oct 2026 (compared with the same number of days before). City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
 
 **F-06.1 Period selector:** this month, last month, 3M, 6M, YTD, 12M, all time, custom.
 

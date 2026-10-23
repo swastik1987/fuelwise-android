@@ -17,6 +17,7 @@ import app.fuelwise.core.testing.SampleVehicles
 import com.github.takahirom.roborazzi.captureRoboImage
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import org.junit.Rule
@@ -63,6 +64,23 @@ class InsightsScreensTest {
 
     @Test fun overviewLight() = capture("insights_light", false) {
         InsightsContent(snapshot(InsightPeriod.All), InsightsActions())
+    }
+
+    @Test fun overviewCustomLight() = capture("insights_custom_light", false) {
+        val range = app.fuelwise.core.domain.insights.CustomRange(LocalDate.of(2026, 8, 1), LocalDate.of(2026, 9, 30))
+        InsightsContent(
+            snapshot(InsightPeriod.Custom).copy(
+                custom = range,
+                report = ComputeInsights(ComputeConsumption(), ComputeCostMetrics(), clock)(
+                    listOf(history),
+                    categories,
+                    InsightPeriod.Custom,
+                    zone,
+                    custom = range,
+                ),
+            ),
+            InsightsActions(),
+        )
     }
 
     @Test fun overviewDark() = capture("insights_dark", true) {

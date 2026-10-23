@@ -11,6 +11,8 @@
     <string name="period_ytd">YTD</string>
     <string name="period_12m">12M</string>
     <string name="period_all">All</string>
+    <string name="period_custom">Pick dates…</string>
+    <string name="period_custom_range">%1$s – %2$s</string>
 
     <string name="insights_hero_overline">Cost per km · %1$s</string>
     <string name="insights_per_km">/km</string>

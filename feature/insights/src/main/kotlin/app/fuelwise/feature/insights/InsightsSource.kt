@@ -6,6 +6,7 @@ import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.insights.ComputeInsights
+import app.fuelwise.core.domain.insights.CustomRange
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.VehicleHistory
@@ -34,6 +35,8 @@ data class InsightsSnapshot(
     val selected: Vehicle?,
     val allVehicles: Boolean,
     val period: InsightPeriod,
+    /** The picked range when [period] is [InsightPeriod.Custom]. */
+    val custom: CustomRange? = null,
     val categories: Map<String, Category>,
     val report: InsightsReport?,
     /** Display units (PRD F-18): the vehicle's own, or the default for "All vehicles". */
@@ -55,39 +58,41 @@ class InsightsSource @Inject constructor(
     private val compute: ComputeInsights,
     private val zoneId: ZoneId,
 ) {
-    fun observe(allVehicles: Boolean, period: InsightPeriod): Flow<InsightsSnapshot> = combine(
-        combine(vehicles.observeVehicles(), userData.userData, ::Pair),
-        entries.observeAllRefuels(),
-        entries.observeAllExpenses(),
-        categories.observeCategories(),
-        homeCityPrices(),
-    ) { (list, data), refuels, expenses, cats, cityHistory ->
-        val selected = list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull()
-        val scope = if (allVehicles) list else listOfNotNull(selected)
-        val histories = scope.map { v ->
-            VehicleHistory(v, refuels.filter { it.vehicleId == v.id }, expenses.filter { it.vehicleId == v.id })
-        }
-        val report = if (histories.isEmpty()) {
-            null
-        } else {
-            compute(histories, cats, period, zoneId, vehicleCount = list.size)
-        }
-        val fuel = selected?.primaryTank?.energyType?.let { priceFuelFor(it) }
-        InsightsSnapshot(
-            vehicles = list,
-            selected = selected,
-            allVehicles = allVehicles,
-            period = period,
-            categories = cats.associateBy { it.id },
-            report = report,
-            units = data.units.forVehicle(if (allVehicles) null else selected?.id),
-            cityPrices = if (allVehicles || report == null || fuel == null) {
-                emptyList()
+    fun observe(allVehicles: Boolean, period: InsightPeriod, custom: CustomRange? = null): Flow<InsightsSnapshot> =
+        combine(
+            combine(vehicles.observeVehicles(), userData.userData, ::Pair),
+            entries.observeAllRefuels(),
+            entries.observeAllExpenses(),
+            categories.observeCategories(),
+            homeCityPrices(),
+        ) { (list, data), refuels, expenses, cats, cityHistory ->
+            val selected = list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull()
+            val scope = if (allVehicles) list else listOfNotNull(selected)
+            val histories = scope.map { v ->
+                VehicleHistory(v, refuels.filter { it.vehicleId == v.id }, expenses.filter { it.vehicleId == v.id })
+            }
+            val report = if (histories.isEmpty()) {
+                null
             } else {
-                cityPriceOverlay(report.prices, cityHistory.filter { it.fuel == fuel }, zoneId)
-            },
-        )
-    }
+                compute(histories, cats, period, zoneId, vehicleCount = list.size, custom = custom)
+            }
+            val fuel = selected?.primaryTank?.energyType?.let { priceFuelFor(it) }
+            InsightsSnapshot(
+                vehicles = list,
+                selected = selected,
+                allVehicles = allVehicles,
+                period = period,
+                custom = custom,
+                categories = cats.associateBy { it.id },
+                report = report,
+                units = data.units.forVehicle(if (allVehicles) null else selected?.id),
+                cityPrices = if (allVehicles || report == null || fuel == null) {
+                    emptyList()
+                } else {
+                    cityPriceOverlay(report.prices, cityHistory.filter { it.fuel == fuel }, zoneId)
+                },
+            )
+        }
 
     suspend fun select(vehicleId: String) = userData.setSelectedVehicle(vehicleId)
 

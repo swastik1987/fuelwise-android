@@ -76,6 +76,26 @@ class HomeScreensTest {
         HomeContent(ready(SampleEntries.safariRefuels), actions, {}, {})
     }
 
+    @Test fun autoTripsPausedLight() = capture("home_auto_paused_light", false) {
+        HomeContent(
+            ready(SampleEntries.safariRefuels),
+            actions,
+            {},
+            {},
+            autoTrips = AutoTripControls(AutoTripPill(pausedUntilUtcMs = Long.MAX_VALUE, oneTap = false)),
+        )
+    }
+
+    @Test fun autoTripsOnDark() = capture("home_auto_on_dark", true) {
+        HomeContent(
+            ready(SampleEntries.safariRefuels),
+            actions,
+            {},
+            {},
+            autoTrips = AutoTripControls(AutoTripPill(pausedUntilUtcMs = null, oneTap = false)),
+        )
+    }
+
     @Test fun dashboardDark() = capture("home_dark", true) {
         HomeContent(ready(SampleEntries.safariRefuels), actions, {}, {})
     }

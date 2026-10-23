@@ -165,4 +165,6 @@
     <string name="trips_auto_card_title">यात्राएँ अपने-आप रिकॉर्ड करें</string>
     <string name="trips_auto_card_body">ड्राइव करते समय यात्राएँ अपने-आप दर्ज होती हैं। रूट इसी फ़ोन पर रहते हैं।</string>
     <string name="trips_auto_tag">ऑटो</string>
+    <string name="trips_not_my_drive">मेरी ड्राइव नहीं</string>
+    <string name="trips_change_vehicle">वाहन बदलें</string>
 </resources>

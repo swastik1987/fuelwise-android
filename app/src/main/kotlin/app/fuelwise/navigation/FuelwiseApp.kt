@@ -123,6 +123,8 @@ fun FuelwiseApp(
 
             NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
 
+            NotificationRoutes.OPEN_AUTO_TRIP_SETUP -> AutoTripSetupRoute
+
             NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
 
             NotificationRoutes.OPEN_SCAN -> ScanRoute()

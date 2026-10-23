@@ -26,8 +26,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +45,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwCard
+import app.fuelwise.core.designsystem.component.FwChoiceSheet
 import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwEntryRow
 import app.fuelwise.core.designsystem.component.FwInkButton
@@ -78,6 +84,9 @@ internal data class TripsActions(
     val onResume: (tripId: String) -> Unit = {},
     val onFinish: (tripId: String) -> Unit = {},
     val onExport: () -> Unit = {},
+    /** Automatic trips only (PRD F-21.3, design.md screen 17 swipe actions). */
+    val onNotMyDrive: (tripId: String) -> Unit = {},
+    val onChangeVehicle: (tripId: String) -> Unit = {},
 )
 
 @Composable
@@ -122,6 +131,7 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
         }
     }
     var choosingRange by rememberSaveable { mutableStateOf(false) }
+    var changingVehicle by rememberSaveable { mutableStateOf<String?>(null) }
     var exportRange by rememberSaveable { mutableStateOf(ExportRange.ThisMonth) }
     val saveGpx = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(GPX_MIME)) { uri ->
         uri?.let { viewModel.exportRange(it, exportRange) }
@@ -167,6 +177,8 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
                 onResume = withLocation,
                 onFinish = viewModel::finishInterrupted,
                 onExport = { choosingRange = true },
+                onNotMyDrive = viewModel::notMyDrive,
+                onChangeVehicle = { changingVehicle = it },
             ),
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
@@ -177,6 +189,19 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
             exportRange = range
             saveGpx.launch(gpxRangeFileName(LocalDate.now()))
         }
+    }
+    changingVehicle?.let { tripId ->
+        val current = state.weeks.flatMap { it.rows }.firstOrNull { it.trip.id == tripId }?.trip?.vehicleId
+        FwChoiceSheet(
+            title = stringResource(R.string.trips_change_vehicle),
+            options = state.vehicles.map { it.name },
+            selectedIndex = state.vehicles.indexOfFirst { it.id == current },
+            onSelect = {
+                changingVehicle = null
+                viewModel.changeVehicle(tripId, state.vehicles[it].id)
+            },
+            onDismiss = { changingVehicle = null },
+        )
     }
 }
 
@@ -278,7 +303,13 @@ internal fun TripsContent(
             }
             state.weeks.forEach { week ->
                 item(key = "week-${week.start}") { WeekHeader(week) }
-                items(week.rows, key = { it.trip.id }) { row -> TripRowItem(row, zone, links.onOpenTrip) }
+                items(week.rows, key = { it.trip.id }) { row ->
+                    if (row.trip.source == TripSource.Auto) {
+                        AutoTripRow(row, zone, links.onOpenTrip, actions)
+                    } else {
+                        TripRowItem(row, zone, links.onOpenTrip)
+                    }
+                }
             }
         }
     }
@@ -390,6 +421,61 @@ private fun WeekHeader(week: TripWeekUi) {
             style = FwTheme.type.caption,
             color = FwTheme.colors.ink2,
         )
+    }
+}
+
+/**
+ * An automatic trip: swipe left for "Not my drive", right for "Change vehicle" (design.md screen 17). The same two
+ * actions are offered to TalkBack, since a swipe isn't discoverable without sight.
+ */
+@Composable
+private fun AutoTripRow(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit, actions: TripsActions) {
+    val state = rememberSwipeToDismissBoxState()
+    val scope = rememberCoroutineScope()
+    val notMine = stringResource(R.string.trips_not_my_drive)
+    val change = stringResource(R.string.trips_change_vehicle)
+    val id = row.trip.id
+    SwipeToDismissBox(
+        state = state,
+        backgroundContent = { SwipeBackground(state.dismissDirection, notMine, change) },
+        modifier = Modifier.semantics {
+            customActions = listOf(
+                CustomAccessibilityAction(notMine) {
+                    actions.onNotMyDrive(id)
+                    true
+                },
+                CustomAccessibilityAction(change) {
+                    actions.onChangeVehicle(id)
+                    true
+                },
+            )
+        },
+        onDismiss = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.EndToStart -> actions.onNotMyDrive(id)
+                SwipeToDismissBoxValue.StartToEnd -> actions.onChangeVehicle(id)
+                SwipeToDismissBoxValue.Settled -> Unit
+            }
+            // The row stays (undo, or a vehicle change): spring back.
+            scope.launch { state.reset() }
+        },
+    ) {
+        Box(Modifier.background(FwTheme.colors.bg)) { TripRowItem(row, zone, onOpen) }
+    }
+}
+
+@Composable
+private fun SwipeBackground(direction: SwipeToDismissBoxValue, notMine: String, change: String) {
+    val (label, color, alignment) = when (direction) {
+        SwipeToDismissBoxValue.EndToStart -> Triple(notMine, FwTheme.colors.negative, Alignment.CenterEnd)
+        SwipeToDismissBoxValue.StartToEnd -> Triple(change, FwTheme.colors.ink, Alignment.CenterStart)
+        SwipeToDismissBoxValue.Settled -> Triple("", FwTheme.colors.bg, Alignment.Center)
+    }
+    Box(
+        Modifier.fillMaxSize().background(color).padding(horizontal = FwTheme.spacing.gutter),
+        contentAlignment = alignment,
+    ) {
+        Text(label, style = FwTheme.type.label, color = FwTheme.colors.bg)
     }
 }
 

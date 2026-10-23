@@ -1,5 +1,9 @@
+// The platform ExifInterface, on purpose: see rotationDegrees.
+@file:SuppressLint("ExifInterface")
+
 package app.fuelwise.core.ui.photo
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -48,7 +52,12 @@ object PhotoImages {
         )
     }
 
-    /** Camera photos are often stored sideways with an EXIF rotation; the shrunk copy carries none, so apply it. */
+    /**
+     * Camera photos are often stored sideways with an EXIF rotation; the shrunk copy carries none, so apply it.
+     * The platform ExifInterface: androidx.exifinterface is only in the APK through CameraX, and declaring it here is
+     * a dependency change (CLAUDE.md rule 7). minSdk 26 has the platform parser fixes; only the user's own picked
+     * photos are read.
+     */
     private fun rotationDegrees(bytes: ByteArray): Int = runCatching {
         when (
             ExifInterface(ByteArrayInputStream(bytes))

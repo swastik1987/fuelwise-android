@@ -79,7 +79,10 @@ class TripRecordingService : Service() {
             ACTION_START -> suspend { startTrip() }
 
             // Driving detection (PRD F-21.3).
-            ACTION_START_AUTO -> suspend { autoTrips.startAutomaticTrip() }
+            ACTION_START_AUTO -> {
+                val car = intent.getStringExtra(EXTRA_VEHICLE_ID)
+                suspend { autoTrips.startAutomaticTrip(car) }
+            }
 
             else -> null
         }
@@ -214,6 +217,9 @@ class TripRecordingService : Service() {
 
         /** From driving detection (PRD F-21.3): start an automatic trip. */
         const val ACTION_START_AUTO = "app.fuelwise.trip.START_AUTO"
+
+        /** With [ACTION_START_AUTO]: the vehicle whose car Bluetooth connected. */
+        const val EXTRA_VEHICLE_ID = "app.fuelwise.trip.VEHICLE_ID"
 
         /** "Not my drive" on an automatic trip: discard it. */
         const val ACTION_NOT_MY_DRIVE = "app.fuelwise.trip.NOT_MY_DRIVE"

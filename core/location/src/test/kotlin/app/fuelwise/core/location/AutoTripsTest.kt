@@ -1,5 +1,6 @@
 package app.fuelwise.core.location
 
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
 import app.fuelwise.core.model.TrackPoint
@@ -32,11 +33,12 @@ class AutoTripsTest {
     private val clock = Clock.fixed(Instant.ofEpochMilli(now), zone)
     private val settings = FakeAutoTripSettingsRepository()
     private val detection = FakeDetection()
+    private val cars = FakeCars()
     private val trips = FakeTripRepository()
     private val starts = mutableListOf<String>()
     private val starter = object : AutoTripStarter {
-        override fun startAutomaticRecording() {
-            starts += "service"
+        override fun startAutomaticRecording(vehicleId: String?) {
+            starts += "service:${vehicleId.orEmpty()}"
         }
     }
     private val prompts = object : TripPrompts {
@@ -73,6 +75,7 @@ class AutoTripsTest {
         val auto = AutoTrips(
             settings,
             detection,
+            cars,
             recorder,
             vehicles,
             FakeUserDataRepository(),
@@ -99,7 +102,7 @@ class AutoTripsTest {
         val (auto, _) = subject()
         settings.setEnabled(true)
         auto.onDriving()
-        assertThat(starts).containsExactly("service")
+        assertThat(starts).containsExactly("service:")
     }
 
     @Test
@@ -152,6 +155,47 @@ class AutoTripsTest {
         detection.permission = false
         auto.syncRegistration()
         assertThat(detection.registered).isFalse()
+    }
+
+    @Test
+    fun `a linked car starts and ends its own vehicle's trip`() = runTest {
+        val (auto, recorder) = subject()
+        settings.setEnabled(true)
+        val car = CarLink("AA:BB:CC:DD:EE:FF", 7, "Safari Audio")
+        auto.linkCar("safari", car)
+        assertThat(cars.observed).containsExactly(car)
+        auto.onCarConnected(null, 7)
+        assertThat(starts).containsExactly("service:safari")
+        // Android 12 reports the address only.
+        auto.onCarConnected("aa:bb:cc:dd:ee:ff", 0)
+        assertThat(starts).containsExactly("service:safari", "service:safari")
+        // An unknown car does nothing.
+        auto.onCarConnected("11:22:33:44:55:66", 9)
+        assertThat(starts).hasSize(2)
+
+        auto.startAutomaticTrip("safari")
+        runCurrent()
+        auto.onCarDisconnected(null, 7)
+        runCurrent()
+        assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
+
+        auto.unlinkCar("safari")
+        assertThat(cars.forgotten).containsExactly(car)
+        assertThat(settings.settings.value.carLinks).isEmpty()
+    }
+
+    private class FakeCars : CarPresence {
+        val observed = mutableListOf<CarLink>()
+        val forgotten = mutableListOf<CarLink>()
+        override val supported = true
+
+        override fun observe(link: CarLink) {
+            observed += link
+        }
+
+        override fun forget(link: CarLink) {
+            forgotten += link
+        }
     }
 
     private class FakeDetection : DriveDetection {

@@ -79,4 +79,11 @@
     <string name="garage_backup_ok">On</string>
     <string name="garage_backup_error">Needs attention</string>
     <string name="garage_backup_off">Off</string>
+    <!-- Car Bluetooth for automatic trips (PRD F-21.3, design.md screen 22). -->
+    <string name="editor_car_bluetooth">Car Bluetooth for automatic trips</string>
+    <string name="editor_car_bluetooth_none">Not linked</string>
+    <string name="editor_car_bluetooth_linked">Linked</string>
+    <string name="editor_car_bluetooth_change">Link another car</string>
+    <string name="editor_car_bluetooth_unlink">Unlink</string>
+    <string name="editor_car_bluetooth_hint">When this car\'s Bluetooth connects, a trip starts for this vehicle.</string>
 </resources>

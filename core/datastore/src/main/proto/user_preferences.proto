@@ -67,6 +67,17 @@ message AutoTripSettings {
   bool one_tap = 3;
   // Last activity-detection event, for the battery-saver health check (PRD F-21.7). 0 = none yet.
   int64 last_activity_event_at = 4;
+  // Car Bluetooth per vehicle id (PRD F-21.3 start signal 2). A Companion Device Manager association belongs to this
+  // phone, so the car's address stays here and never goes into a backup.
+  map<string, CarLink> car_links = 5;
+}
+
+message CarLink {
+  // The car's Bluetooth address, as the association reports it.
+  string address = 1;
+  int32 association_id = 2;
+  // What the system chooser showed, e.g. "Safari Audio"; may be empty on Android 12.
+  string name = 3;
 }
 
 // Zero values are the India defaults: km, L, km/L.

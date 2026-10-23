@@ -26,6 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -42,14 +45,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwChoiceChip
+import app.fuelwise.core.designsystem.component.FwChoiceSheet
 import app.fuelwise.core.designsystem.component.FwFilterChip
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
+import app.fuelwise.core.designsystem.component.FwSettingsRow
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
+import app.fuelwise.core.location.rememberCarBluetoothLinker
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.VehicleType
@@ -64,6 +70,8 @@ internal fun VehicleEditorScreen(
     viewModel: VehicleEditorViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // Null where Android can't observe a car (before Android 12): the row is hidden.
+    val linkCar = rememberCarBluetoothLinker(viewModel::linkCar)
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -85,6 +93,8 @@ internal fun VehicleEditorScreen(
             onClaimed = viewModel::onClaimedChange,
             onToggleMore = viewModel::onToggleMore,
             onSave = viewModel::save,
+            onLinkCar = linkCar,
+            onUnlinkCar = viewModel::unlinkCar,
         ),
     )
 }
@@ -100,6 +110,8 @@ internal data class VehicleEditorActions(
     val onClaimed: (String) -> Unit = {},
     val onToggleMore: () -> Unit = {},
     val onSave: () -> Unit = {},
+    val onLinkCar: (() -> Unit)? = null,
+    val onUnlinkCar: () -> Unit = {},
 )
 
 /** Add your first vehicle / Add vehicle / Edit vehicle (design.md screen 2). A single scrolling form, not a wizard. */
@@ -217,6 +229,37 @@ private fun FuelPicker(state: VehicleFormState, onSelect: (FuelSetup) -> Unit) {
     }
 }
 
+/** "Car Bluetooth for automatic trips" (design.md screen 22): link through the system chooser, or unlink. */
+@Composable
+private fun CarBluetoothRow(state: VehicleFormState, onLink: () -> Unit, onUnlink: () -> Unit) {
+    var choosing by rememberSaveable { mutableStateOf(false) }
+    FwSettingsRow(
+        stringResource(R.string.editor_car_bluetooth),
+        value = when {
+            !state.carLinked -> stringResource(R.string.editor_car_bluetooth_none)
+            else -> state.carLinkName ?: stringResource(R.string.editor_car_bluetooth_linked)
+        },
+        onClick = { if (state.carLinked) choosing = true else onLink() },
+    )
+    if (choosing) {
+        val options = listOf(
+            R.string.editor_car_bluetooth_change to onLink,
+            R.string.editor_car_bluetooth_unlink to onUnlink,
+        )
+        FwChoiceSheet(
+            title = stringResource(R.string.editor_car_bluetooth),
+            options = options.map { stringResource(it.first) },
+            selectedIndex = -1,
+            onSelect = {
+                choosing = false
+                options[it].second()
+            },
+            onDismiss = { choosing = false },
+            subtitle = stringResource(R.string.editor_car_bluetooth_hint),
+        )
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MoreDetails(state: VehicleFormState, actions: VehicleEditorActions) {
@@ -311,6 +354,9 @@ private fun MoreDetails(state: VehicleFormState, actions: VehicleEditorActions) 
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done,
             )
+            actions.onLinkCar?.takeIf {
+                state.showCarBluetooth
+            }?.let { link -> CarBluetoothRow(state, link, actions.onUnlinkCar) }
         }
     }
 }

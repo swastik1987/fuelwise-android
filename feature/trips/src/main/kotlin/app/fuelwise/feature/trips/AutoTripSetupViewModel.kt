@@ -3,17 +3,24 @@ package app.fuelwise.feature.trips
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.fuelwise.core.data.repository.AutoTripSettingsRepository
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.location.AutoTrips
+import app.fuelwise.core.location.CarLinker
+import app.fuelwise.core.model.VehicleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** A vehicle in the optional car Bluetooth step; [link] when already linked. */
+data class SetupCar(val vehicleId: String, val name: String, val link: CarLink?)
 
 /**
  * Automatic trips setup (design.md screen 32, PRD F-21.3). The screen walks the disclosure and the permission steps;
@@ -23,8 +30,19 @@ import kotlinx.coroutines.launch
 class AutoTripSetupViewModel @Inject constructor(
     private val settings: AutoTripSettingsRepository,
     private val autoTrips: AutoTrips,
+    private val carLinker: CarLinker,
     vehicles: VehicleRepository,
 ) : ViewModel() {
+    /** Vehicles with a car kit to link (not two-wheelers), with their linked car's name, for the optional step. */
+    val cars: StateFlow<List<SetupCar>> = combine(vehicles.observeVehicles(), settings.settings) { list, s ->
+        list.filter { it.type != VehicleType.Scooter && it.type != VehicleType.Motorcycle }
+            .map { SetupCar(it.id, it.name, s.carLinks[it.id]) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), emptyList())
+
+    fun linkCar(vehicleId: String, link: CarLink) {
+        viewModelScope.launch { carLinker.linkCar(vehicleId, link) }
+    }
+
     /** The vehicle named in the one-tap notification preview, if there's exactly one to name. */
     val previewVehicle: StateFlow<String?> = vehicles.observeVehicles()
         .map { list -> list.singleOrNull()?.name }

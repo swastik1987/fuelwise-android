@@ -174,4 +174,13 @@
     <string name="trips_auto_tag">Auto</string>
     <string name="trips_not_my_drive">Not my drive</string>
     <string name="trips_change_vehicle">Change vehicle</string>
+    <!-- Setup step 3, optional (design.md screen 32). -->
+    <string name="auto_continue">Continue</string>
+    <string name="auto_step_optional">%1$s · optional</string>
+    <string name="auto_car_title">Link your car\'s Bluetooth</string>
+    <string name="auto_car_body">Trips start faster and go to the right vehicle. Two-wheelers can skip this.</string>
+    <string name="auto_car_linked">Linked</string>
+    <string name="auto_car_not_linked">Not linked</string>
+    <string name="auto_car_link">Link</string>
+    <string name="auto_car_change">Change</string>
 </resources>

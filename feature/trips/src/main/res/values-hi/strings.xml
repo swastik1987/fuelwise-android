@@ -167,4 +167,12 @@
     <string name="trips_auto_tag">ऑटो</string>
     <string name="trips_not_my_drive">मेरी ड्राइव नहीं</string>
     <string name="trips_change_vehicle">वाहन बदलें</string>
+    <string name="auto_continue">आगे बढ़ें</string>
+    <string name="auto_step_optional">%1$s · वैकल्पिक</string>
+    <string name="auto_car_title">अपनी कार का ब्लूटूथ लिंक करें</string>
+    <string name="auto_car_body">यात्राएँ जल्दी शुरू होती हैं और सही वाहन में दर्ज होती हैं। दोपहिया वाले इसे छोड़ सकते हैं।</string>
+    <string name="auto_car_linked">लिंक है</string>
+    <string name="auto_car_not_linked">लिंक नहीं है</string>
+    <string name="auto_car_link">लिंक करें</string>
+    <string name="auto_car_change">बदलें</string>
 </resources>

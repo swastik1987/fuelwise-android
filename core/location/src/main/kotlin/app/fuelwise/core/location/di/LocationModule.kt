@@ -2,10 +2,14 @@ package app.fuelwise.core.location.di
 
 import app.fuelwise.core.domain.Dispatcher
 import app.fuelwise.core.domain.FwDispatcher
+import app.fuelwise.core.location.ActivityTransitionDriveDetection
+import app.fuelwise.core.location.AutoTripStarter
+import app.fuelwise.core.location.DriveDetection
 import app.fuelwise.core.location.FusedTripLocationSource
 import app.fuelwise.core.location.NotificationTripPrompts
 import app.fuelwise.core.location.RecorderScope
 import app.fuelwise.core.location.RecordingHost
+import app.fuelwise.core.location.ServiceAutoTripStarter
 import app.fuelwise.core.location.ServiceRecordingHost
 import app.fuelwise.core.location.TripLocationSource
 import app.fuelwise.core.location.TripPrompts
@@ -30,6 +34,12 @@ internal interface LocationModule {
 
     @Binds
     fun tripPrompts(impl: NotificationTripPrompts): TripPrompts
+
+    @Binds
+    fun driveDetection(impl: ActivityTransitionDriveDetection): DriveDetection
+
+    @Binds
+    fun autoTripStarter(impl: ServiceAutoTripStarter): AutoTripStarter
 
     companion object {
         @Provides

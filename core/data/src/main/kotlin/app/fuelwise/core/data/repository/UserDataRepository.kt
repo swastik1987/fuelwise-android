@@ -45,7 +45,7 @@ data class UserData(
 
 enum class ThemeMode { System, Light, Dark }
 
-/** R2/R3 features stay off until their release (CLAUDE.md feature flags). */
+/** Features behind a flag (CLAUDE.md): R2/R3 ones stay off until their release; automatic trips ship on in R1. */
 data class FeatureFlags(val automaticTrips: Boolean, val multiDeviceSync: Boolean, val tripPlanner: Boolean)
 
 interface UserDataRepository {
@@ -93,7 +93,7 @@ internal class DataStoreUserDataRepository @Inject constructor(private val sourc
             },
             hideAmounts = p.hideAmounts,
             flags = FeatureFlags(
-                automaticTrips = p.featureFlags.automaticTrips,
+                automaticTrips = !p.featureFlags.automaticTripsOff,
                 multiDeviceSync = p.featureFlags.multiDeviceSync,
                 tripPlanner = p.featureFlags.tripPlanner,
             ),

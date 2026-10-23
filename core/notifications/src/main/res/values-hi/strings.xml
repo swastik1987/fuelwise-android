@@ -6,6 +6,8 @@
     <string name="channel_insights_description">हर महीने की 1 तारीख को आपका महीना आँकड़ों में।</string>
     <string name="channel_trip_recording">यात्रा रिकॉर्डिंग</string>
     <string name="channel_trip_recording_description">GPS यात्रा रिकॉर्ड होते समय दूरी और समय दिखाता है।</string>
+    <string name="channel_automatic_trips">अपने-आप यात्राएँ</string>
+    <string name="channel_automatic_trips_description">अपने-आप रिकॉर्ड हो रही ड्राइव दिखाता है, और ड्राइव शुरू होने पर यात्रा शुरू करने को पूछता है।</string>
     <string name="channel_price_alerts">कीमत अलर्ट</string>
     <string name="channel_price_alerts_description">जब आपके होम शहर में किसी ईंधन की कीमत ₹1 या ज़्यादा बदले।</string>
     <string name="notif_price_up">%2$s में %1$s आज %3$s/%4$s महँगा</string>

@@ -64,6 +64,9 @@ object NotificationRoutes {
 /** Channel ids other modules use: the trip recorder in core:location posts, Settings links to the system screens. */
 object NotificationChannels {
     const val TRIP_RECORDING = "trip_recording"
+
+    /** Automatic trips (PRD F-21.3, F-16): the quiet ongoing drive and the one-tap "Start trip?" prompt. */
+    const val AUTOMATIC_TRIPS = "automatic_trips"
     const val REMINDERS = "reminders"
     const val INSIGHTS = "insights"
     const val PRICE_ALERTS = "price_alerts"
@@ -103,6 +106,15 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
                 NotificationManager.IMPORTANCE_LOW,
             )
                 .apply { description = context.getString(R.string.channel_trip_recording_description) },
+        )
+        // Low importance: no sound while the user is driving (PRD F-21.3).
+        system.createNotificationChannel(
+            NotificationChannel(
+                NotificationChannels.AUTOMATIC_TRIPS,
+                context.getString(R.string.channel_automatic_trips),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+                .apply { description = context.getString(R.string.channel_automatic_trips_description) },
         )
         // Opt-in in the app (PRD F-09.5); low importance, a price move is never urgent.
         system.createNotificationChannel(

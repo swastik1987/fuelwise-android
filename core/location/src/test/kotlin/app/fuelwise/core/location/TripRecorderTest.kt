@@ -46,20 +46,25 @@ class TripRecorderTest {
         override fun odometerAfterTrip(tripId: String, distanceKm: Double) {
             prompted += tripId
         }
+
+        override fun startTripPrompt() {
+            prompted += "start"
+        }
     }
 
-    private fun TestScope.recorder(repo: FakeTripRepository = trips) = TripRecorder(
-        repo,
-        FakeVehicleRepository(listOf(SampleVehicles.safari)),
-        FakeEntryRepository(refuels = SampleEntries.safariRefuels),
-        EstimateTripCost(ComputeConsumption()),
-        source,
-        host,
-        prompts,
-        clock,
-        zone,
-        backgroundScope,
-    )
+    private fun TestScope.recorder(repo: FakeTripRepository = trips, clock: Clock = this@TripRecorderTest.clock) =
+        TripRecorder(
+            repo,
+            FakeVehicleRepository(listOf(SampleVehicles.safari)),
+            FakeEntryRepository(refuels = SampleEntries.safariRefuels),
+            EstimateTripCost(ComputeConsumption()),
+            source,
+            host,
+            prompts,
+            clock,
+            zone,
+            backgroundScope,
+        )
 
     @Test
     fun `record, pause, resume and stop`() = runTest {
@@ -163,6 +168,92 @@ class TripRecorderTest {
         assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
         assertThat(trips.observeTrip(id).first()?.status).isEqualTo(TripStatus.Interrupted)
         assertThat(trips.points(id)).hasSize(1)
+    }
+
+    // Automatic trips (PRD F-21.3) run on a clock that follows virtual time, so the stillness timer can be tested.
+    private val base = clock.millis()
+
+    private fun TestScope.virtualClock(): Clock = object : Clock() {
+        override fun getZone(): ZoneId = zone
+
+        override fun withZone(zone: ZoneId?): Clock = this
+
+        override fun instant(): Instant = Instant.ofEpochMilli(base + testScheduler.currentTime)
+    }
+
+    private fun TestScope.at(lat: Double) = TrackPoint(base + testScheduler.currentTime, lat, 77.6, 8f, null, 0)
+
+    @Test
+    fun `an automatic trip ends by itself after standing still, at its last movement`() = runTest {
+        val recorder = recorder(clock = virtualClock())
+        val id = recorder.start("safari", TripSource.Auto)
+        runCurrent()
+        send(listOf(at(12.900)))
+        advanceTimeBy(60_000)
+        send(listOf(at(12.903)))
+        advanceTimeBy(90_000)
+        send(listOf(at(12.906)))
+        // Parked: no fixes. Checked every minute; 5 minutes after the last movement it ends.
+        advanceTimeBy(4 * TripRecorder.STILL_CHECK_MS)
+        assertThat(recorder.state.value).isInstanceOf(RecordingState.Active::class.java)
+        advanceTimeBy(3 * TripRecorder.STILL_CHECK_MS)
+        runCurrent()
+
+        assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
+        assertThat(source.listening).isEqualTo(0)
+        val trip = trips.trips.single()
+        assertThat(trip.id).isEqualTo(id)
+        assertThat(trip.source).isEqualTo(TripSource.Auto)
+        assertThat(trip.status).isEqualTo(TripStatus.Done)
+        assertThat(trip.endUtcMs).isEqualTo(base + 150_000)
+        assertThat(trip.distanceKm).isWithin(0.001).of(0.667)
+        // No odometer notification after every automatic drive.
+        assertThat(prompted).isEmpty()
+    }
+
+    @Test
+    fun `a short automatic trip is discarded`() = runTest {
+        val recorder = recorder(clock = virtualClock())
+        recorder.start("safari", TripSource.Auto)
+        runCurrent()
+        send(listOf(at(12.900)))
+        advanceTimeBy(60_000)
+        // 220 m: under the 500 m minimum for automatic trips.
+        send(listOf(at(12.902)))
+        advanceTimeBy(8 * TripRecorder.STILL_CHECK_MS)
+        runCurrent()
+        assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
+        assertThat(trips.trips).isEmpty()
+    }
+
+    @Test
+    fun `leaving the vehicle ends only automatic trips`() = runTest {
+        val recorder = recorder(clock = virtualClock())
+        val manual = recorder.start("safari")
+        runCurrent()
+        assertThat(recorder.stop(onlyAutomatic = true)).isNull()
+        assertThat((recorder.state.value as RecordingState.Active).tripId).isEqualTo(manual)
+        // A manual GPS trip never ends from standing still either.
+        advanceTimeBy(20 * TripRecorder.STILL_CHECK_MS)
+        assertThat(recorder.state.value).isInstanceOf(RecordingState.Active::class.java)
+    }
+
+    @Test
+    fun `not my drive throws the recording away`() = runTest {
+        val recorder = recorder(clock = virtualClock())
+        recorder.start("safari", TripSource.Auto)
+        runCurrent()
+        send(listOf(at(12.900)))
+        advanceTimeBy(60_000)
+        send(listOf(at(12.910)))
+        recorder.discardCurrent()
+        runCurrent()
+        assertThat(recorder.state.value).isEqualTo(RecordingState.Idle)
+        assertThat(source.listening).isEqualTo(0)
+        assertThat(trips.trips).isEmpty()
+        // And nothing fires later.
+        advanceTimeBy(10 * TripRecorder.STILL_CHECK_MS)
+        assertThat(trips.trips).isEmpty()
     }
 
     private suspend fun TestScope.send(batch: List<TrackPoint>) {

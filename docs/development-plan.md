@@ -119,7 +119,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Glance widgets (Quick add, Status, Trip controls; Pro Dashboard/Consumption), QS tiles, app shortcuts.
 - Play Billing: products, paywall sheet, restore, 7-day offline grace; `EntitlementRepository` goes live.
 
-### M13 — Automatic trips, F-21.3–21.7 (moved into R1, 23 Oct 2026, PRD D15) — ⏳ not started
+### M13 — Automatic trips, F-21.3–21.7 (moved into R1, 23 Oct 2026, PRD D15) — 🚧 in progress: F-21.3 slice 1 (detection engine, recorder, notifications) built 23 Oct 2026
 - F-21.4 fill-up prompts: stations from the M9 bundled list (PRD D16), so M9 lands first. F-21.5 GPS odometer estimate: per-vehicle correction factor, feeds the odometer hint, odometer reminders and range.
 - Needs approval first (CLAUDE.md rule 7): `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION`, `BLUETOOTH_CONNECT`, Companion Device Manager, any new Activity Recognition dependency.
 - Setup screen with the prominent disclosure (design.md screens 32–33), activity-transition start/stop, car Bluetooth per vehicle, reuse of the M8 recorder, "Pause automatic trips" QS tile and Home pill, "Not my drive".

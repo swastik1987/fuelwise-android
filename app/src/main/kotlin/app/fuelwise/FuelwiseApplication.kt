@@ -3,6 +3,7 @@ package app.fuelwise
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import app.fuelwise.core.location.AutoTrips
 import app.fuelwise.core.notifications.Notifier
 import app.fuelwise.di.ApplicationScope
 import app.fuelwise.feature.prices.feed.PriceFeedScheduler
@@ -30,6 +31,8 @@ class FuelwiseApplication :
 
     @Inject lateinit var widgetUpdater: WidgetUpdater
 
+    @Inject lateinit var autoTrips: AutoTrips
+
     @Inject
     @ApplicationScope
     lateinit var appScope: CoroutineScope
@@ -45,6 +48,7 @@ class FuelwiseApplication :
         backupScheduler.start(appScope)
         priceFeedScheduler.start(appScope)
         widgetUpdater.start(appScope)
+        autoTrips.start(appScope)
         AppShortcuts.publish(this)
     }
 }

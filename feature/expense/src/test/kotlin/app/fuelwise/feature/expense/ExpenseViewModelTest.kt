@@ -11,10 +11,13 @@ import app.fuelwise.core.model.Reminder
 import app.fuelwise.core.model.ReminderKind
 import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeReminderRepository
+import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -42,6 +45,18 @@ class ExpenseViewModelTest {
     private val categories = FakeCategoryRepository()
 
     private val reminders = FakeReminderRepository()
+    private val mysuru = Trip(
+        "mysuru",
+        "safari",
+        Instant.parse("2026-10-16T01:30:00Z").toEpochMilli(),
+        "Asia/Kolkata",
+        146.0,
+        TripPurpose.Personal,
+        endUtcMs = Instant.parse("2026-10-16T05:00:00Z").toEpochMilli(),
+        fromPlace = "HSR Layout",
+        toPlace = "Mysuru",
+    )
+    private val trips = FakeTripRepository(listOf(mysuru))
 
     private fun viewModel(toll: Boolean = false, extra: Map<String, Any?> = emptyMap()) = ExpenseViewModel(
         savedStateHandle = SavedStateHandle(
@@ -53,6 +68,7 @@ class ExpenseViewModelTest {
         userData = FakeUserDataRepository(),
         recurrences = recurrences,
         reminders = reminders,
+        trips = trips,
         clock = Clock.fixed(Instant.parse("2026-10-16T04:30:00Z"), ZoneOffset.UTC),
         zoneId = ZoneId.of("Asia/Kolkata"),
     )
@@ -133,5 +149,21 @@ class ExpenseViewModelTest {
         val puc = entries.expenses.single()
         assertThat(puc.categoryId).isEqualTo(SystemCategory.Puc.id)
         assertThat(reminders.completion(completionId)!!.expenseId).isEqualTo(puc.id)
+    }
+
+    @Test
+    fun aTollLinksToTheTripItWasPaidOn() = runTest {
+        val vm = viewModel(toll = true)
+        // Saved at 10:00 IST on 16 Oct, during the drive to Mysuru.
+        assertThat(vm.state.first { it.trips.isNotEmpty() }.trips.map { it.id }).containsExactly("mysuru")
+        vm.onTrip("mysuru")
+        vm.onPlaza("Kaniminike")
+        vm.typeAmount("165")
+        vm.save()
+        vm.saved.first()
+        assertThat(entries.expenses.single().tripId).isEqualTo("mysuru")
+        // Tapping it again unlinks.
+        vm.onTrip("mysuru")
+        assertThat(vm.state.value.tripId).isNull()
     }
 }

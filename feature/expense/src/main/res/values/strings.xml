@@ -13,6 +13,10 @@
     <string name="expense_odometer_optional">Odometer (optional)</string>
     <string name="expense_payment">Payment</string>
     <string name="expense_notes">Notes</string>
+    <!-- Link to a trip (PRD F-04.1, F-10.2). Places: 1 from, 2 to, 3 date. Distance: 1 date, 2 km. -->
+    <string name="expense_trip">Trip</string>
+    <string name="expense_trip_places">%1$s → %2$s · %3$s</string>
+    <string name="expense_trip_distance">%1$s · %2$s km</string>
     <string name="expense_plaza">Toll plaza</string>
     <string name="expense_plaza_placeholder">e.g. Attibele</string>
     <string name="expense_fastag">FASTag</string>

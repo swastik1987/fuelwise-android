@@ -265,7 +265,7 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 ### F-04 Expenses — FREE · R1
 
-**F-04.1 Expense entry fields:** ✅ built (attachments and trip link not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
+**F-04.1 Expense entry fields:** ✅ built (trip link ✅ 23 Oct 2026: the vehicle's trips within 7 days of the entry, the one under way first; attachments not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
 
 **F-04.2 Categories.** ✅ built 23 Oct 2026 (presets; custom categories with name and icon, rename, hide, delete when unused; Settings → Expense categories. No per-category colour: design.md keeps categories neutral) System presets (renameable, hideable, not deletable if used):
 - Service, Repair, Tyres, Battery, Insurance, PUC, Parking, Toll (FASTag), Toll (cash), Wash/Detailing, Accessories
@@ -407,7 +407,7 @@ Users can add custom categories (name, icon, colour).
 ### F-10 FASTag and tolls — FREE · R1
 
 - **F-10.1 FASTag account per vehicle (optional):** ✅ built (M6) issuer bank and tag ID (last 4 only).
-- **F-10.2 Toll entry:** ✅ built (trip link not yet) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
+- **F-10.2 Toll entry:** ✅ built (trip link ✅ 23 Oct 2026, as F-04.1) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
 - **F-10.3 Recharges:** ✅ built (M6; low balance notifies on the day a toll takes it under the threshold, then weekly) logged separately. They are transfers, not vehicle expenses, so they're excluded from cost/km. **Estimated balance** = Σ recharges − Σ FASTag tolls since the user's "balance anchor" (the user enters the current balance once). Labelled "est." with low-balance reminder (threshold user-set, default ₹300).
 - **F-10.4 Share-to-app parser (R2; moved 23 Oct 2026):**
   - The app registers as a share target for `text/plain`.

@@ -13,6 +13,9 @@
     <string name="expense_odometer_optional">ओडोमीटर (ज़रूरी नहीं)</string>
     <string name="expense_payment">भुगतान</string>
     <string name="expense_notes">नोट</string>
+    <string name="expense_trip">यात्रा</string>
+    <string name="expense_trip_places">%1$s → %2$s · %3$s</string>
+    <string name="expense_trip_distance">%1$s · %2$s km</string>
     <string name="expense_plaza">टोल प्लाज़ा</string>
     <string name="expense_plaza_placeholder">जैसे अत्तिबेले</string>
     <string name="expense_fastag">FASTag</string>

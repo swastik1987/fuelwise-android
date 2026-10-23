@@ -44,8 +44,16 @@ interface ReminderRepository {
 
     suspend fun delete(id: String)
 
-    /** Logs a completion and moves a recurring reminder forward (PRD F-11.4 "Done"). */
-    suspend fun complete(id: String, odometerKm: Double?, expenseId: String? = null)
+    /**
+     * Logs a completion and moves a recurring reminder forward (PRD F-11.4 "Done"). Returns the completion's id, or
+     * null when the reminder is gone.
+     */
+    suspend fun complete(id: String, odometerKm: Double?, expenseId: String? = null): String?
+
+    suspend fun completion(id: String): ReminderCompletion?
+
+    /** Links an expense to a completion, from "Add cost" after a "Done". */
+    suspend fun attachExpense(completionId: String, expenseId: String)
 
     suspend fun snooze(id: String, days: Long)
 }
@@ -145,14 +153,15 @@ internal class OfflineReminderRepository @Inject constructor(
 
     override suspend fun delete(id: String) = dao.tombstoneReminder(id, sync.now(), sync.device())
 
-    override suspend fun complete(id: String, odometerKm: Double?, expenseId: String?) {
-        val row = dao.reminder(id) ?: return
+    override suspend fun complete(id: String, odometerKm: Double?, expenseId: String?): String? {
+        val row = dao.reminder(id) ?: return null
         val reminder = row.toModel()
         val at = sync.now()
         val next = reminder.nextAfterCompletion(at, odometerKm, zoneId)
+        val completionId = ids.newId()
         dao.complete(
             completion = ReminderCompletion(
-                ids.newId(),
+                completionId,
                 id,
                 reminder.vehicleId,
                 at,
@@ -164,7 +173,13 @@ internal class OfflineReminderRepository @Inject constructor(
             at = at,
             deviceId = sync.device(),
         )
+        return completionId
     }
+
+    override suspend fun completion(id: String): ReminderCompletion? = dao.completion(id)?.toModel()
+
+    override suspend fun attachExpense(completionId: String, expenseId: String) =
+        dao.attachExpense(completionId, expenseId, sync.now(), sync.device())
 
     override suspend fun snooze(id: String, days: Long) {
         val row = dao.reminder(id) ?: return

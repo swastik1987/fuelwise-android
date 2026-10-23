@@ -28,6 +28,10 @@
     <string name="notif_overdue_km">%1$s · about %2$s km overdue</string>
     <string name="notif_action_done">Done</string>
     <string name="notif_action_snooze">Snooze 3 days</string>
+    <!-- After "Done" (PRD F-11.4). 1: reminder title -->
+    <string name="notif_done_title">%1$s marked done</string>
+    <string name="notif_done_body">Add what it cost so it counts in your running costs.</string>
+    <string name="notif_action_add_cost">Add cost</string>
     <string name="notif_recap_title">Your %1$s recap is ready</string>
     <string name="notif_recap_body">Kilometres, spend and your best tank, as a card you can share.</string>
     <!-- Weekly digest (Monday). 1: vehicle, 2: cost per km, e.g. "₹4.82" -->

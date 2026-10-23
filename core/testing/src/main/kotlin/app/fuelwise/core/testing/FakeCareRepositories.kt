@@ -56,13 +56,19 @@ class FakeReminderRepository(initial: List<Reminder> = emptyList(), private val 
 
     override suspend fun delete(id: String) = state.update { list -> list.filterNot { it.id == id } }
 
-    override suspend fun complete(id: String, odometerKm: Double?, expenseId: String?) {
-        val r = reminder(id) ?: return
-        completions.update {
-            it + ReminderCompletion("c-${nextId++}", id, r.vehicleId, nowUtcMs, odometerKm, expenseId)
-        }
+    override suspend fun complete(id: String, odometerKm: Double?, expenseId: String?): String? {
+        val r = reminder(id) ?: return null
+        val completionId = "c-${nextId++}"
+        completions.update { it + ReminderCompletion(completionId, id, r.vehicleId, nowUtcMs, odometerKm, expenseId) }
         val next = r.nextAfterCompletion(nowUtcMs, odometerKm, ZoneId.of("Asia/Kolkata"))
         if (next == null) delete(id) else save(next)
+        return completionId
+    }
+
+    override suspend fun completion(id: String): ReminderCompletion? = completions.value.firstOrNull { it.id == id }
+
+    override suspend fun attachExpense(completionId: String, expenseId: String) = completions.update { list ->
+        list.map { if (it.id == completionId) it.copy(expenseId = expenseId) else it }
     }
 
     override suspend fun snooze(id: String, days: Long) {

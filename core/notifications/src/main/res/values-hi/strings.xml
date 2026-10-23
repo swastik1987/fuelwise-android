@@ -28,6 +28,9 @@
     <string name="notif_overdue_km">%1$s · लगभग %2$s km देर</string>
     <string name="notif_action_done">हो गया</string>
     <string name="notif_action_snooze">3 दिन बाद</string>
+    <string name="notif_done_title">%1$s हो गया</string>
+    <string name="notif_done_body">कितना खर्च हुआ, जोड़ें ताकि यह गाड़ी के खर्च में गिना जाए।</string>
+    <string name="notif_action_add_cost">खर्च जोड़ें</string>
     <string name="notif_recap_title">%1$s का सार तैयार है</string>
     <string name="notif_recap_body">किलोमीटर, खर्च और सबसे अच्छी टंकी, शेयर करने लायक कार्ड में।</string>
     <string name="notif_digest_title">पिछला हफ़्ता, %1$s: %2$s/km</string>

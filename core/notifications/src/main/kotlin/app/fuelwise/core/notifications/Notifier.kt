@@ -13,8 +13,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.domain.prices.PriceChange
+import app.fuelwise.core.domain.reminder.ReminderCost
 import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.Reminder
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.price.PriceLabels
@@ -30,6 +32,9 @@ object NotificationRoutes {
 
     /** The record the screen is for, e.g. a trip id. */
     const val EXTRA_ARG = "app.fuelwise.extra.ARG"
+
+    /** A notification to clear on open: an action button, unlike a tap on the notification, leaves it up. */
+    const val EXTRA_DISMISS = "app.fuelwise.extra.DISMISS"
     const val OPEN_REMINDERS = "reminders"
     const val OPEN_RECAP = "recap"
     const val OPEN_FASTAG = "fastag"
@@ -49,6 +54,9 @@ object NotificationRoutes {
     /** The fill-up sheet pre-filled from a fill-up prompt (PRD F-21.4); [EXTRA_ARG] is `FillUpPrefill.encode()`. */
     const val OPEN_ADD_FUEL_PROMPT = "add_fuel_prompt"
     const val OPEN_ADD_EXPENSE = "add_expense"
+
+    /** The expense sheet after a reminder's "Done" (PRD F-11.4); [EXTRA_ARG] is `ReminderCost.encode()`. */
+    const val OPEN_ADD_REMINDER_COST = "add_reminder_cost"
 
     /** A manual trip, as from the in-app quick-add sheet. */
     const val OPEN_ADD_TRIP = "add_trip"
@@ -175,7 +183,7 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
 
     fun reminder(status: ReminderStatus, vehicleName: String) {
         val r = status.reminder
-        val title = r.title ?: context.getString(CareLabels.reminder(r.kind))
+        val title = reminderTitle(r)
         val body = when {
             status.daysLeft != null && status.daysLeft!! < 0 ->
                 context.resources.getQuantityString(
@@ -226,6 +234,28 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
             )
         post(id, builder)
     }
+
+    /**
+     * Replaces a reminder's notification after "Done" with "Marked done. Add what it cost?" (PRD F-11.4). Tapping it,
+     * or "Add cost", opens the expense sheet pre-filled; the expense is linked to the completion when saved.
+     */
+    fun reminderDone(reminderId: String, title: String, cost: ReminderCost) {
+        val id = notificationId(reminderId)
+        val addCost = open(NotificationRoutes.OPEN_ADD_REMINDER_COST, id, cost.encode(), dismiss = true)
+        val builder = base(
+            CHANNEL_REMINDERS,
+            context.getString(R.string.notif_done_title, title),
+            context.getString(R.string.notif_done_body),
+            addCost,
+        )
+            .setSilent(true)
+            .addAction(0, context.getString(R.string.notif_action_add_cost), addCost)
+        post(id, builder)
+    }
+
+    /** A reminder's title as its notification shows it. */
+    fun reminderTitle(reminder: Reminder): String =
+        reminder.title ?: context.getString(CareLabels.reminder(reminder.kind))
 
     fun recap(monthName: String) {
         post(
@@ -301,9 +331,11 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
         }
     }
 
-    private fun open(route: String, requestCode: Int): PendingIntent {
+    private fun open(route: String, requestCode: Int, arg: String? = null, dismiss: Boolean = false): PendingIntent {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
             ?.putExtra(NotificationRoutes.EXTRA_OPEN, route)
+            ?.apply { if (arg != null) putExtra(NotificationRoutes.EXTRA_ARG, arg) }
+            ?.apply { if (dismiss) putExtra(NotificationRoutes.EXTRA_DISMISS, requestCode) }
             ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             ?: Intent()
         return PendingIntent.getActivity(

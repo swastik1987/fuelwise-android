@@ -131,4 +131,38 @@
         <item quantity="other">%1$d यात्राएँ GPX के रूप में सेव हुईं</item>
     </plurals>
     <string name="trips_odometer_invalid">यह यात्रा की शुरुआती रीडिंग से कम है।</string>
+
+    <string name="auto_close">बंद करें</string>
+    <string name="auto_turn_on">चालू करें</string>
+    <string name="auto_not_now">अभी नहीं</string>
+    <string name="auto_allow">अनुमति दें</string>
+    <string name="auto_open_settings">सेटिंग खोलें</string>
+    <string name="auto_one_tap">इसके बजाय एक टैप से यात्रा शुरू करें</string>
+    <string name="auto_try_again">“हर समय अनुमति दें” फिर से आज़माएँ</string>
+    <string name="auto_disclosure_title">बिना हाथ लगाए यात्राएँ दर्ज करें।</string>
+    <string name="auto_disclosure_body">यह ऐप &lt;b&gt;बैकग्राउंड&lt;/b&gt; में &lt;b&gt;लोकेशन&lt;/b&gt; डेटा इकट्ठा करता है, तब भी जब ऐप बंद हो या इस्तेमाल में न हो, ताकि आपकी ड्राइव अपने-आप रिकॉर्ड हों और ईंधन स्टेशन पर रुकने पर आपको फ़िल-अप दर्ज करने की याद दिलाई जा सके। आपके रूट इसी फ़ोन पर रहते हैं। वे कभी हमें या किसी और को नहीं भेजे जाते।</string>
+    <string name="auto_promise_driving">सिर्फ़ ड्राइव करते समय</string>
+    <string name="auto_promise_phone">रूट आपके फ़ोन पर ही रहते हैं</string>
+    <string name="auto_promise_pause">कभी भी रोकें</string>
+    <string name="auto_step">चरण %1$d / %2$d</string>
+    <string name="auto_activity_title">जानें कि आप कब ड्राइव शुरू करते हैं</string>
+    <string name="auto_activity_body">Android हमें बताता है कि आप वाहन में हैं। हम कदम नहीं गिनते और न ही वर्कआउट पढ़ते हैं।</string>
+    <string name="auto_activity_refused">इस ऐप के लिए फ़िज़िकल एक्टिविटी बंद है। इसे ऐप की सेटिंग में चालू करें: इसके बिना ड्राइव का पता नहीं चल सकता।</string>
+    <string name="auto_location_title">“हर समय अनुमति दें” चुनें</string>
+    <string name="auto_location_body">Android एक सेटिंग पेज खोलेगा। सबसे ऊपर वाला विकल्प चुनें ताकि ऐप बंद होने पर भी ड्राइव रिकॉर्ड हों।</string>
+    <string name="auto_location_page">इस ऐप के लिए लोकेशन एक्सेस</string>
+    <string name="auto_location_always">हर समय अनुमति दें</string>
+    <string name="auto_location_while_using">सिर्फ़ ऐप इस्तेमाल करते समय अनुमति दें</string>
+    <string name="auto_location_ask">हर बार पूछें</string>
+    <string name="auto_location_deny">अनुमति न दें</string>
+    <string name="auto_location_illustration">Android सेटिंग पेज का एक चित्रण।</string>
+    <string name="auto_denied_title">यात्रा शुरू करने के लिए टैप करना होगा</string>
+    <string name="auto_denied_body">“हर समय अनुमति दें” के बिना हम अपने-आप रिकॉर्ड नहीं कर सकते। फिर भी हम पहचान सकते हैं कि आप ड्राइव कर रहे हैं और पूछ सकते हैं।</string>
+    <string name="auto_denied_preview">ड्राइव करते समय आपको यह दिखेगा</string>
+    <string name="auto_denied_preview_vehicle">%1$s चला रहे हैं? यह यात्रा रिकॉर्ड करने के लिए टैप करें।</string>
+    <string name="auto_denied_preview_plain">ड्राइव कर रहे हैं? यह यात्रा रिकॉर्ड करने के लिए टैप करें।</string>
+    <string name="auto_denied_fillups">फ़िल-अप की याद सिर्फ़ इसी तरह शुरू हुई यात्राओं पर मिलती है।</string>
+    <string name="trips_auto_card_title">यात्राएँ अपने-आप रिकॉर्ड करें</string>
+    <string name="trips_auto_card_body">ड्राइव करते समय यात्राएँ अपने-आप दर्ज होती हैं। रूट इसी फ़ोन पर रहते हैं।</string>
+    <string name="trips_auto_tag">ऑटो</string>
 </resources>

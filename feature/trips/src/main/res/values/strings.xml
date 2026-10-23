@@ -136,4 +136,40 @@
         <item quantity="other">%1$d trips saved as GPX</item>
     </plurals>
     <string name="trips_odometer_invalid">That\'s less than where the trip started.</string>
+
+    <!-- Automatic trips setup (PRD F-21.3, design.md screen 32). The disclosure is Play's prominent disclosure: keep its meaning exact. -->
+    <string name="auto_close">Close</string>
+    <string name="auto_turn_on">Turn on</string>
+    <string name="auto_not_now">Not now</string>
+    <string name="auto_allow">Allow</string>
+    <string name="auto_open_settings">Open settings</string>
+    <string name="auto_one_tap">Start trips with one tap instead</string>
+    <string name="auto_try_again">Try “Allow all the time” again</string>
+    <string name="auto_disclosure_title">Log trips without lifting a finger.</string>
+    <string name="auto_disclosure_body">This app collects &lt;b&gt;location&lt;/b&gt; data in the &lt;b&gt;background&lt;/b&gt;, even when the app is closed or not in use, to record your drives automatically and remind you to log fill-ups when you stop at a fuel station. Your routes stay on this phone. They\'re never sent to us or anyone else.</string>
+    <string name="auto_promise_driving">Only while you\'re driving</string>
+    <string name="auto_promise_phone">Routes stay on your phone</string>
+    <string name="auto_promise_pause">Pause any time</string>
+    <string name="auto_step">Step %1$d of %2$d</string>
+    <string name="auto_activity_title">Know when you start driving</string>
+    <string name="auto_activity_body">Android tells us when you\'re in a vehicle. We don\'t count steps or read workouts.</string>
+    <string name="auto_activity_refused">Physical activity is off for this app. Turn it on in the app\'s settings: without it, drives can\'t be noticed.</string>
+    <string name="auto_location_title">Pick “Allow all the time”</string>
+    <string name="auto_location_body">Android opens a settings page. Choose the top option so drives record with the app closed.</string>
+    <string name="auto_location_page">Location access for this app</string>
+    <string name="auto_location_always">Allow all the time</string>
+    <string name="auto_location_while_using">Allow only while using the app</string>
+    <string name="auto_location_ask">Ask every time</string>
+    <string name="auto_location_deny">Don\'t allow</string>
+    <string name="auto_location_illustration">An illustration of the Android settings page.</string>
+    <string name="auto_denied_title">Trips will need a tap to start</string>
+    <string name="auto_denied_body">Without “Allow all the time”, we can\'t record on our own. We can still notice you\'re driving and ask.</string>
+    <string name="auto_denied_preview">You\'d see this when you drive</string>
+    <string name="auto_denied_preview_vehicle">Driving %1$s? Tap to record this trip.</string>
+    <string name="auto_denied_preview_plain">Driving? Tap to record this trip.</string>
+    <string name="auto_denied_fillups">Fill-up prompts only work on trips started this way.</string>
+    <!-- Trips list (design.md screen 17). -->
+    <string name="trips_auto_card_title">Record trips automatically</string>
+    <string name="trips_auto_card_body">Drives log themselves while you drive. Routes stay on this phone.</string>
+    <string name="trips_auto_tag">Auto</string>
 </resources>

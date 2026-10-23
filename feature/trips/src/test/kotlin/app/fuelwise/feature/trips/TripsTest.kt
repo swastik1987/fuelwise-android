@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
@@ -34,6 +35,7 @@ import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.TripStatus
+import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeTripRepository
@@ -79,6 +81,7 @@ class TripsTest {
     private val estimate = EstimateTripCost(ComputeConsumption())
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.ertiga))
     private val userData = FakeUserDataRepository(FakeUserDataRepository.DEFAULT.copy(selectedVehicleId = "safari"))
+    private val autoTrips = FakeAutoTripSettingsRepository()
     private val mysuru = Trip(
         id = "mysuru",
         vehicleId = "safari",
@@ -200,6 +203,7 @@ class TripsTest {
             FakeEntryRepository(expenses = listOf(toll)),
             userData,
             recorder(repo),
+            autoTrips,
             files,
             clock,
             zone,
@@ -251,6 +255,7 @@ class TripsTest {
             FakeEntryRepository(),
             userData,
             recorder,
+            autoTrips,
             files,
             clock,
             zone,
@@ -301,12 +306,24 @@ class TripsTest {
         assertThat(repo.trips.single().status).isEqualTo(TripStatus.Done)
     }
 
+    @Test
+    fun automaticTripsAreOfferedUntilTurnedOn() = runTest {
+        val list = listViewModel(FakeTripRepository())
+        assertThat(list.state.first { !it.loading }.offerAutoTrips).isTrue()
+        autoTrips.setEnabled(true)
+        assertThat(list.state.first { !it.offerAutoTrips }.offerAutoTrips).isFalse()
+        // Behind the kill switch (CLAUDE.md rule 6): never offered.
+        autoTrips.settings.value = autoTrips.settings.value.copy(available = false, enabled = false)
+        assertThat(list.state.first { !it.loading }.offerAutoTrips).isFalse()
+    }
+
     private fun TestScope.listViewModel(repo: FakeTripRepository) = TripsViewModel(
         repo,
         vehicles,
         FakeEntryRepository(),
         userData,
         recorder(repo),
+        autoTrips,
         files,
         clock,
         zone,
@@ -419,6 +436,52 @@ class TripsTest {
             TripsLinks(),
             TripDetailActions(),
         )
+    }
+
+    @Test
+    fun autoSetupDisclosureComesFirstAndLeadsOn() {
+        var turnedOn = 0
+        var oneTap = 0
+        var step by mutableStateOf(SetupStep.Disclosure)
+        compose.setContent {
+            FuelwiseTheme {
+                AutoTripSetupContent(
+                    step,
+                    activityRefused = false,
+                    previewVehicle = "Safari",
+                    SetupActions(onTurnOn = { turnedOn++ }, onOneTap = { oneTap++ }),
+                )
+            }
+        }
+        // Play's prominent disclosure names location and background (PRD §9), before any prompt.
+        compose.onNodeWithText("location", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("background", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Turn on").performClick()
+        assertThat(turnedOn).isEqualTo(1)
+        step = SetupStep.Denied
+        compose.onNodeWithText("Driving Safari? Tap to record this trip.").assertIsDisplayed()
+        compose.onNodeWithText("Start trips with one tap instead").performClick()
+        assertThat(oneTap).isEqualTo(1)
+    }
+
+    @Test fun autoDisclosureLight() = capture("auto_setup_disclosure_light", false) {
+        AutoTripSetupContent(SetupStep.Disclosure, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoDisclosureDark() = capture("auto_setup_disclosure_dark", true) {
+        AutoTripSetupContent(SetupStep.Disclosure, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoLocationLight() = capture("auto_setup_location_light", false) {
+        AutoTripSetupContent(SetupStep.Location, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoDeniedDark() = capture("auto_setup_denied_dark", true) {
+        AutoTripSetupContent(SetupStep.Denied, false, "Safari", SetupActions())
+    }
+
+    @Test fun listAutoOfferLight() = capture("trips_list_auto_offer_light", false) {
+        TripsContent(listState().copy(offerAutoTrips = true), TripsLinks(), zone = zone)
     }
 
     @Test fun listLight() = capture("trips_list_light", false) { TripsContent(listState(), TripsLinks(), zone = zone) }

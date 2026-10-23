@@ -2,15 +2,20 @@ package app.fuelwise.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.BackupSettingsRepository
 import app.fuelwise.core.data.repository.LocalDataReset
 import app.fuelwise.core.data.repository.ThemeMode
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.trip.AutoTripPause
+import app.fuelwise.core.domain.trip.autoTripPauseEnd
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.BackupError
 import app.fuelwise.core.model.Money
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +45,12 @@ data class SettingsUiState(
     /** Drive is connected, so "also delete Drive backups" is offered. */
     val driveConnected: Boolean = false,
     val deleting: Boolean = false,
+    /** Automatic trips on this phone (PRD F-21.3); null when the feature isn't offered. */
+    val autoTrips: AutoTripsUi? = null,
 )
+
+/** The "Automatic trips" row: off, on, one-tap, or paused until [pausedUntilUtcMs] ([Long.MAX_VALUE] = until on). */
+data class AutoTripsUi(val enabled: Boolean, val oneTap: Boolean, val pausedUntilUtcMs: Long?)
 
 sealed interface SettingsEvent {
     /** Everything is gone; the app starts over at onboarding. */
@@ -58,6 +68,9 @@ class SettingsViewModel @Inject constructor(
     backupSettings: BackupSettingsRepository,
     private val backups: BackupEraser,
     private val reset: LocalDataReset,
+    private val autoTrips: AutoTripSettingsRepository,
+    private val clock: Clock,
+    private val zoneId: ZoneId,
 ) : ViewModel() {
     private val deleting = MutableStateFlow(false)
 
@@ -66,7 +79,8 @@ class SettingsViewModel @Inject constructor(
         vehicles.observeVehicles(),
         backupSettings.settings,
         deleting,
-    ) { data, list, backup, isDeleting ->
+        autoTrips.settings,
+    ) { data, list, backup, isDeleting, auto ->
         val ids = list.map { it.id }.toSet()
         SettingsUiState(
             loading = false,
@@ -84,6 +98,14 @@ class SettingsViewModel @Inject constructor(
             monthlyRecap = data.monthlyRecap,
             driveConnected = backup.accountEmail != null,
             deleting = isDeleting,
+            autoTrips = auto.takeIf { it.available }?.let { s ->
+                AutoTripsUi(
+                    enabled = s.enabled,
+                    oneTap = s.oneTap,
+                    // A pause that has ended shows as on.
+                    pausedUntilUtcMs = s.pausedUntilUtcMs?.takeIf { it > clock.millis() },
+                )
+            },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
 
@@ -109,6 +131,16 @@ class SettingsViewModel @Inject constructor(
     fun setHomeTariff(tariff: Money?) = launch { userData.setHomeTariff(tariff?.takeIf { it.paise > 0 }) }
 
     fun setUpi(vpa: String, name: String) = launch { userData.setUpiPayee(vpa, name) }
+
+    /** "Pause automatic trips" (PRD F-21.3 controls). */
+    fun pauseAutoTrips(pause: AutoTripPause) = launch {
+        autoTrips.pauseUntil(autoTripPauseEnd(pause, clock.millis(), zoneId))
+    }
+
+    fun resumeAutoTrips() = launch { autoTrips.pauseUntil(null) }
+
+    /** Off: driving detection is unregistered at once (AutoTrips follows the setting). */
+    fun turnOffAutoTrips() = launch { autoTrips.setEnabled(false) }
 
     /**
      * "Delete all data" (PRD F-18). With [alsoDrive], Drive goes first: if it can't be reached nothing is deleted,

@@ -70,6 +70,20 @@
     <string name="settings_channel_reminders">Reminders</string>
     <string name="settings_channel_price_alerts">Price alerts</string>
     <string name="settings_channel_trips">Trip recording</string>
+    <string name="settings_channel_auto_trips">Automatic trips</string>
+    <!-- Location &amp; trips (PRD F-21.3). -->
+    <string name="settings_section_location">Location &amp; trips</string>
+    <string name="settings_auto_trips">Automatic trips</string>
+    <string name="settings_auto_trips_off">Off</string>
+    <string name="settings_auto_trips_on">On</string>
+    <string name="settings_auto_trips_one_tap">One tap to start</string>
+    <string name="settings_auto_trips_paused">Paused</string>
+    <string name="settings_auto_trips_paused_until">Paused until %1$s</string>
+    <string name="settings_auto_trips_resume">Resume now</string>
+    <string name="settings_auto_trips_pause_hour">Pause for 1 hour</string>
+    <string name="settings_auto_trips_pause_tomorrow">Pause until tomorrow</string>
+    <string name="settings_auto_trips_pause_until_on">Pause until I turn it back on</string>
+    <string name="settings_auto_trips_turn_off">Turn off</string>
     <string name="settings_channel_system">Sound and style in phone settings</string>
 
     <!-- Data -->

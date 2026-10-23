@@ -26,6 +26,8 @@ data class SettingsLinks(
     val onExport: (() -> Unit)? = null,
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
+    /** "Automatic trips" while off → setup (design.md screen 32). Null hides the row. */
+    val onAutoTripSetup: (() -> Unit)? = null,
     /** After "Delete all data": start over at onboarding. */
     val onDataDeleted: () -> Unit = {},
 )

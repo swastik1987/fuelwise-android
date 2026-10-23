@@ -38,6 +38,7 @@ import app.fuelwise.core.data.repository.OfflineLogbookRepository
 import app.fuelwise.core.data.repository.OfflineRecurrenceRepository
 import app.fuelwise.core.data.repository.OfflineReminderRepository
 import app.fuelwise.core.data.repository.OfflineTripRepository
+import app.fuelwise.core.data.repository.OfflineVehiclePhotoRepository
 import app.fuelwise.core.data.repository.OfflineVehicleRepository
 import app.fuelwise.core.data.repository.PriceSettingsRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
@@ -47,6 +48,7 @@ import app.fuelwise.core.data.repository.ScanSettingsRepository
 import app.fuelwise.core.data.repository.StationRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
+import app.fuelwise.core.data.repository.VehiclePhotoRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.data.vault.AttachmentStore
 import app.fuelwise.core.data.vault.TinkAttachmentStore
@@ -66,6 +68,9 @@ import java.time.ZoneId
 internal interface DataModule {
     @Binds
     fun vehicleRepository(impl: OfflineVehicleRepository): VehicleRepository
+
+    @Binds
+    fun vehiclePhotoRepository(impl: OfflineVehiclePhotoRepository): VehiclePhotoRepository
 
     @Binds
     fun categoryRepository(impl: OfflineCategoryRepository): CategoryRepository

@@ -1,5 +1,6 @@
 package app.fuelwise.feature.garage.detail
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,7 +30,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +49,7 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.feature.garage.R
@@ -67,11 +74,12 @@ internal fun VehicleDetailScreen(
             onArchive = viewModel::setArchived,
             onDelete = { onDelete(s.vehicle.id) },
             confirmationMatches = { typed -> viewModel.confirmationMatches(typed, s.vehicle) },
+            photo = s.photo,
         )
     }
 }
 
-/** Vehicle detail (design.md screen 22). Photo, purchase details and car Bluetooth arrive with their features. */
+/** Vehicle detail (design.md screen 22). */
 @Composable
 internal fun VehicleDetailContent(
     vehicle: Vehicle,
@@ -80,6 +88,7 @@ internal fun VehicleDetailContent(
     onArchive: (Boolean) -> Unit,
     onDelete: () -> Unit,
     confirmationMatches: (String) -> Boolean,
+    photo: ImageBitmap? = null,
 ) {
     var confirmingDelete by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
@@ -97,7 +106,7 @@ internal fun VehicleDetailContent(
             Modifier.verticalScroll(rememberScrollState()).padding(bottom = FwTheme.spacing.xxl),
             verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
         ) {
-            Header(vehicle)
+            Header(vehicle, photo)
             Section(stringResource(R.string.detail_energy)) {
                 vehicle.tanks.forEachIndexed { index, tank ->
                     if (index > 0) HorizontalDivider(color = FwTheme.colors.line)
@@ -105,6 +114,7 @@ internal fun VehicleDetailContent(
                         Box(Modifier.size(8.dp).background(VehicleLabels.energyColor(tank.energyType), CircleShape))
                         Text(
                             stringResource(VehicleLabels.energy(tank.energyType)) +
+                                tank.defaultGrade?.let { " · " + stringResource(EntryLabels.grade(it)) }.orEmpty() +
                                 if (tank.isPrimary &&
                                     vehicle.isBiFuel
                                 ) {
@@ -138,6 +148,7 @@ internal fun VehicleDetailContent(
                     },
                 )
             }
+            Custom(vehicle)
             Section(stringResource(R.string.detail_registration)) {
                 ValueRow(stringResource(R.string.editor_registration), vehicle.registrationNumber, mono = true)
                 HorizontalDivider(color = FwTheme.colors.line)
@@ -148,6 +159,7 @@ internal fun VehicleDetailContent(
                     },
                 )
             }
+            Purchase(vehicle)
             Column(Modifier.padding(horizontal = FwTheme.spacing.gutter)) {
                 ActionRow(
                     icon = if (vehicle.isArchived) FwIcons.Unarchive else FwIcons.Archive,
@@ -182,23 +194,40 @@ internal fun VehicleDetailContent(
 }
 
 @Composable
-private fun Header(vehicle: Vehicle) {
-    // Ink block stands in for the header photo until vehicle photos exist.
-    Column(
-        Modifier
-            .padding(horizontal = FwTheme.spacing.gutter)
-            .fillMaxWidth()
-            .background(FwTheme.colors.ink, FwTheme.radius.card)
-            .padding(FwTheme.spacing.l),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Icon(
-            painterResource(VehicleLabels.typeIcon(vehicle.type)),
-            null,
-            tint = FwTheme.colors.bg,
-            modifier = Modifier.size(32.dp),
+private fun Header(vehicle: Vehicle, photo: ImageBitmap?) {
+    val card = Modifier.padding(horizontal = FwTheme.spacing.gutter).fillMaxWidth().clip(FwTheme.radius.card)
+    if (photo == null) {
+        // No photo: the type glyph on an ink block.
+        Column(card.background(FwTheme.colors.ink).padding(FwTheme.spacing.l)) {
+            Icon(
+                painterResource(VehicleLabels.typeIcon(vehicle.type)),
+                null,
+                tint = FwTheme.colors.bg,
+                modifier = Modifier.size(32.dp),
+            )
+            HeaderText(vehicle, Modifier.padding(top = 12.dp))
+        }
+        return
+    }
+    // The photo with the name over a scrim (design.md screen 22).
+    Box(card.height(PHOTO_HEIGHT)) {
+        Image(photo, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        HeaderText(
+            vehicle,
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(FwTheme.colors.ink.copy(alpha = 0f), FwTheme.colors.ink)))
+                .padding(start = FwTheme.spacing.l, end = FwTheme.spacing.l, top = 40.dp, bottom = FwTheme.spacing.l),
         )
-        Text(vehicle.name, style = FwTheme.type.h1, color = FwTheme.colors.bg, modifier = Modifier.padding(top = 12.dp))
+    }
+}
+
+@Composable
+private fun HeaderText(vehicle: Vehicle, modifier: Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(vehicle.name, style = FwTheme.type.h1, color = FwTheme.colors.bg)
+        modelLine(vehicle)?.let { Text(it, style = FwTheme.type.bodyS, color = FwTheme.colors.bg) }
         Text(
             listOfNotNull(
                 vehicle.registrationNumber,
@@ -206,6 +235,65 @@ private fun Header(vehicle: Vehicle) {
             ).joinToString(" · "),
             style = FwTheme.type.monoS,
             color = FwTheme.colors.bg.copy(alpha = 0.75f),
+        )
+    }
+}
+
+private val PHOTO_HEIGHT = 220.dp
+
+/** Custom parameters (PRD F-01.4, design.md screen 22): overrides for estimates, marked "manual". */
+@Composable
+private fun Custom(vehicle: Vehicle) {
+    val unit = stringResource(VehicleLabels.unit(vehicle.primaryTank?.energyType?.canonicalUnit ?: return))
+    val history = stringResource(R.string.detail_from_history)
+    val custom = vehicle.custom
+    Section(stringResource(R.string.detail_custom)) {
+        ValueRow(
+            stringResource(R.string.editor_custom_consumption),
+            custom.kmPerUnit?.let {
+                manual(IndianNumberFormat.decimal(it, 1) + " " + stringResource(R.string.editor_claimed_unit, unit))
+            },
+            empty = history,
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_custom_price),
+            custom.pricePerUnit?.let { manual(IndianNumberFormat.rupees(it) + "/" + unit) },
+            empty = history,
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_custom_range),
+            custom.rangeKm?.let { manual(stringResource(R.string.garage_km, IndianNumberFormat.decimal(it, 0))) },
+            empty = history,
+        )
+    }
+}
+
+@Composable
+private fun manual(value: String) = stringResource(R.string.detail_manual, value)
+
+/** Purchase details (design.md screen 22). */
+@Composable
+private fun Purchase(vehicle: Vehicle) {
+    Section(stringResource(R.string.editor_purchase_section)) {
+        ValueRow(
+            stringResource(R.string.editor_purchase_date),
+            vehicle.purchaseDate?.let {
+                IndianNumberFormat.date(it)
+            },
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_purchase_odometer),
+            vehicle.purchaseOdometerKm?.let {
+                stringResource(R.string.garage_km, IndianNumberFormat.decimal(it, 0))
+            },
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_purchase_price),
+            vehicle.purchasePrice?.let(IndianNumberFormat::rupeesWhole),
         )
     }
 }
@@ -219,11 +307,11 @@ private fun Section(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun ValueRow(label: String, value: String?, mono: Boolean = false) {
+private fun ValueRow(label: String, value: String?, mono: Boolean = false, empty: String? = null) {
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = FwTheme.type.body, color = FwTheme.colors.ink, modifier = Modifier.weight(1f))
         Text(
-            value ?: stringResource(R.string.detail_not_set),
+            value ?: empty ?: stringResource(R.string.detail_not_set),
             style = if (mono && value != null) FwTheme.type.monoS else FwTheme.type.label,
             color = if (value == null) FwTheme.colors.ink3 else FwTheme.colors.ink,
         )
@@ -287,6 +375,14 @@ private fun DeleteDialog(
         },
     )
 }
+
+/** "Tata Safari XZ+ · 2023 · Hybrid", from what was filled in (PRD F-01.1, F-01.2). */
+@Composable
+private fun modelLine(vehicle: Vehicle): String? = listOfNotNull(
+    listOfNotNull(vehicle.make, vehicle.model, vehicle.variant).joinToString(" ").ifEmpty { null },
+    vehicle.year?.toString(),
+    if (vehicle.isHybrid) stringResource(R.string.editor_hybrid) else null,
+).joinToString(" · ").ifEmpty { null }
 
 private fun normName(norm: EmissionNorm): Int = when (norm) {
     EmissionNorm.BS3 -> R.string.norm_bs3

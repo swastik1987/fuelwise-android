@@ -76,7 +76,7 @@ internal fun ChartDetailContent(kind: ChartKind, state: InsightsSnapshot?, onBac
             verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
         ) {
             Text(
-                stringResource(state.period.label),
+                periodLabel(state),
                 style = FwTheme.type.bodyS,
                 color = FwTheme.colors.ink2,
             )

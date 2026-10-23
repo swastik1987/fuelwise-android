@@ -47,6 +47,9 @@ data class Attachment(
     /** Of the plaintext, for content-addressed backups (M7). */
     val sha256: String,
 ) {
-    /** [Trip] holds a GPS trip's simplified route (PRD F-07.2); [Refuel] a pump or receipt scan photo (PRD F-15). */
-    enum class OwnerType { Document, Expense, Trip, Refuel }
+    /**
+     * [Trip] holds a GPS trip's simplified route (PRD F-07.2); [Refuel] a pump or receipt scan photo (PRD F-15);
+     * [Vehicle] the vehicle's photo (PRD F-01.1).
+     */
+    enum class OwnerType { Document, Expense, Trip, Refuel, Vehicle }
 }

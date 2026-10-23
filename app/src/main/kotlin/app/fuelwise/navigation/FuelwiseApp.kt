@@ -23,6 +23,7 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.reminder.ReminderCost
 import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
@@ -127,6 +128,11 @@ fun FuelwiseApp(
             )
 
             NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
+
+            NotificationRoutes.OPEN_ADD_REMINDER_COST ->
+                ReminderCost.decode(openRequest.arg)?.let {
+                    ExpenseRoute(vehicleId = it.vehicleId, categoryId = it.categoryId, completionId = it.completionId)
+                } ?: return@LaunchedEffect
 
             NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
 

@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.data.repository.ThemeMode
@@ -106,6 +107,10 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun readOpenRequest(intent: Intent?) {
+        intent?.getIntExtra(NotificationRoutes.EXTRA_DISMISS, -1)?.takeIf { it >= 0 }?.let {
+            NotificationManagerCompat.from(this).cancel(it)
+            intent.removeExtra(NotificationRoutes.EXTRA_DISMISS)
+        }
         val target = intent?.getStringExtra(NotificationRoutes.EXTRA_OPEN) ?: return
         openRequest = OpenRequest(target, System.nanoTime(), intent.getStringExtra(NotificationRoutes.EXTRA_ARG))
         intent.removeExtra(NotificationRoutes.EXTRA_OPEN)

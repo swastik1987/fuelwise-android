@@ -7,9 +7,12 @@ import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
+import app.fuelwise.core.data.repository.ReminderRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.designsystem.component.KeypadKey
+import app.fuelwise.core.domain.trip.tripsToLink
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
@@ -17,6 +20,7 @@ import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.Recurrence
 import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.ui.format.KeypadInput
 import app.fuelwise.core.ui.format.MoneyInput
@@ -30,7 +34,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -61,6 +68,9 @@ data class ExpenseFormState(
     val repeat: Boolean = false,
     val repeatEvery: String = "1",
     val repeatUnit: RepeatUnit = RepeatUnit.Months,
+    /** The trip this entry counts towards (PRD F-04.1, F-10.2), and trips near its date to pick from. */
+    val tripId: String? = null,
+    val trips: List<Trip> = emptyList(),
 )
 
 /** Add / edit an expense or a toll (PRD F-04.1, F-10.2; design.md screens 10 and 11). */
@@ -72,6 +82,8 @@ class ExpenseViewModel @Inject constructor(
     private val entries: EntryRepository,
     private val userData: UserDataRepository,
     private val recurrences: RecurrenceRepository,
+    private val reminders: ReminderRepository,
+    private val trips: TripRepository,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -91,6 +103,20 @@ class ExpenseViewModel @Inject constructor(
         viewModelScope.launch {
             entries.observeRecentPlazas().collect { p -> _state.update { it.copy(plazaSuggestions = p) } }
         }
+        viewModelScope.launch { observeTrips() }
+    }
+
+    /** Candidates follow the vehicle and date picked; a trip already linked stays on the list. */
+    private suspend fun observeTrips() {
+        val vehicleAndDate = _state.map { it.vehicle?.id to it.dateTimeUtcMs }.distinctUntilChanged()
+        combine(trips.observeTrips(), vehicleAndDate, ::Pair).collect { (all, picked) ->
+            val (vehicleId, at) = picked
+            _state.update { s ->
+                val near = vehicleId?.let { tripsToLink(all, it, at) }.orEmpty()
+                val linked = all.firstOrNull { it.id == s.tripId }
+                s.copy(trips = if (linked == null || linked in near) near else listOf(linked) + near)
+            }
+        }
     }
 
     private suspend fun load() {
@@ -109,7 +135,7 @@ class ExpenseViewModel @Inject constructor(
                 vehicle = vehicle,
                 categories = cats,
                 isToll = isToll,
-                categoryId = existing?.categoryId,
+                categoryId = existing?.categoryId ?: route.categoryId?.takeIf { id -> cats.any { it.id == id } },
                 amount = existing?.amount?.let(MoneyInput::plain).orEmpty(),
                 odometer = existing?.odometerKm?.let(NumberInput::plain).orEmpty(),
                 dateTimeUtcMs = existing?.dateTimeUtcMs ?: s.dateTimeUtcMs,
@@ -118,6 +144,7 @@ class ExpenseViewModel @Inject constructor(
                 plaza = existing?.tollPlaza.orEmpty(),
                 tollByFastag = existing?.categoryId != SystemCategory.TollCash.id,
                 focus = if (existing != null) null else ExpenseField.Amount,
+                tripId = existing?.tripId ?: route.tripId,
             )
         }
     }
@@ -152,6 +179,9 @@ class ExpenseViewModel @Inject constructor(
 
     fun onTollMethod(fastag: Boolean) = _state.update { it.copy(tollByFastag = fastag) }
 
+    /** Tapping the linked trip again unlinks it. */
+    fun onTrip(id: String) = _state.update { it.copy(tripId = if (it.tripId == id) null else id) }
+
     fun onDateTime(utcMs: Long) = _state.update { it.copy(dateTimeUtcMs = utcMs) }
 
     fun onVehicle(id: String?) {
@@ -175,7 +205,7 @@ class ExpenseViewModel @Inject constructor(
         if (amount == null || categoryId == null || vehicle == null) return
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
-            entries.saveExpense(
+            val savedId = entries.saveExpense(
                 Expense(
                     id = editing?.id.orEmpty(),
                     vehicleId = vehicle.id,
@@ -190,12 +220,24 @@ class ExpenseViewModel @Inject constructor(
                     // Editing an auto-created entry confirms it and keeps its recurrence link (idempotency).
                     recurrenceId = editing?.recurrenceId,
                     isAutoCreated = false,
-                    tripId = editing?.tripId ?: route.tripId,
+                    tripId = s.tripId,
                 ),
             )
-            if (s.repeat && editing == null) saveRecurrence(s, vehicle.id, categoryId, amount)
+            if (editing == null) afterAdding(s, savedId, vehicle.id, categoryId, amount)
             savedChannel.send(Unit)
         }
+    }
+
+    /** A new entry may start a recurrence, and may be the cost of a reminder's "Done" (PRD F-11.4). */
+    private suspend fun afterAdding(
+        s: ExpenseFormState,
+        id: String,
+        vehicleId: String,
+        categoryId: String,
+        amount: Money,
+    ) {
+        if (s.repeat) saveRecurrence(s, vehicleId, categoryId, amount)
+        route.completionId?.let { reminders.attachExpense(it, id) }
     }
 
     /** This entry is the first occurrence; the recurrence starts at the next one, so nothing is created twice. */

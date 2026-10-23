@@ -8,9 +8,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object InsightsRoute
 
-/** Chart detail (design.md screen 15). [chart] is a [ChartKind] name, [period] an [InsightPeriod] name. */
+/**
+ * Chart detail (design.md screen 15). [chart] is a [ChartKind] name, [period] an [InsightPeriod] name; a custom
+ * period carries its days as epoch days.
+ */
 @Serializable
-data class ChartDetailRoute(val chart: String, val period: String, val allVehicles: Boolean)
+data class ChartDetailRoute(
+    val chart: String,
+    val period: String,
+    val allVehicles: Boolean,
+    val fromEpochDay: Long? = null,
+    val toEpochDay: Long? = null,
+)
 
 /** Monthly recap card (design.md screen 16). [month] is "2026-09"; null means last month. */
 @Serializable
@@ -24,7 +33,11 @@ fun NavGraphBuilder.insightsScreen(
     composable<InsightsRoute> {
         InsightsScreen(
             onAddEntry = onAddEntry,
-            onOpenChart = { kind, period, all -> onOpenChart(ChartDetailRoute(kind.name, period.name, all)) },
+            onOpenChart = { kind, period, all, custom ->
+                onOpenChart(
+                    ChartDetailRoute(kind.name, period.name, all, custom?.from?.toEpochDay(), custom?.to?.toEpochDay()),
+                )
+            },
             onOpenRecap = onOpenRecap,
         )
     }
@@ -46,4 +59,5 @@ internal val InsightPeriod.label: Int
         InsightPeriod.YearToDate -> R.string.period_ytd
         InsightPeriod.TwelveMonths -> R.string.period_12m
         InsightPeriod.All -> R.string.period_all
+        InsightPeriod.Custom -> R.string.period_custom
     }

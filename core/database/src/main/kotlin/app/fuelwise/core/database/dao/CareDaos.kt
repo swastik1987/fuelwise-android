@@ -45,6 +45,18 @@ interface ReminderDao {
     @Query("SELECT * FROM reminder_completion WHERE deletedAt IS NULL ORDER BY completedAt DESC")
     fun observeCompletions(): Flow<List<ReminderCompletionEntity>>
 
+    @Query("SELECT * FROM reminder_completion WHERE id = :id AND deletedAt IS NULL")
+    suspend fun completion(id: String): ReminderCompletionEntity?
+
+    /** Links the expense logged from "Add cost" to its completion (PRD F-11.4). */
+    @Query(
+        """
+        UPDATE reminder_completion SET expenseId = :expenseId, updatedAt = :at, deviceId = :deviceId
+        WHERE id = :id AND deletedAt IS NULL
+        """,
+    )
+    suspend fun attachExpense(id: String, expenseId: String, at: Long, deviceId: String)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCompletion(completion: ReminderCompletionEntity)
 
@@ -85,6 +97,9 @@ interface DocumentDao {
 
     @Query("SELECT * FROM attachment WHERE ownerId = :ownerId AND deletedAt IS NULL ORDER BY createdAt")
     fun observeAttachments(ownerId: String): Flow<List<AttachmentEntity>>
+
+    @Query("SELECT * FROM attachment WHERE ownerType = :ownerType AND deletedAt IS NULL ORDER BY createdAt")
+    fun observeAttachmentsOfType(ownerType: String): Flow<List<AttachmentEntity>>
 
     @Query("SELECT * FROM attachment WHERE id = :id AND deletedAt IS NULL")
     suspend fun attachment(id: String): AttachmentEntity?

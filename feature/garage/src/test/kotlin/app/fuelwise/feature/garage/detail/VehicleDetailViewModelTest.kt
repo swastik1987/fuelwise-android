@@ -2,9 +2,11 @@ package app.fuelwise.feature.garage.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.testing.FakeVehiclePhotoRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.feature.garage.photo.VehiclePhotoLoader
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -20,7 +22,11 @@ class VehicleDetailViewModelTest {
     val main = MainDispatcherRule()
 
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari))
-    private val viewModel = VehicleDetailViewModel(SavedStateHandle(mapOf("vehicleId" to "safari")), vehicles)
+    private val viewModel = VehicleDetailViewModel(
+        SavedStateHandle(mapOf("vehicleId" to "safari")),
+        vehicles,
+        VehiclePhotoLoader(FakeVehiclePhotoRepository(), main.dispatcher),
+    )
 
     @Test
     fun deleteConfirmationNeedsTheVehicleName() {

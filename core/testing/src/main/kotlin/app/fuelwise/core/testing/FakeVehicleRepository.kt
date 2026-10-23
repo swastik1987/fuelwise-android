@@ -3,6 +3,7 @@ package app.fuelwise.core.testing
 import app.fuelwise.core.data.repository.DeletedVehicle
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.vehicle.VehicleDraft
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Tank
 import app.fuelwise.core.model.Vehicle
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +38,7 @@ class FakeVehicleRepository(initial: List<Vehicle> = emptyList()) : VehicleRepos
                     e,
                     draft.tankCapacities.getOrNull(i),
                     i == 0,
+                    draft.defaultGrade.takeIf { e == EnergyType.PETROL },
                 )
             },
             startOdometerKm = draft.odometerKm ?: 0.0,
@@ -44,6 +46,15 @@ class FakeVehicleRepository(initial: List<Vehicle> = emptyList()) : VehicleRepos
             registrationNumber = draft.registrationNumber.ifBlank { null },
             emissionNorm = draft.emissionNorm,
             claimedKmPerUnit = draft.claimedKmPerUnit,
+            make = draft.make.ifBlank { null },
+            model = draft.model.ifBlank { null },
+            variant = draft.variant.ifBlank { null },
+            year = draft.year,
+            purchaseDate = draft.purchaseDate,
+            purchaseOdometerKm = draft.purchaseOdometerKm,
+            purchasePrice = draft.purchasePrice,
+            isHybrid = draft.isHybrid,
+            custom = draft.custom,
             sortOrder = live.value.size,
         )
         live.update { it + vehicle }

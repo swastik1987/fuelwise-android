@@ -13,6 +13,7 @@ import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelPrice
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceFuel
@@ -51,7 +52,11 @@ class RefuelViewModelTest {
 
     private val now = Instant.parse("2026-10-16T04:30:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
-    private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.nexonEv))
+    private val activaE20 = SampleVehicles.activa.copy(
+        isArchived = false,
+        tanks = SampleVehicles.activa.tanks.map { it.copy(defaultGrade = FuelGrade.E20) },
+    )
+    private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.nexonEv, activaE20))
     private val entries = FakeEntryRepository()
     private val documents = FakeDocumentRepository()
     private val stash = ScanPhotoStash({ "photo-1" }, documents)
@@ -116,6 +121,19 @@ class RefuelViewModelTest {
         // Back to odometer mode starts over.
         vm.onTripMeterMode(false)
         assertThat(vm.state.value.odometer).isEmpty()
+    }
+
+    @Test
+    fun theFirstFillUpStartsOnTheVehiclesDefaultGradeThenFollowsTheLast() = runTest {
+        assertThat(viewModel("activa").state.first { it.tank != null }.grade).isEqualTo(FuelGrade.E20)
+        entries.saveRefuel(
+            fill(
+                "a",
+                odo = 10_000.0,
+                price = 10_250,
+            ).copy(vehicleId = "activa", tankId = "activa-petrol", grade = null),
+        )
+        assertThat(viewModel("activa").state.first { it.tank != null }.grade).isNull()
     }
 
     @Test

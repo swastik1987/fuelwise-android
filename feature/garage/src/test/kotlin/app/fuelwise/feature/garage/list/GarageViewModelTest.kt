@@ -12,11 +12,13 @@ import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFastagRepository
 import app.fuelwise.core.testing.FakeReminderRepository
+import app.fuelwise.core.testing.FakeVehiclePhotoRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
 import app.fuelwise.core.testing.reminderStatuses
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
+import app.fuelwise.feature.garage.photo.VehiclePhotoLoader
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
@@ -68,6 +70,7 @@ class GarageViewModelTest {
         FakeFastagRepository(),
         entries,
         FakeBackupSettingsRepository(),
+        VehiclePhotoLoader(FakeVehiclePhotoRepository(), main.dispatcher),
         clock,
     )
 

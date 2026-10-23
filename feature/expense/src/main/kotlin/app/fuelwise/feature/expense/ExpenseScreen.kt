@@ -58,14 +58,18 @@ import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.entry.EntryDateTimePicker
 import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.entry.categoryName
 import app.fuelwise.core.ui.entry.entryDateTimeLabel
+import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
+import java.time.Instant
 import java.time.ZoneId
+import kotlin.math.roundToLong
 
 @Composable
 internal fun ExpenseScreen(onClose: () -> Unit, viewModel: ExpenseViewModel = hiltViewModel()) {
@@ -87,6 +91,7 @@ internal fun ExpenseScreen(onClose: () -> Unit, viewModel: ExpenseViewModel = hi
             onRepeat = viewModel::onRepeat,
             onRepeatEvery = viewModel::onRepeatEvery,
             onRepeatUnit = viewModel::onRepeatUnit,
+            onTrip = viewModel::onTrip,
         ),
         onClose = onClose,
     )
@@ -106,6 +111,7 @@ internal data class ExpenseActions(
     val onRepeat: (Boolean) -> Unit = {},
     val onRepeatEvery: (String) -> Unit = {},
     val onRepeatUnit: (RepeatUnit) -> Unit = {},
+    val onTrip: (String) -> Unit = {},
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -255,6 +261,7 @@ internal fun ExpenseContent(
                     }
                 }
             }
+            if (state.trips.isNotEmpty()) TripLink(state, actions.onTrip, zone)
             FwTextField(
                 value = state.notes,
                 onValueChange = actions.onNotes,
@@ -368,5 +375,34 @@ private fun RepeatSection(state: ExpenseFormState, actions: ExpenseActions) {
                 })
             }
         }
+    }
+}
+
+/**
+ * "Trip" (PRD F-04.1, F-10.2): link the entry to one of the vehicle's trips near its date, so it counts in that
+ * trip's cost.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TripLink(state: ExpenseFormState, onTrip: (String) -> Unit, zone: ZoneId) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.expense_trip), style = FwTheme.type.bodyS, color = FwTheme.colors.ink2)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            state.trips.forEach { trip ->
+                FwChoiceChip(tripLabel(trip, zone), trip.id == state.tripId, { onTrip(trip.id) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun tripLabel(trip: Trip, zone: ZoneId): String {
+    val day = IndianNumberFormat.date(Instant.ofEpochMilli(trip.startUtcMs).atZone(zone).toLocalDate())
+    val from = trip.fromPlace
+    val to = trip.toPlace
+    return if (from != null && to != null) {
+        stringResource(R.string.expense_trip_places, from, to, day)
+    } else {
+        stringResource(R.string.expense_trip_distance, day, IndianNumberFormat.group(trip.distanceKm.roundToLong()))
     }
 }

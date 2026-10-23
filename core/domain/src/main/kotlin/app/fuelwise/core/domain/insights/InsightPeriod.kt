@@ -5,8 +5,12 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
-/** The Insights period selector (PRD F-06.1). Calendar based: "3M" is this month and the two before it. */
+/**
+ * The Insights period selector (PRD F-06.1). Calendar based: "3M" is this month and the two before it. [Custom] is a
+ * range the user picked ([CustomRange]).
+ */
 enum class InsightPeriod {
     Month,
     ThreeMonths,
@@ -14,14 +18,17 @@ enum class InsightPeriod {
     YearToDate,
     TwelveMonths,
     All,
+    Custom,
     ;
 
     /**
      * The range this period covers up to [nowUtcMs], and the equally long range just before it for "vs" deltas.
-     * [All] starts at [earliestUtcMs] and has no previous range.
+     * [All] starts at [earliestUtcMs] and has no previous range. [Custom] covers [custom] (both days), compared
+     * with the same number of days just before; without a range it falls back to this month.
      */
-    fun resolve(nowUtcMs: Long, zone: ZoneId, earliestUtcMs: Long?): Resolved {
+    fun resolve(nowUtcMs: Long, zone: ZoneId, earliestUtcMs: Long?, custom: CustomRange? = null): Resolved {
         val today = Instant.ofEpochMilli(nowUtcMs).atZone(zone).toLocalDate()
+        if (this == Custom) return custom?.resolve(zone) ?: Month.resolve(nowUtcMs, zone, earliestUtcMs)
         val thisMonth = YearMonth.from(today)
         val months = when (this) {
             Month -> 1L
@@ -29,7 +36,7 @@ enum class InsightPeriod {
             SixMonths -> HALF_YEAR
             TwelveMonths -> YEAR
             YearToDate -> today.monthValue.toLong()
-            All -> null
+            All, Custom -> null
         }
         val end = nowUtcMs
         if (months == null) {
@@ -48,6 +55,20 @@ enum class InsightPeriod {
         const val QUARTER = 3L
         const val HALF_YEAR = 6L
         const val YEAR = 12L
+    }
+}
+
+/** A picked Insights range (PRD F-06 custom period), both days included; [from] is never after [to]. */
+data class CustomRange(val from: LocalDate, val to: LocalDate) {
+    init {
+        require(!from.isAfter(to)) { "from after to" }
+    }
+
+    fun resolve(zone: ZoneId): InsightPeriod.Resolved {
+        val start = from.startOfDay(zone)
+        val end = to.plusDays(1).startOfDay(zone)
+        val days = ChronoUnit.DAYS.between(from, to.plusDays(1))
+        return InsightPeriod.Resolved(Period(start, end), Period(from.minusDays(days).startOfDay(zone), start))
     }
 }
 

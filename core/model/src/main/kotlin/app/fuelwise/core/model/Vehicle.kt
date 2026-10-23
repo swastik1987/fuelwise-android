@@ -36,8 +36,17 @@ enum class FuelSetup(val tanks: List<EnergyType>) {
     val isBiFuel: Boolean get() = tanks.size > 1
 }
 
-/** One tank or battery. [capacity] is in the energy type's canonical unit (L, kg or usable kWh). */
-data class Tank(val id: String, val energyType: EnergyType, val capacity: Double?, val isPrimary: Boolean)
+/**
+ * One tank or battery. [capacity] is in the energy type's canonical unit (L, kg or usable kWh). [defaultGrade] starts
+ * a petrol tank's first fill-up on that grade (PRD F-01.2); after that the last fill-up's grade is used.
+ */
+data class Tank(
+    val id: String,
+    val energyType: EnergyType,
+    val capacity: Double?,
+    val isPrimary: Boolean,
+    val defaultGrade: FuelGrade? = null,
+)
 
 /**
  * A vehicle (PRD F-01). Only name, type, energy setup and the current odometer are required.

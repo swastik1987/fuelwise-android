@@ -132,7 +132,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-01 Vehicles (Garage) — FREE · R1
 
-**F-01.1 Vehicle profile.** ✅ built (photo, accent colour, make/model/year and purchase details not yet) Fields:
+**F-01.1 Vehicle profile.** ✅ built (make/model/variant/year and purchase details ✅ 23 Oct 2026; photo ✅ 23 Oct 2026: system photo picker, shrunk to a 1280 px JPEG, kept as an encrypted attachment and backed up; shown on the Garage card and detail header; accent colour on hold: design.md keeps one accent colour) Fields:
 - Name (required, e.g., "Safari")
 - Type: car / motorcycle / scooter / auto-rickshaw / van / truck / other
 - Make, model, variant, year (optional, free text in R1)
@@ -143,7 +143,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Colour accent (auto from photo or picked)
 - Archived flag (sold vehicles stay in history)
 
-**F-01.2 Energy setup.** ✅ built (hybrid tag and default grade not yet)
+**F-01.2 Energy setup.** ✅ built (hybrid tag and default petrol grade ✅ 23 Oct 2026; the first fill-up starts on the default grade, later ones follow the last fill-up)
 - **Single fuel:** petrol, diesel, CNG, LPG, electric, ethanol/flex.
 - **Bi-fuel:** two tanks, e.g., CNG (kg) + petrol (L). One is marked primary.
 - **Hybrid (HEV):** treated as single-fuel petrol with a "hybrid" tag.
@@ -151,7 +151,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 **F-01.3 Claimed efficiency.** ✅ built Optional ARAI/claimed figure (km/L, km/kg, km/kWh). Used for "your real vs claimed" comparisons.
 
-**F-01.4 Custom parameters.** (stored; editing UI not yet) The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
+**F-01.4 Custom parameters.** ✅ built 23 Oct 2026 (mileage, fuel price and full-tank range under "For estimates" on the vehicle form; vehicle detail shows them as manual, or "From your fill-ups"; tank capacity is the tank field) The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
 
 **F-01.5 Multiple vehicles.** ✅ built ("All vehicles" view arrives with stats, M5) Unlimited. A global vehicle switcher exists. "All vehicles" aggregate view is available for stats.
 
@@ -265,7 +265,7 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 ### F-04 Expenses — FREE · R1
 
-**F-04.1 Expense entry fields:** ✅ built (attachments and trip link not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
+**F-04.1 Expense entry fields:** ✅ built (trip link ✅ 23 Oct 2026: the vehicle's trips within 7 days of the entry, the one under way first; attachments not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
 
 **F-04.2 Categories.** ✅ built 23 Oct 2026 (presets; custom categories with name and icon, rename, hide, delete when unused; Settings → Expense categories. No per-category colour: design.md keeps categories neutral) System presets (renameable, hideable, not deletable if used):
 - Service, Repair, Tyres, Battery, Insurance, PUC, Parking, Toll (FASTag), Toll (cash), Wash/Detailing, Accessories
@@ -281,7 +281,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters, the 5,000-entry scroll benchmark are still open); map mode ✅ M8 slice 3: list ⇄ map with energy-coloured pins under the same filters, tap for the entry. Entries get coordinates from station auto-detect, F-21.1, so the map stays empty until it ships in R2)
+### F-05 Logbook (timeline) — FREE · R1 ✅ built (M4: vehicle + type filters and search; category, date-range and payment filters ✅ 23 Oct 2026 in a Filters sheet; the 5,000-entry scroll benchmark is still open: it needs a device run); map mode ✅ M8 slice 3: list ⇄ map with energy-coloured pins under the same filters, tap for the entry. Entries get coordinates from station auto-detect, F-21.1, so the map stays empty until it ships in R2)
 
 - Unified reverse-chronological list of fill-ups, charges, expenses, trips and reminder completions, grouped by month with a month total.
 - Filters: vehicle, type, category, date range, payment method. Search on notes, station and plaza.
@@ -293,7 +293,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards show "Coming soon" (✅ 23 Oct 2026, D15); custom date range still open. City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
+### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards show "Coming soon" (✅ 23 Oct 2026, D15); custom date range ✅ 23 Oct 2026 (compared with the same number of days before). City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
 
 **F-06.1 Period selector:** this month, last month, 3M, 6M, YTD, 12M, all time, custom.
 
@@ -407,7 +407,7 @@ Users can add custom categories (name, icon, colour).
 ### F-10 FASTag and tolls — FREE · R1
 
 - **F-10.1 FASTag account per vehicle (optional):** ✅ built (M6) issuer bank and tag ID (last 4 only).
-- **F-10.2 Toll entry:** ✅ built (trip link not yet) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
+- **F-10.2 Toll entry:** ✅ built (trip link ✅ 23 Oct 2026, as F-04.1) expense category "Toll (FASTag)" or "Toll (cash)", with plaza name, amount, date-time and trip link.
 - **F-10.3 Recharges:** ✅ built (M6; low balance notifies on the day a toll takes it under the threshold, then weekly) logged separately. They are transfers, not vehicle expenses, so they're excluded from cost/km. **Estimated balance** = Σ recharges − Σ FASTag tolls since the user's "balance anchor" (the user enters the current balance once). Labelled "est." with low-balance reminder (threshold user-set, default ₹300).
 - **F-10.4 Share-to-app parser (R2; moved 23 Oct 2026):**
   - The app registers as a share target for `text/plain`.
@@ -421,7 +421,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-11 Reminders — FREE · R1 ✅ built (M6: presets from assets/rules/india.json, date/odometer/both, daily WorkManager check around 09:30, Done/Snooze/Open actions, in-app banner without the notification permission; "Done" from a notification does not create an expense yet)
+### F-11 Reminders — FREE · R1 ✅ built (M6: presets from assets/rules/india.json, date/odometer/both, daily WorkManager check around 09:30, Done/Snooze/Open actions, in-app banner without the notification permission; "Done" then offers "Add cost" ✅ 23 Oct 2026: the expense sheet opens on the matching category and the expense is linked to the completion)
 
 **F-11.1 Trigger types:** by date, by odometer, or both (whichever first). Can recur (every N km and/or N months).
 

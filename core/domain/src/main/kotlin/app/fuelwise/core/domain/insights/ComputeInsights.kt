@@ -96,11 +96,12 @@ class ComputeInsights @Inject constructor(
         selection: InsightPeriod,
         zone: ZoneId,
         vehicleCount: Int = histories.size,
+        custom: CustomRange? = null,
     ): InsightsReport {
         val earliest = histories.flatMap { h ->
             h.refuels.map { it.dateTimeUtcMs } + h.expenses.map { it.dateTimeUtcMs }
         }.minOrNull()
-        val (period, previous) = selection.resolve(clock.millis(), zone, earliest)
+        val (period, previous) = selection.resolve(clock.millis(), zone, earliest, custom)
         val included = categories.associate { it.id to it.includeInCostPerKm }
         val prepared = histories.map { Prepared(it, included) }
 

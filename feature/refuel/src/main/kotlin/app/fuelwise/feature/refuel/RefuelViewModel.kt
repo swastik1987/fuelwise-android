@@ -191,13 +191,15 @@ class RefuelViewModel @Inject constructor(
             gpsDistances(vehicle, tripList),
         )
         val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
-        val latestCity = if (applyDefaults) latestCityPrice(tank.energyType, last?.grade) else null
+        // The vehicle's default grade (PRD F-01.2) until there's a fill-up to follow.
+        val grade = last?.grade ?: tank.defaultGrade.takeIf { last == null }
+        val latestCity = if (applyDefaults) latestCityPrice(tank.energyType, grade) else null
         _state.update { current ->
             var next = current.copy(predictedOdometer = predicted)
             if (applyDefaults) {
                 next = next.copy(
                     isFull = last?.isFull ?: true,
-                    grade = last?.grade,
+                    grade = grade,
                     payment = last?.paymentMethod,
                     charger = if (current.isCharge) last?.chargerType ?: ChargerType.HomeAc else null,
                     socStart = last?.socStartPct?.toFloat() ?: RefuelFormState.DEFAULT_SOC_START,

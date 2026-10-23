@@ -18,9 +18,16 @@ class ComputePredictions @Inject constructor(private val clock: Clock) {
         return rate(readings.filter { it.atUtcMs >= windowStart }) ?: rate(readings)
     }
 
-    /** Today's odometer: the latest reading plus average km/day × days since. Null without readings. */
-    fun predictedOdometer(readings: List<OdometerReading>): Double? {
+    /**
+     * Today's odometer. With GPS or automatic trips recorded since the latest reading (PRD F-21.5), the latest
+     * reading plus their distance, scaled by this vehicle's own GPS-vs-odometer factor; otherwise the latest
+     * reading plus average km/day × days since. Null without readings. A typed reading always wins: the estimate
+     * only ever starts from one.
+     */
+    fun predictedOdometer(readings: List<OdometerReading>, gps: List<GpsDistance> = emptyList()): Double? {
         val latest = latest(readings) ?: return null
+        val recorded = gps.filter { it.atUtcMs > latest.atUtcMs }.sumOf { it.km }
+        if (recorded > 0.0) return latest.odometerKm + recorded * gpsFactor(readings, gps)
         val perDay = avgKmPerDay(readings) ?: return latest.odometerKm
         val daysSince = ((clock.millis() - latest.atUtcMs) / MS_PER_DAY).coerceAtLeast(0.0)
         return latest.odometerKm + perDay * daysSince
@@ -56,6 +63,26 @@ class ComputePredictions @Inject constructor(private val clock: Clock) {
         return (capacity * efficiency - driven).coerceAtLeast(0.0)
     }
 
+    /**
+     * How far the odometer moves per GPS km, learned from this vehicle's own history (PRD F-21.5 calibration):
+     * between consecutive readings, odometer km ÷ recorded km. Only intervals the recordings plausibly covered
+     * (ratio [MIN_COVERED]–[MAX_COVERED]) count, so a week of unrecorded drives doesn't skew it. 1.0 until there are
+     * some, and never outside [MIN_FACTOR]–[MAX_FACTOR].
+     */
+    fun gpsFactor(readings: List<OdometerReading>, gps: List<GpsDistance>): Double {
+        var odometerKm = 0.0
+        var gpsKm = 0.0
+        readings.sortedWith(BY_TIME).zipWithNext { a, b ->
+            val driven = b.odometerKm - a.odometerKm
+            val recorded = gps.filter { it.atUtcMs > a.atUtcMs && it.atUtcMs <= b.atUtcMs }.sumOf { it.km }
+            if (driven > 0.0 && recorded > 0.0 && driven / recorded in MIN_COVERED..MAX_COVERED) {
+                odometerKm += driven
+                gpsKm += recorded
+            }
+        }
+        return if (gpsKm > 0.0) (odometerKm / gpsKm).coerceIn(MIN_FACTOR, MAX_FACTOR) else 1.0
+    }
+
     private fun rate(readings: List<OdometerReading>): Double? {
         if (readings.size < 2) return null
         val first = readings.minWith(BY_TIME)
@@ -71,6 +98,10 @@ class ComputePredictions @Inject constructor(private val clock: Clock) {
     private companion object {
         const val RECENT_WINDOW_DAYS = 90L
         const val MIN_SPAN_DAYS = 7.0
+        const val MIN_COVERED = 0.9
+        const val MAX_COVERED = 1.3
+        const val MIN_FACTOR = 0.9
+        const val MAX_FACTOR = 1.2
         val BY_TIME = compareBy<OdometerReading>({ it.atUtcMs }, { it.odometerKm })
     }
 }

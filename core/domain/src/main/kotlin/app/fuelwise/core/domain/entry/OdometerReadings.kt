@@ -1,9 +1,11 @@
 package app.fuelwise.core.domain.entry
 
+import app.fuelwise.core.domain.engine.GpsDistance
 import app.fuelwise.core.domain.engine.OdometerReading
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.TripStatus
 import app.fuelwise.core.model.Vehicle
 
@@ -25,6 +27,17 @@ fun odometerReadings(
         t.endOdometerKm?.let { add(OdometerReading(it, t.endUtcMs ?: t.startUtcMs)) }
     }
 }
+
+/**
+ * Distances recorded by finished GPS and automatic trips of [vehicle] (PRD F-21.5), for the odometer estimate. A trip
+ * whose end odometer was typed is already a reading, so it isn't counted twice.
+ */
+fun gpsDistances(vehicle: Vehicle, trips: List<Trip>): List<GpsDistance> = trips
+    .filter {
+        it.vehicleId == vehicle.id && it.status == TripStatus.Done && it.endOdometerKm == null &&
+            (it.source == TripSource.Gps || it.source == TripSource.Auto)
+    }
+    .map { GpsDistance(it.startUtcMs, it.distanceKm) }
 
 /**
  * The hint for a GPS trip's end odometer (PRD F-07.6): its start reading, or the last reading before it began, plus

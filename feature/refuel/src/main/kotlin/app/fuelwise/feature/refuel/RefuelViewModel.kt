@@ -16,6 +16,7 @@ import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.entry.PriceTriangle.Field
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.PriceDefault
@@ -170,9 +171,13 @@ class RefuelViewModel @Inject constructor(
         val expenses = entries.observeExpenses(vehicle.id).first()
         tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
         homeTariff = userData.userData.first().homeTariff
-        // A finished trip's odometer counts too (PRD F-07.6), so the hint follows recent driving.
+        // A finished trip's odometer counts too (PRD F-07.6), and so does distance recorded since the last reading
+        // (PRD F-21.5), so the hint follows recent driving. A hint only: the typed value always wins.
         val tripList = trips.observeTrips().first()
-        val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses, tripList))
+        val predicted = predictions.predictedOdometer(
+            odometerReadings(vehicle, refuels, expenses, tripList),
+            gpsDistances(vehicle, tripList),
+        )
         val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
         val latestCity = if (applyDefaults) latestCityPrice(tank.energyType, last?.grade) else null
         _state.update { current ->

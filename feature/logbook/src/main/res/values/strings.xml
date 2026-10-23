@@ -54,4 +54,19 @@
         <item quantity="one">Map with %1$d entry</item>
         <item quantity="other">Map with %1$d entries</item>
     </plurals>
+    <!-- Filter sheet (PRD F-05). -->
+    <string name="logbook_filters">Filters</string>
+    <string name="logbook_filters_count">Filters · %1$d</string>
+    <string name="logbook_filters_title">Filter entries</string>
+    <string name="logbook_filters_dates">Dates</string>
+    <string name="logbook_filters_categories">Expense category</string>
+    <string name="logbook_filters_payment">Paid by</string>
+    <string name="logbook_filters_clear">Clear</string>
+    <string name="logbook_filters_apply">Show results</string>
+    <string name="logbook_filters_custom_range">%1$s – %2$s</string>
+    <string name="logbook_range_all">All time</string>
+    <string name="logbook_range_month">This month</string>
+    <string name="logbook_range_three_months">Last 3 months</string>
+    <string name="logbook_range_year">This year</string>
+    <string name="logbook_range_custom">Pick dates…</string>
 </resources>

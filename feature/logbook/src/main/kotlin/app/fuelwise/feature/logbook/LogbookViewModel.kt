@@ -13,7 +13,9 @@ import app.fuelwise.core.data.repository.LogbookFilter
 import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.entry.EntryRangePreset
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.entry.entryRange
 import app.fuelwise.core.domain.units.UnitSettings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
@@ -21,11 +23,13 @@ import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.Year
 import java.time.YearMonth
 import java.time.ZoneId
@@ -70,8 +74,28 @@ data class LogbookChrome(
     val selectedPinId: String? = null,
     /** Display units per vehicle (PRD F-18). */
     val units: UnitSettings = UnitSettings(),
+    /** The filter sheet (PRD F-05): categories, payment methods and a date range. */
+    val sheet: LogbookSheetFilters = LogbookSheetFilters(),
 ) {
-    val filtering: Boolean get() = kinds.isNotEmpty() || query.isNotBlank()
+    val filtering: Boolean get() = kinds.isNotEmpty() || query.isNotBlank() || sheet.count > 0
+}
+
+/** What the filter sheet sets. Empty sets mean "all". */
+data class LogbookSheetFilters(
+    val categoryIds: Set<String> = emptySet(),
+    val payments: Set<PaymentMethod> = emptySet(),
+    val range: EntryRangePreset = EntryRangePreset.All,
+    val customFrom: LocalDate? = null,
+    val customTo: LocalDate? = null,
+) {
+    /** How many groups are narrowed, for the "Filters · 2" chip. */
+    val count: Int get() = listOf(
+        categoryIds.isNotEmpty(),
+        payments.isNotEmpty(),
+        range != EntryRangePreset.All,
+    ).count {
+        it
+    }
 }
 
 /** A geotagged fill-up or charge on the Logbook map. */
@@ -100,6 +124,7 @@ class LogbookViewModel @Inject constructor(
         val searchOpen: Boolean = false,
         val mapMode: Boolean = false,
         val selectedPinId: String? = null,
+        val sheet: LogbookSheetFilters = LogbookSheetFilters(),
     )
 
     private val controls = MutableStateFlow(Controls())
@@ -111,7 +136,17 @@ class LogbookViewModel @Inject constructor(
         }
 
     private val filter: Flow<LogbookFilter> = combine(selectedVehicle, controls) { (_, selected, _), c ->
-        LogbookFilter(vehicleId = if (c.allVehicles) null else selected?.id, kinds = c.kinds, query = c.query)
+        val range =
+            with(c.sheet) { entryRange(range, LocalDate.now(clock.withZone(zoneId)), zoneId, customFrom, customTo) }
+        LogbookFilter(
+            vehicleId = if (c.allVehicles) null else selected?.id,
+            kinds = c.kinds,
+            query = c.query,
+            categoryIds = c.sheet.categoryIds,
+            payments = c.sheet.payments,
+            fromUtcMs = range.fromUtcMs,
+            toUtcMs = range.toUtcMs,
+        )
     }
 
     val items: Flow<PagingData<LogbookItem>> = filter
@@ -142,6 +177,7 @@ class LogbookViewModel @Inject constructor(
             pins = if (c.mapMode) pins(refuels, all, vehicleId, c) else emptyList(),
             selectedPinId = c.selectedPinId,
             units = units,
+            sheet = c.sheet,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), LogbookChrome())
 
@@ -161,6 +197,9 @@ class LogbookViewModel @Inject constructor(
     }
 
     fun clearKinds() = controls.update { it.copy(kinds = emptySet()) }
+
+    /** Applies the filter sheet (PRD F-05: category, payment method, date range). */
+    fun setSheetFilters(filters: LogbookSheetFilters) = controls.update { it.copy(sheet = filters) }
 
     fun setQuery(query: String) = controls.update { it.copy(query = query.take(MAX_QUERY)) }
 

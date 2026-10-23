@@ -9,6 +9,7 @@ import app.fuelwise.core.domain.id.UuidV7Generator
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.LogbookKind
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.SystemCategory
 import com.google.common.truth.Truth.assertThat
@@ -86,6 +87,29 @@ class OfflineLogbookRepositoryTest {
         assertThat(
             logbook.pagedEntries(LogbookFilter(query = "filter")).asSnapshot().single().kind,
         ).isEqualTo(LogbookKind.Expense)
+    }
+
+    @Test
+    fun filtersByCategoryPaymentAndDates() = runTest {
+        entries.saveExpense(
+            expense("safari", day(2026, 10, 15), SystemCategory.Parking.id, 6_000)
+                .copy(paymentMethod = PaymentMethod.Upi),
+        )
+        // A category picks expenses only: fill-ups have none.
+        val service = logbook.pagedEntries(LogbookFilter(categoryIds = setOf(SystemCategory.Service.id))).asSnapshot()
+        assertThat(service.map { it.amount }).containsExactly(Money(485_000))
+        assertThat(
+            logbook.pagedEntries(LogbookFilter(payments = setOf(PaymentMethod.Upi))).asSnapshot().single().amount,
+        )
+            .isEqualTo(Money(6_000))
+        // 10–14 Oct: from inclusive, to exclusive (the 15th).
+        val from = LocalDate.of(2026, 10, 10).atStartOfDay(zone).toInstant().toEpochMilli()
+        val to = LocalDate.of(2026, 10, 15).atStartOfDay(zone).toInstant().toEpochMilli()
+        val october = logbook.pagedEntries(LogbookFilter(fromUtcMs = from, toUtcMs = to)).asSnapshot()
+        assertThat(october.map { it.amount }).containsExactly(Money(355_800), Money(16_500), Money(18_450)).inOrder()
+        // Month totals follow the same filters.
+        assertThat(logbook.monthTotals(LogbookFilter(fromUtcMs = from, toUtcMs = to)).first())
+            .containsExactly("2026-10", Money(355_800 + 16_500 + 18_450))
     }
 
     @Test

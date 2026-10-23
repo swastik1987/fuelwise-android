@@ -79,6 +79,7 @@ import app.fuelwise.feature.settings.SettingsLinks
 import app.fuelwise.feature.settings.SettingsRoute
 import app.fuelwise.feature.settings.UnitsRoute
 import app.fuelwise.feature.settings.settingsScreens
+import app.fuelwise.feature.trips.AutoTripSetupRoute
 import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
@@ -267,6 +268,7 @@ fun FuelwiseApp(
                     onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onAutoTripSetup = { navController.navigate(AutoTripSetupRoute) },
                     // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
                     onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
                 ),
@@ -287,6 +289,7 @@ fun FuelwiseApp(
                     },
                     onOpenCost = { id -> navController.navigate(ExpenseRoute(expenseId = id)) },
                     onOpenLive = { navController.navigate(LiveTripRoute) { launchSingleTop = true } },
+                    onAutoSetup = { navController.navigate(AutoTripSetupRoute) },
                     onLiveFinished = { id ->
                         if (id == null) {
                             navController.popBackStack()

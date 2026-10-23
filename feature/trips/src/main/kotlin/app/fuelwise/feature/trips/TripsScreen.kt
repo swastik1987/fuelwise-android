@@ -62,6 +62,7 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.ExportRange
 import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.ui.entry.shortDate
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import java.time.Instant
@@ -263,6 +264,7 @@ internal fun TripsContent(
         }
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FwTheme.spacing.xl)) {
             item { StartButtons(state.recording, links, actions) }
+            if (state.offerAutoTrips) item(key = "auto-offer") { AutoTripsCard(links.onAutoSetup) }
             items(state.interrupted, key = { "cut-${it.id}" }) { trip -> InterruptedCard(trip, zone, actions) }
             if (state.weeks.isEmpty()) {
                 item {
@@ -311,6 +313,29 @@ private fun StartButtons(recording: RecordingBanner?, links: TripsLinks, actions
             Modifier.fillMaxWidth(),
             leadingIcon = FwIcons.ManualTrip,
         )
+    }
+}
+
+/** A quiet card leading to automatic trips setup (design.md screen 17 → 32). */
+@Composable
+private fun AutoTripsCard(onSetup: () -> Unit) {
+    FwCard(Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 6.dp), onClick = onSetup) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.trips_auto_card_title),
+                    style = FwTheme.type.label,
+                    color = FwTheme.colors.ink,
+                )
+                Text(
+                    stringResource(R.string.trips_auto_card_body),
+                    style = FwTheme.type.bodyS,
+                    color = FwTheme.colors.ink2,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            Icon(painterResource(FwIcons.ChevronRight), null, tint = FwTheme.colors.ink3)
+        }
     }
 }
 
@@ -378,6 +403,8 @@ private fun TripRowItem(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit) {
         tripDuration(trip),
         purposeName(trip),
         row.vehicleName,
+        // Recorded on its own (PRD F-21.3): "auto" tag, design.md screen 17.
+        if (trip.source == TripSource.Auto) stringResource(R.string.trips_auto_tag) else null,
     ).joinToString(" · ")
     FwEntryRow(
         icon = TripLabels.purposeIcon(trip.purpose),

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.DeletedTrip
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
@@ -58,6 +59,8 @@ data class TripsUiState(
     val recording: RecordingBanner? = null,
     /** GPS trips a crash, reboot or revoked permission cut short (PRD F-07.3): resume or finish. */
     val interrupted: List<Trip> = emptyList(),
+    /** "Record trips automatically" (design.md screen 17): offered while automatic trips are available but off. */
+    val offerAutoTrips: Boolean = false,
 )
 
 sealed interface TripsEvent {
@@ -82,6 +85,7 @@ class TripsViewModel @Inject constructor(
     entries: EntryRepository,
     private val userData: UserDataRepository,
     private val recorder: TripRecorder,
+    autoTrips: AutoTripSettingsRepository,
     private val files: TripFileWriter,
     private val clock: Clock,
     private val zoneId: ZoneId,
@@ -92,8 +96,8 @@ class TripsViewModel @Inject constructor(
         vehicles.observeVehicles(),
         entries.observeAllExpenses(),
         trips.observeUnfinished(),
-        recorder.state,
-    ) { all, vehicleList, expenses, unfinished, recording ->
+        combine(recorder.state, autoTrips.settings, ::Pair),
+    ) { all, vehicleList, expenses, unfinished, (recording, auto) ->
         val names = vehicleList.associate { it.id to it.name }
         val active = recording as? RecordingState.Active
         val rows = all.filter { it.status == TripStatus.Done }.map { trip ->
@@ -105,6 +109,7 @@ class TripsViewModel @Inject constructor(
             recording = active?.let { RecordingBanner(it.tripId, it.summary.distanceKm, it.paused) },
             // Unfinished but not in this process's recorder: the process died while it recorded.
             interrupted = unfinished.filter { it.id != active?.tripId },
+            offerAutoTrips = auto.available && !auto.enabled,
             weeks = groupByWeek(rows, zoneId) { it.trip.startUtcMs }.map { week ->
                 TripWeekUi(
                     week.start,

@@ -1,5 +1,6 @@
 package app.fuelwise.feature.refuel
 
+import app.fuelwise.core.designsystem.component.FwPhoto
 import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
@@ -76,6 +77,10 @@ data class RefuelFormState(
     val fairPrice: FairPrice? = null,
     /** A scan photo waiting to be attached on save (PRD F-15); null when none or removed. */
     val scanPhotoToken: String? = null,
+    /** Receipt or pump photos (PRD F-02.1), saved with the entry. */
+    val photos: List<FwPhoto> = emptyList(),
+    val canAddPhoto: Boolean = true,
+    val photoFailed: Boolean = false,
 ) {
     val tank: Tank? get() = vehicle?.tanks?.getOrNull(tankIndex)
     val isCharge: Boolean get() = tank?.energyType == EnergyType.ELECTRIC

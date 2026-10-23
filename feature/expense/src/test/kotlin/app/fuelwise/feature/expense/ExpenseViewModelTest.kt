@@ -1,9 +1,16 @@
 package app.fuelwise.feature.expense
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.SavedStateHandle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.photo.EntryPhotoDraft
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.designsystem.component.KeypadKey
+import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
@@ -14,6 +21,7 @@ import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.testing.FakeCategoryRepository
+import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeReminderRepository
@@ -23,6 +31,7 @@ import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -33,8 +42,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35])
 class ExpenseViewModelTest {
     @get:Rule
@@ -45,6 +56,7 @@ class ExpenseViewModelTest {
     private val categories = FakeCategoryRepository()
 
     private val reminders = FakeReminderRepository()
+    private val documents = FakeDocumentRepository()
     private val mysuru = Trip(
         "mysuru",
         "safari",
@@ -69,6 +81,9 @@ class ExpenseViewModelTest {
         recurrences = recurrences,
         reminders = reminders,
         trips = trips,
+        photos = EntryPhotoDraft(documents),
+        picked = PickedPhotoReader(ApplicationProvider.getApplicationContext(), main.dispatcher),
+        io = main.dispatcher,
         clock = Clock.fixed(Instant.parse("2026-10-16T04:30:00Z"), ZoneOffset.UTC),
         zoneId = ZoneId.of("Asia/Kolkata"),
     )
@@ -165,5 +180,32 @@ class ExpenseViewModelTest {
         // Tapping it again unlinks.
         vm.onTrip("mysuru")
         assertThat(vm.state.value.tripId).isNull()
+    }
+
+    @Test
+    fun editingKeepsSavedPhotosAndOnlyRemovesOnSave() = runTest {
+        val receipt = File.createTempFile("bill", ".jpg").apply {
+            outputStream().use { createBitmap(1200, 1600).compress(Bitmap.CompressFormat.JPEG, 90, it) }
+        }
+        val vm = viewModel()
+        vm.onCategory(SystemCategory.Service.id)
+        vm.typeAmount("4850")
+        vm.onPhotosPicked(listOf(Uri.fromFile(receipt)))
+        vm.state.first { it.photos.isNotEmpty() }
+        vm.save()
+        vm.saved.first()
+        val service = entries.expenses.single()
+        val photo = documents.allAttachments().single()
+        assertThat(photo.ownerId).isEqualTo(service.id)
+        assertThat(photo.ownerType).isEqualTo(Attachment.OwnerType.Expense)
+
+        val edit = viewModel(extra = mapOf("expenseId" to service.id))
+        assertThat(edit.state.first { !it.loading }.isEdit).isTrue()
+        edit.onRemovePhoto(photo.id)
+        // Removing is only noted until save.
+        assertThat(documents.allAttachments()).hasSize(1)
+        edit.save()
+        edit.saved.first()
+        assertThat(documents.allAttachments()).isEmpty()
     }
 }

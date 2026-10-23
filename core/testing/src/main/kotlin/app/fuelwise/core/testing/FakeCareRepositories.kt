@@ -110,6 +110,8 @@ class FakeRecurrenceRepository : RecurrenceRepository {
 class FakeDocumentRepository(initial: List<Document> = emptyList()) : DocumentRepository {
     private val state = MutableStateFlow(initial)
     private val attachments = MutableStateFlow<List<Attachment>>(emptyList())
+    private val files = mutableMapOf<String, ByteArray>()
+    private var nextAttachment = 1
 
     val documents: List<Document> get() = state.value
 
@@ -138,7 +140,8 @@ class FakeDocumentRepository(initial: List<Document> = emptyList()) : DocumentRe
         bytes: ByteArray,
         mimeType: String,
     ): String {
-        val id = "attachment-${attachments.value.size + 1}"
+        val id = "attachment-${nextAttachment++}"
+        files[id] = bytes
         attachments.update { it + Attachment(id, ownerId, ownerType, "$id.bin", mimeType, bytes.size.toLong(), "") }
         return id
     }
@@ -150,7 +153,7 @@ class FakeDocumentRepository(initial: List<Document> = emptyList()) : DocumentRe
         }
     }
 
-    override suspend fun readAttachment(attachment: Attachment): ByteArray = ByteArray(0)
+    override suspend fun readAttachment(attachment: Attachment): ByteArray = files[attachment.id] ?: ByteArray(0)
 
     override suspend fun allAttachments(): List<Attachment> = attachments.value
 

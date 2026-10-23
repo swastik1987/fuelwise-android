@@ -1,13 +1,17 @@
 package app.fuelwise.feature.logbook
 
+import android.graphics.Bitmap
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeCategoryRepository
+import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFuelPriceRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
@@ -16,20 +20,25 @@ import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35])
 class EntryDetailViewModelTest {
     @get:Rule
     val main = MainDispatcherRule()
 
     private val entries = FakeEntryRepository(SampleEntries.safariRefuels, listOf(SampleEntries.safariService))
+
+    private val documents = FakeDocumentRepository()
 
     private fun viewModel(source: EntrySource, id: String) = EntryDetailViewModel(
         savedStateHandle = SavedStateHandle(mapOf("source" to source.name, "id" to id)),
@@ -39,6 +48,8 @@ class EntryDetailViewModelTest {
         lookupIntervals = LookupIntervals(ComputeConsumption()),
         userData = FakeUserDataRepository(),
         cityPrices = FakeFuelPriceRepository(),
+        documents = documents,
+        io = main.dispatcher,
     )
 
     @Test
@@ -76,5 +87,20 @@ class EntryDetailViewModelTest {
         vm.delete()
         vm.deleted.first()
         assertThat(entries.expenses).isEmpty()
+    }
+
+    @Test
+    fun anEntryShowsItsPhotos() = runTest {
+        val jpeg = ByteArrayOutputStream().use { out ->
+            createBitmap(600, 800).compress(Bitmap.CompressFormat.JPEG, 90, out)
+            out.toByteArray()
+        }
+        documents.addAttachment("e1", Attachment.OwnerType.Expense, jpeg, "image/jpeg")
+        // A PDF bill is kept but isn't a thumbnail.
+        documents.addAttachment("e1", Attachment.OwnerType.Expense, byteArrayOf(1), "application/pdf")
+        val cost = viewModel(EntrySource.Expense, "e1").uiState.first {
+            it is EntryDetailUiState.Cost && it.photos.isNotEmpty()
+        } as EntryDetailUiState.Cost
+        assertThat(cost.photos).hasSize(1)
     }
 }

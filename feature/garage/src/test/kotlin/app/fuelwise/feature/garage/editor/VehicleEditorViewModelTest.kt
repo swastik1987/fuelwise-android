@@ -7,6 +7,7 @@ import androidx.core.graphics.createBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
@@ -55,7 +56,7 @@ class VehicleEditorViewModelTest {
         autoTripSettings = autoTrips,
         carLinker = linker,
         photos = photos,
-        context = ApplicationProvider.getApplicationContext(),
+        picked = PickedPhotoReader(ApplicationProvider.getApplicationContext(), main.dispatcher),
         io = main.dispatcher,
     )
 

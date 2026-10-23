@@ -1,9 +1,12 @@
 package app.fuelwise.feature.expense
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import app.fuelwise.core.data.photo.EntryPhotoDraft
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
@@ -11,8 +14,12 @@ import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.designsystem.component.FwPhoto
 import app.fuelwise.core.designsystem.component.KeypadKey
+import app.fuelwise.core.domain.Dispatcher
+import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.domain.trip.tripsToLink
+import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
@@ -25,11 +32,13 @@ import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.ui.format.KeypadInput
 import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
+import app.fuelwise.core.ui.photo.ThumbnailCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +50,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class ExpenseField { Amount, Odometer }
 
@@ -71,9 +81,15 @@ data class ExpenseFormState(
     /** The trip this entry counts towards (PRD F-04.1, F-10.2), and trips near its date to pick from. */
     val tripId: String? = null,
     val trips: List<Trip> = emptyList(),
+    /** Receipt or bill photos (PRD F-04.1), saved with the entry. */
+    val photos: List<FwPhoto> = emptyList(),
+    val canAddPhoto: Boolean = true,
+    val photoFailed: Boolean = false,
 )
 
 /** Add / edit an expense or a toll (PRD F-04.1, F-10.2; design.md screens 10 and 11). */
+// One collaborator per thing the sheet offers (category, repeat, reminder cost, trip, photos), as in RefuelViewModel.
+@Suppress("LongParameterList")
 @HiltViewModel
 class ExpenseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -84,6 +100,9 @@ class ExpenseViewModel @Inject constructor(
     private val recurrences: RecurrenceRepository,
     private val reminders: ReminderRepository,
     private val trips: TripRepository,
+    private val photos: EntryPhotoDraft,
+    private val picked: PickedPhotoReader,
+    @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -98,8 +117,16 @@ class ExpenseViewModel @Inject constructor(
     private val savedChannel = Channel<Unit>(Channel.BUFFERED)
     val saved = savedChannel.receiveAsFlow()
 
+    private val thumbnails = ThumbnailCache()
+
     init {
         viewModelScope.launch { load() }
+        viewModelScope.launch {
+            photos.items.collect { items ->
+                val strip = withContext(io) { thumbnails.of(items, { it.key }, photos::bytes) }
+                _state.update { it.copy(photos = strip, canAddPhoto = photos.canAdd) }
+            }
+        }
         viewModelScope.launch {
             entries.observeRecentPlazas().collect { p -> _state.update { it.copy(plazaSuggestions = p) } }
         }
@@ -124,6 +151,7 @@ class ExpenseViewModel @Inject constructor(
         val cats = categories.observeCategories().first().filterNot { it.isHidden }
         val existing = route.expenseId?.let { entries.observeExpense(it).first() }
         editing = existing
+        existing?.let { photos.load(it.id) }
         val vehicleId = existing?.vehicleId ?: route.vehicleId ?: userData.userData.first().selectedVehicleId
         val vehicle = all.firstOrNull { it.id == vehicleId } ?: all.firstOrNull()
         val isToll = route.toll || existing?.tollPlaza != null ||
@@ -179,6 +207,17 @@ class ExpenseViewModel @Inject constructor(
 
     fun onTollMethod(fastag: Boolean) = _state.update { it.copy(tollByFastag = fastag) }
 
+    /** Receipt or bill photos from the system picker (PRD F-04.1); saved with the entry. */
+    fun onPhotosPicked(uris: List<Uri>) {
+        viewModelScope.launch {
+            var failed = false
+            uris.forEach { uri -> picked.read(uri)?.let(photos::add) ?: run { failed = true } }
+            _state.update { it.copy(photoFailed = failed) }
+        }
+    }
+
+    fun onRemovePhoto(key: String) = photos.remove(key)
+
     /** Tapping the linked trip again unlinks it. */
     fun onTrip(id: String) = _state.update { it.copy(tripId = if (it.tripId == id) null else id) }
 
@@ -224,6 +263,7 @@ class ExpenseViewModel @Inject constructor(
                 ),
             )
             if (editing == null) afterAdding(s, savedId, vehicle.id, categoryId, amount)
+            photos.commit(savedId, Attachment.OwnerType.Expense)
             savedChannel.send(Unit)
         }
     }

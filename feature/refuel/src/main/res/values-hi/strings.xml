@@ -37,6 +37,11 @@
     <string name="refuel_station">पंप</string>
     <string name="refuel_station_placeholder">जैसे HP, इंदिरानगर</string>
     <string name="refuel_notes">नोट</string>
+    <string name="refuel_photos">फ़ोटो</string>
+    <string name="refuel_photo">फ़िल-अप की फ़ोटो</string>
+    <string name="refuel_photo_add">फ़ोटो जोड़ें</string>
+    <string name="refuel_photo_remove">फ़ोटो हटाएँ</string>
+    <string name="refuel_photo_failed">एक फ़ोटो नहीं खुली। कोई और चुनें।</string>
     <string name="refuel_missed">पिछली बार फ़्यूल दर्ज करना भूल गया</string>
     <string name="refuel_missed_hint">इस टंकी का माइलेज छोड़कर यहीं से नई गिनती शुरू होगी, ताकि आपका औसत सही रहे।</string>
     <string name="refuel_battery">बैटरी</string>

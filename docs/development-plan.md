@@ -103,31 +103,38 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Logbook map mode (Maps Compose).
 - Field test: 20 km drive within ±3 % → `docs/perf.md`.
 
-### M9 — Station auto-detect, F-21.1–21.2 (≈1.5 weeks) — needs L6 — ⏸ deferred (19 Oct 2026)
-- Build script to turn an India OSM extract into a compact bundled file (< 3 MB target); `station_osm` read-only + `station_user`.
-- Single-fix request (balanced, 10 s, 2 min max age), matcher (history boost → distance → fuel fit), station chip states, picker sheet with ODbL attribution, learning from corrections.
+### M9 — Offline station list, F-21.2 (R1, bundled) — needs L6 — ⏳ not started; F-21.1 station chip ➡ R2 (PRD D15, D16, 23 Oct 2026)
+- R1: build script to turn an India OSM extract into a compact bundled file (< 3 MB target); `station_osm` read-only + `station_user`; offline nearest-station matcher (distance → fuel fit, personal stations boosted) used by F-21.4; ODbL attribution in Settings → About. Refreshed only with app updates. Ask before adding any tool or dependency for the build script.
+- R2: single-fix request (balanced, 10 s, 2 min max age), station chip states, picker sheet with ODbL attribution, learning from corrections (F-21.1), monthly refresh through the feed (needs D3).
 
 ### M10 — Scan, prices, import/export, FASTag parser (≈3 weeks) — needs L5, D2/D3 — 🚧 in progress (19 Oct 2026): F-15 scan, F-09 prices (manual + feed client, feed off with no URL until D2/D3), F-13.1 export + free reports, in parallel sessions
 - F-15 ML Kit (bundled) pump/receipt/odometer scan with triangle validation.
 - F-13 CSV export (zip); text reports (PDF = Pro). Drivvo/Simply Auto presets once D9 samples exist.
 - ✅ F-13.2 import brought forward (18 Oct 2026): one Import screen, Fuelio preset, generic mapper, .xlsx bulk-entry template, dry-run + undo (Room v4).
-- F-10.4 share-target SMS parser per issuer, amount-only fallback. ⏸ deferred (19 Oct 2026).
+- F-10.4 share-target SMS parser per issuer, amount-only fallback. ➡ moved to R2 (23 Oct 2026, PRD D15).
 - F-09 city prices (feed or manual), "did I pay fair?", Maps intent for nearby pumps, price alerts.
 
-### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ⏸ deferred
+### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ➡ moved to R2 (23 Oct 2026, PRD D15); R1 still needs the Insights Pro cards switched from "locked" to "Coming soon"
 - Settings screen (units, theme, Material You opt-in, app lock via BiometricPrompt, hide amounts, delete all data incl. Drive).
 - Glance widgets (Quick add, Status, Trip controls; Pro Dashboard/Consumption), QS tiles, app shortcuts.
 - Play Billing: products, paywall sheet, restore, 7-day offline grace; `EntitlementRepository` goes live.
 
+### M13 — Automatic trips, F-21.3–21.7 (moved into R1, 23 Oct 2026, PRD D15) — ⏳ not started
+- F-21.4 fill-up prompts: stations from the M9 bundled list (PRD D16), so M9 lands first. F-21.5 GPS odometer estimate: per-vehicle correction factor, feeds the odometer hint, odometer reminders and range.
+- Needs approval first (CLAUDE.md rule 7): `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION`, `BLUETOOTH_CONNECT`, Companion Device Manager, any new Activity Recognition dependency.
+- Setup screen with the prominent disclosure (design.md screens 32–33), activity-transition start/stop, car Bluetooth per vehicle, reuse of the M8 recorder, "Pause automatic trips" QS tile and Home pill, "Not my drive".
+- F-21.6: retention setting, private places trimmed from route ends, "Delete all location history". F-21.7: brand-specific battery-saver steps and the 3-day health check.
+- Play: Permissions Declaration Form and ≤30 s video, submitted early with a closed-test build. Device runs on Pixel, Samsung and one of Xiaomi/Realme/Vivo; battery drain logged in `docs/perf.md`.
+
 ### M12 — Release hardening (≈1.5 weeks) — ⏸ deferred (19 Oct 2026)
 - Baseline profile, cold-start and sheet-open budgets, 200 % font scale, TalkBack pass, Hindi review + pseudo-locale, data safety form, privacy policy, store listing, closed test.
 
-**Total R1 estimate: roughly 5 months.** If time-boxed, cut in PRD §12.9 order: F-17 → Pro widgets → F-10.4 parser → F-09.
+**Total R1 estimate: roughly 5 months.** If time-boxed, cut in PRD §12.9 order: F-17 → F-09.
 
 ---
 
 ## 3. R2 / R3 (after R1 ships)
-- R2: F-21.3–21.7 automatic trips + fill-up prompts (background location, behind a flag; Play declaration + video), F-14.6 multi-device sync, F-10.5 statement import, combined trip map, regional languages, Drive Wrapped.
+- R2 (re-scoped 23 Oct 2026, PRD D15): F-21.1 station chip and picker plus the monthly station-list refresh (rest of M9), F-10.4 FASTag share parser, F-19 Pro and billing (Pro widgets, PDF reports, Pro insight cards), F-14.6 multi-device sync, F-10.5 statement import, combined trip map, regional languages, Drive Wrapped.
 - R3: F-08 trip planner (Routes API; needs a cost budget decision).
 
 ---

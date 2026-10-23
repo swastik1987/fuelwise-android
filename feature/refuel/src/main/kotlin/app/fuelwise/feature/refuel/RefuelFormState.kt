@@ -36,6 +36,13 @@ data class RefuelFormState(
     val tankIndex: Int = 0,
     val dateTimeUtcMs: Long = 0,
     val odometer: String = "",
+    /**
+     * "Trip meter since last fill" (PRD F-02.4): the trip meter as typed, or null in odometer mode. [odometer] holds
+     * the converted reading either way, so checks and save don't care which mode was used.
+     */
+    val tripMeter: String? = null,
+    /** The vehicle's previous fill-up reading; the trip meter mode is offered only when there is one. */
+    val previousFillOdometer: Double? = null,
     val predictedOdometer: Double? = null,
     val quantity: String = "",
     val unitPrice: String = "",

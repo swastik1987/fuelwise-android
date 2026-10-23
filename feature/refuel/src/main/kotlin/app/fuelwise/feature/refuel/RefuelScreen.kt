@@ -102,6 +102,7 @@ internal data class RefuelActions(
     val onSave: () -> Unit = {},
     val onScan: () -> Unit = {},
     val onRemoveScanPhoto: () -> Unit = {},
+    val onTripMeterMode: (Boolean) -> Unit = {},
 )
 
 private fun RefuelViewModel.actions() = RefuelActions(
@@ -109,6 +110,7 @@ private fun RefuelViewModel.actions() = RefuelActions(
     onFocus = ::onFocus,
     onNext = ::onNextField,
     onUsePrediction = ::onUsePrediction,
+    onTripMeterMode = ::onTripMeterMode,
     onFull = ::onFullChange,
     onToggleMore = ::onToggleMore,
     onGrade = ::onGrade,
@@ -224,63 +226,6 @@ internal fun RefuelContent(
             onDismiss = onClose,
             fairPriceLine = state.fairPrice?.let { fairPriceText(it) },
         )
-    }
-}
-
-@Composable
-private fun OdometerSection(state: RefuelFormState, actions: RefuelActions) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FwOverline(stringResource(R.string.refuel_odometer))
-        val predicted = state.predictedOdometer?.toLong()?.toString()
-        FwOdometerField(
-            typed = state.odometer.substringBefore('.'),
-            predicted = predicted,
-            focused = state.focus == NumericField.Odometer,
-            error = state.problems.isNotEmpty() || RequiredField.Odometer in state.missing,
-            onClick = { actions.onFocus(NumericField.Odometer) },
-            contentDescription = stringResource(R.string.refuel_odometer_cd, state.odometer.ifEmpty { "—" }),
-            trailing = {
-                if (state.odometer.isEmpty() && state.predictedOdometer != null) {
-                    Surface(
-                        onClick = actions.onUsePrediction,
-                        shape = FwTheme.radius.pill,
-                        color = FwTheme.colors.accentSoft,
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.refuel_use_prediction,
-                                IndianNumberFormat.decimal(state.predictedOdometer, 0),
-                            ),
-                            style = FwTheme.type.label,
-                            color = FwTheme.colors.accent,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                        )
-                    }
-                }
-            },
-        )
-        state.problems.forEach { problem ->
-            val (text, entry) = when (problem) {
-                is CheckFillUp.Problem.OdometerNotAbovePrevious -> R.string.refuel_error_odo_low to problem.previous
-                is CheckFillUp.Problem.OdometerNotBelowNext -> R.string.refuel_error_odo_high to problem.next
-            }
-            Text(
-                stringResource(
-                    text,
-                    IndianNumberFormat.decimal(entry.odometerKm, 0),
-                    IndianNumberFormat.date(localDate(entry.dateTimeUtcMs)),
-                ),
-                style = FwTheme.type.bodyS,
-                color = FwTheme.colors.negative,
-            )
-        }
-        if (RequiredField.Odometer in state.missing) {
-            Text(
-                stringResource(R.string.refuel_error_odo_missing),
-                style = FwTheme.type.bodyS,
-                color = FwTheme.colors.negative,
-            )
-        }
     }
 }
 

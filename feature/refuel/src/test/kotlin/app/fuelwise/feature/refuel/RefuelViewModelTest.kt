@@ -104,6 +104,26 @@ class RefuelViewModelTest {
     }
 
     @Test
+    fun theTripMeterSinceTheLastFillBecomesTheOdometer() = runTest {
+        // No earlier fill: nothing to add a trip meter to.
+        val first = viewModel()
+        first.onTripMeterMode(true)
+        assertThat(first.state.value.tripMeter).isNull()
+
+        entries.saveRefuel(fill("a", odo = 41_900.0))
+        val vm = viewModel()
+        assertThat(vm.state.first { it.previousFillOdometer != null }.previousFillOdometer).isEqualTo(41_900.0)
+        vm.onTripMeterMode(true)
+        vm.onFocus(NumericField.Odometer)
+        "418.5".forEach { c -> vm.onKey(if (c == '.') KeypadKey.Dot else KeypadKey.Digit(c.digitToInt())) }
+        assertThat(vm.state.value.tripMeter).isEqualTo("418.5")
+        assertThat(vm.state.value.odometer).isEqualTo("42318.5")
+        // Back to odometer mode starts over.
+        vm.onTripMeterMode(false)
+        assertThat(vm.state.value.odometer).isEmpty()
+    }
+
+    @Test
     fun theFirstFillUpStartsOnTheVehiclesDefaultGradeThenFollowsTheLast() = runTest {
         assertThat(viewModel("activa").state.first { it.tank != null }.grade).isEqualTo(FuelGrade.E20)
         entries.saveRefuel(

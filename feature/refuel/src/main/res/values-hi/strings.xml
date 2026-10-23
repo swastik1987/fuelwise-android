@@ -6,6 +6,10 @@
     <string name="refuel_title_edit_charge">चार्जिंग बदलें</string>
     <string name="refuel_close">बंद करें</string>
     <string name="refuel_odometer">ओडोमीटर · km</string>
+    <string name="refuel_mode_odometer">ओडोमीटर</string>
+    <string name="refuel_trip_meter">ट्रिप मीटर</string>
+    <string name="refuel_trip_meter_since">पिछली फ़िल से ट्रिप मीटर</string>
+    <string name="refuel_trip_meter_result">पिछली फ़िल %1$s km + ट्रिप = %2$s km</string>
     <string name="refuel_odometer_cd">ओडोमीटर, %1$s km</string>
     <string name="refuel_use_prediction">%1$s रखें</string>
     <string name="refuel_error_odo_low">पिछली एंट्री से कम है: %2$s को %1$s km।</string>

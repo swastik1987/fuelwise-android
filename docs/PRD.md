@@ -182,7 +182,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Odometer field pre-filled with the **predicted** odometer (last odo + avg km/day × days since). Shown as a placeholder hint, not a value. The user must confirm or type it.
 - Station = auto-detected from the current location when the sheet opens (F-21.1), if location permission is granted.
 
-**F-02.4 Odometer input modes.** (not yet: odometer mode only) "Odometer" (default) or "Trip meter since last fill" (converted to odometer). Decimal allowed.
+**F-02.4 Odometer input modes.** ✅ built 23 Oct 2026 (offered once the vehicle has a fill-up; the trip meter adds to the latest earlier fill on any tank, and the converted reading is what's checked and saved) "Odometer" (default) or "Trip meter since last fill" (converted to odometer). Decimal allowed.
 
 **F-02.5 EV charge session fields:** ✅ built (Home AC charges start from the Settings home tariff; other chargers from the last tariff per charger type)
 - Date-time, odometer

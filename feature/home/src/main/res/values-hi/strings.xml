@@ -58,6 +58,7 @@
     <string name="home_auto_on">ऑटो यात्राएँ चालू</string>
     <string name="home_auto_one_tap">ऑटो यात्राएँ · एक टैप</string>
     <string name="home_auto_paused">ऑटो यात्राएँ रुकी हैं</string>
+    <string name="home_auto_blocked">बैटरी सेवर ने रोका है</string>
     <string name="home_auto_paused_until">%1$s तक रुकी हैं</string>
     <string name="home_auto_sheet_title">अपने-आप यात्राएँ</string>
     <string name="home_auto_resume">अभी फिर शुरू करें</string>

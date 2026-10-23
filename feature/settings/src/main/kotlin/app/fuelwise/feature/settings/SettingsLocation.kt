@@ -35,6 +35,13 @@ internal fun LocationSection(
             value = autoTripsValue(auto),
             onClick = { if (auto.enabled) open(SettingsSheet.AutoTrips) else actions.onAutoTripSetup() },
         )
+        if (auto.enabled) {
+            FwSettingsRow(
+                stringResource(R.string.settings_battery_saver),
+                value = stringResource(R.string.settings_battery_saver_value),
+                onClick = actions.onBatterySaver,
+            )
+        }
     }
     // PRD F-21.6: how long routes stay, places trimmed from route ends, and a separate delete.
     FwSettingsRow(

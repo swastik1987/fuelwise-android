@@ -18,6 +18,7 @@ import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.domain.trip.AutoTripPause
 import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.domain.trip.autoTripPauseEnd
+import app.fuelwise.core.domain.trip.autoTripsLikelyBlocked
 import app.fuelwise.core.domain.trip.monthTrips
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
@@ -69,7 +70,7 @@ sealed interface HomeUiState {
 }
 
 /** Automatic trips are on; paused until [pausedUntilUtcMs] ([Long.MAX_VALUE] = until turned on), or watching. */
-data class AutoTripPill(val pausedUntilUtcMs: Long?, val oneTap: Boolean)
+data class AutoTripPill(val pausedUntilUtcMs: Long?, val oneTap: Boolean, val blocked: Boolean = false)
 
 // Home reads every part of a vehicle's history (fills, costs, trips, reminders), so it lists more collaborators than
 // the detekt limit; a holder object would only hide them.
@@ -96,11 +97,25 @@ class HomeViewModel @Inject constructor(
      * The tracking status pill (design.md, PRD F-21.3): shown while automatic trips are on. Re-read every minute so a
      * pause that ends flips the pill back to "on" without waiting for another change.
      */
-    val autoTrips: StateFlow<AutoTripPill?> = combine(autoTripSettings.settings, minuteTicks()) { s, now ->
+    val autoTrips: StateFlow<AutoTripPill?> = combine(
+        autoTripSettings.settings,
+        minuteTicks(),
+        entries.observeAllRefuels(),
+    ) { s, now, refuels ->
         if (!s.available || !s.enabled) {
             null
         } else {
-            AutoTripPill(pausedUntilUtcMs = s.pausedUntilUtcMs?.takeIf { it > now }, oneTap = s.oneTap)
+            AutoTripPill(
+                pausedUntilUtcMs = s.pausedUntilUtcMs?.takeIf { it > now },
+                oneTap = s.oneTap,
+                // The health check (PRD F-21.7): silent for 3 days while the user was clearly driving.
+                blocked = autoTripsLikelyBlocked(
+                    s.enabledAtUtcMs,
+                    s.lastActivityEventUtcMs,
+                    refuels.map { it.dateTimeUtcMs },
+                    now,
+                ),
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
 

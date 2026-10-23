@@ -89,6 +89,7 @@ internal data class SettingsActions(
     val onRouteRetention: (RouteRetention) -> Unit = {},
     val onPrivatePlaces: () -> Unit = {},
     val onDeleteLocationHistory: () -> Unit = {},
+    val onBatterySaver: () -> Unit = {},
 )
 
 @Composable
@@ -167,6 +168,7 @@ internal fun SettingsScreen(links: SettingsLinks, viewModel: SettingsViewModel =
             onRouteRetention = viewModel::setRouteRetention,
             onPrivatePlaces = links.onPrivatePlaces,
             onDeleteLocationHistory = viewModel::deleteLocationHistory,
+            onBatterySaver = links.onBatterySaver,
         ),
     )
 }

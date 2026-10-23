@@ -24,4 +24,19 @@
     <string name="expense_repeat">Repeat</string>
     <string name="expense_repeat_body">For EMIs, parking passes and other fixed costs. Future entries are added automatically for you to confirm.</string>
     <string name="expense_repeat_every">Every</string>
+    <!-- Expense categories (PRD F-04.2). -->
+    <string name="categories_title">Expense categories</string>
+    <string name="categories_back">Back</string>
+    <string name="categories_add">Add category</string>
+    <string name="categories_edit">Edit category</string>
+    <string name="categories_name">Name</string>
+    <string name="categories_reset_hint">Clear the name to go back to the built-in one.</string>
+    <string name="categories_icon">Icon</string>
+    <string name="categories_show">Show when adding an expense</string>
+    <string name="categories_show_body">Hidden categories stay on past expenses.</string>
+    <string name="categories_save">Save</string>
+    <string name="categories_delete">Delete category</string>
+    <string name="categories_hidden">Hidden</string>
+    <string name="categories_deleted">Category deleted</string>
+    <string name="categories_hidden_used">Some expenses use it, so it\'s hidden instead</string>
 </resources>

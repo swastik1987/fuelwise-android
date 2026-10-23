@@ -90,6 +90,7 @@ internal data class SettingsActions(
     val onPrivatePlaces: () -> Unit = {},
     val onDeleteLocationHistory: () -> Unit = {},
     val onBatterySaver: () -> Unit = {},
+    val onCategories: () -> Unit = {},
 )
 
 @Composable
@@ -169,6 +170,7 @@ internal fun SettingsScreen(links: SettingsLinks, viewModel: SettingsViewModel =
             onPrivatePlaces = links.onPrivatePlaces,
             onDeleteLocationHistory = viewModel::deleteLocationHistory,
             onBatterySaver = links.onBatterySaver,
+            onCategories = links.onCategories,
         ),
     )
 }
@@ -453,6 +455,7 @@ private fun NotificationsSection(state: SettingsUiState, actions: SettingsAction
 @Composable
 private fun DataSection(chrome: SettingsChrome, actions: SettingsActions, open: (SettingsSheet) -> Unit) {
     Header(R.string.settings_section_data)
+    FwSettingsRow(stringResource(R.string.settings_categories), onClick = actions.onCategories)
     FwSettingsRow(
         stringResource(R.string.settings_import),
         value = stringResource(R.string.settings_import_value),

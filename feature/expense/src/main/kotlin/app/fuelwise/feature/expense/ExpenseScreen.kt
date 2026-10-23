@@ -319,7 +319,7 @@ private fun CategoryGrid(categories: List<Category>, selectedId: String?, onSele
                     verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Icon(
-                        painterResource(EntryLabels.categoryIcon(category.systemKey)),
+                        painterResource(EntryLabels.categoryIcon(category)),
                         null,
                         tint = FwTheme.colors.ink,
                         modifier = Modifier.size(22.dp),

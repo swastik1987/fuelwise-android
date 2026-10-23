@@ -38,6 +38,7 @@ import app.fuelwise.feature.documents.DocumentsRoute
 import app.fuelwise.feature.documents.documentEditorScreen
 import app.fuelwise.feature.documents.documentViewScreen
 import app.fuelwise.feature.documents.documentsScreen
+import app.fuelwise.feature.expense.CategoriesRoute
 import app.fuelwise.feature.expense.ExpenseRoute
 import app.fuelwise.feature.expense.expenseSheet
 import app.fuelwise.feature.fastag.FastagRoute
@@ -282,6 +283,7 @@ fun FuelwiseApp(
                     onImport = { navController.navigate(ImportRoute) },
                     onAutoTripSetup = { navController.navigate(AutoTripSetupRoute) },
                     onBatterySaver = { navController.navigate(BatterySaverRoute) },
+                    onCategories = { navController.navigate(CategoriesRoute) },
                     // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
                     onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
                 ),

@@ -76,7 +76,7 @@ fun LogbookEntryRow(
 
         LogbookKind.Toll -> FwIcons.Toll to EnergyColors.Premium
 
-        LogbookKind.Expense -> EntryLabels.categoryIcon(category?.systemKey) to FwTheme.colors.ink2
+        LogbookKind.Expense -> EntryLabels.categoryIcon(category) to FwTheme.colors.ink2
     }
     FwEntryRow(
         icon = icon,

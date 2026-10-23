@@ -11,6 +11,8 @@ data class Category(
     val isHidden: Boolean,
     val includeInCostPerKm: Boolean,
     val sortOrder: Int,
+    /** A custom category's icon key (PRD F-04.2); system presets have their own. */
+    val icon: String? = null,
 ) {
     val isSystem: Boolean get() = systemKey != null
 }

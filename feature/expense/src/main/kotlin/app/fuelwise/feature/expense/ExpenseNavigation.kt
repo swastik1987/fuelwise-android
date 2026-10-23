@@ -16,6 +16,11 @@ data class ExpenseRoute(
     val tripId: String? = null,
 )
 
+/** Expense categories: add your own, rename or hide any (PRD F-04.2). Opened from Settings. */
+@Serializable
+data object CategoriesRoute
+
 fun NavGraphBuilder.expenseSheet(onClose: () -> Unit) {
     composable<ExpenseRoute> { ExpenseScreen(onClose = onClose) }
+    composable<CategoriesRoute> { CategoriesScreen(onBack = onClose) }
 }

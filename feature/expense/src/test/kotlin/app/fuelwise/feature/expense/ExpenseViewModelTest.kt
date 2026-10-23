@@ -9,6 +9,7 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
 import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
+import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
@@ -21,7 +22,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -36,11 +36,7 @@ class ExpenseViewModelTest {
 
     private val entries = FakeEntryRepository()
     private val recurrences = FakeRecurrenceRepository()
-    private val categories = object : CategoryRepository {
-        override fun observeCategories() = flowOf(
-            SystemCategory.entries.mapIndexed { i, c -> Category(c.id, c, null, false, c.includeInCostPerKm, i) },
-        )
-    }
+    private val categories = FakeCategoryRepository()
 
     private fun viewModel(toll: Boolean = false) = ExpenseViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "safari", "expenseId" to null, "toll" to toll)),

@@ -114,6 +114,7 @@
     <string name="units_own">इस गाड़ी की अपनी यूनिट</string>
     <string name="units_own_body">बंद रखने पर डिफ़ॉल्ट यूनिट लागू होंगी।</string>
     <string name="settings_osm_attribution">स्टेशन डेटा © OpenStreetMap योगदानकर्ता (ODbL)</string>
+    <string name="settings_categories">खर्च की श्रेणियाँ</string>
     <string name="settings_battery_saver">बैटरी सेवर</string>
     <string name="settings_battery_saver_value">यह फ़ोन जाँचें</string>
     <string name="settings_route_retention">रूट कितने समय रखें</string>

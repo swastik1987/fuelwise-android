@@ -267,7 +267,7 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 **F-04.1 Expense entry fields:** ✅ built (attachments and trip link not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
 
-**F-04.2 Categories.** ✅ presets built (custom categories, rename and hide not yet) System presets (renameable, hideable, not deletable if used):
+**F-04.2 Categories.** ✅ built 23 Oct 2026 (presets; custom categories with name and icon, rename, hide, delete when unused; Settings → Expense categories. No per-category colour: design.md keeps categories neutral) System presets (renameable, hideable, not deletable if used):
 - Service, Repair, Tyres, Battery, Insurance, PUC, Parking, Toll (FASTag), Toll (cash), Wash/Detailing, Accessories
 - Fine/Challan, Road tax, Registration/RTO, Loan EMI, Purchase, Extended warranty, Other
 

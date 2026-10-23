@@ -10,6 +10,8 @@ import app.fuelwise.core.database.model.VehicleEntity
 import app.fuelwise.core.domain.id.IdGenerator
 import app.fuelwise.core.domain.vehicle.RegistrationNumber
 import app.fuelwise.core.domain.vehicle.VehicleDraft
+import app.fuelwise.core.model.EnergyType
+import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.Vehicle
 import java.time.Clock
 import java.time.ZoneId
@@ -38,17 +40,17 @@ internal class OfflineVehicleRepository @Inject constructor(
             id = vehicleId,
             name = draft.name.trim(),
             type = draft.type.name,
-            make = null,
-            model = null,
-            variant = null,
-            year = null,
+            make = draft.make.trim().ifEmpty { null },
+            model = draft.model.trim().ifEmpty { null },
+            variant = draft.variant.trim().ifEmpty { null },
+            year = draft.year,
             registrationNumber = draft.registrationNumber.takeIf { it.isNotBlank() }?.let(RegistrationNumber::format),
             emissionNorm = draft.emissionNorm?.name,
-            purchaseEpochDay = null,
-            purchaseOdometerKm = null,
-            purchasePricePaise = null,
+            purchaseEpochDay = draft.purchaseDate?.toEpochDay(),
+            purchaseOdometerKm = draft.purchaseOdometerKm,
+            purchasePricePaise = draft.purchasePrice?.paise,
             claimedKmPerUnit = draft.claimedKmPerUnit,
-            isHybrid = false,
+            isHybrid = draft.isHybrid && draft.fuelSetup == FuelSetup.Petrol,
             customKmPerUnit = null,
             customPricePerUnitPaise = null,
             customRangeKm = null,
@@ -66,7 +68,7 @@ internal class OfflineVehicleRepository @Inject constructor(
                 energyType = energy.name,
                 capacity = draft.tankCapacities.getOrNull(index),
                 isPrimary = index == 0,
-                defaultGrade = null,
+                defaultGrade = draft.defaultGrade?.takeIf { energy == EnergyType.PETROL }?.name,
                 sync = sync,
             )
         }

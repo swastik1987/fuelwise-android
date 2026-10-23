@@ -21,7 +21,7 @@
     <string name="editor_odometer">Current odometer</string>
     <string name="editor_start_odometer">Odometer when added</string>
     <string name="editor_more">More details (optional)</string>
-    <string name="editor_more_hint">Tank size, reg number, emission norm, claimed mileage</string>
+    <string name="editor_more_hint">Tank size, reg number, emission norm, mileage, make and model, purchase</string>
     <string name="editor_tank">%1$s tank</string>
     <string name="editor_battery">Usable battery</string>
     <string name="editor_bifuel_hint">The first fuel is primary. You can pick the tank on every fill-up.</string>
@@ -29,6 +29,24 @@
     <string name="editor_registration_placeholder">KA 01 AB 1234</string>
     <string name="editor_emission_norm">Emission norm</string>
     <string name="editor_claimed">Claimed mileage</string>
+    <!-- PRD F-01.1 / F-01.2 details -->
+    <string name="editor_default_grade">Usual petrol grade</string>
+    <string name="editor_hybrid">Hybrid (HEV)</string>
+    <string name="editor_hybrid_hint">Tracked as petrol, tagged as a hybrid.</string>
+    <string name="editor_model_section">Make and model</string>
+    <string name="editor_make">Make</string>
+    <string name="editor_model">Model</string>
+    <string name="editor_variant">Variant</string>
+    <string name="editor_year">Year</string>
+    <string name="editor_purchase_section">Purchase details</string>
+    <string name="editor_purchase_date">Bought on</string>
+    <string name="editor_purchase_date_none">Add date</string>
+    <string name="editor_purchase_odometer">Odometer when bought</string>
+    <string name="editor_purchase_price">Price paid</string>
+    <string name="editor_error_year">Enter a year from 1950 to next year</string>
+    <string name="editor_error_purchase_date">The purchase date can\'t be in the future</string>
+    <string name="editor_error_purchase_odometer">Should be between 0 and the current reading</string>
+    <string name="editor_error_purchase_price">Enter an amount above ₹0</string>
     <string name="editor_claimed_unit">km/%1$s</string>
     <string name="editor_add">Add vehicle</string>
     <string name="editor_save">Save changes</string>

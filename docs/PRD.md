@@ -132,7 +132,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-01 Vehicles (Garage) — FREE · R1
 
-**F-01.1 Vehicle profile.** ✅ built (photo, accent colour, make/model/year and purchase details not yet) Fields:
+**F-01.1 Vehicle profile.** ✅ built (make/model/variant/year and purchase details ✅ 23 Oct 2026; photo not yet; accent colour on hold: design.md keeps one accent colour) Fields:
 - Name (required, e.g., "Safari")
 - Type: car / motorcycle / scooter / auto-rickshaw / van / truck / other
 - Make, model, variant, year (optional, free text in R1)
@@ -143,7 +143,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Colour accent (auto from photo or picked)
 - Archived flag (sold vehicles stay in history)
 
-**F-01.2 Energy setup.** ✅ built (hybrid tag and default grade not yet)
+**F-01.2 Energy setup.** ✅ built (hybrid tag and default petrol grade ✅ 23 Oct 2026; the first fill-up starts on the default grade, later ones follow the last fill-up)
 - **Single fuel:** petrol, diesel, CNG, LPG, electric, ethanol/flex.
 - **Bi-fuel:** two tanks, e.g., CNG (kg) + petrol (L). One is marked primary.
 - **Hybrid (HEV):** treated as single-fuel petrol with a "hybrid" tag.

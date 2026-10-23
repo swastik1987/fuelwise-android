@@ -7,7 +7,9 @@ import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
 import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.model.EmissionNorm
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelSetup
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.VehicleType
 import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
@@ -15,6 +17,10 @@ import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -35,7 +41,7 @@ class VehicleEditorViewModelTest {
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "onboarding" to onboarding)),
         vehicles = vehicles,
         userData = userData,
-        validate = ValidateVehicleDraft(),
+        validate = ValidateVehicleDraft(Clock.fixed(Instant.parse("2026-10-23T04:30:00Z"), ZoneOffset.UTC)),
         autoTripSettings = autoTrips,
         carLinker = linker,
     )
@@ -125,5 +131,34 @@ class VehicleEditorViewModelTest {
         assertThat(updated.name).isEqualTo("Safari Dicor")
         assertThat(updated.tanks).isEqualTo(SampleVehicles.safari.tanks)
         assertThat(vehicles.addedDrafts).isEmpty()
+    }
+
+    @Test
+    fun detailsGradeAndHybridAreSavedAndLoadedBack() = runTest {
+        val vm = viewModel()
+        vm.onNameChange("City")
+        vm.onOdometerChange("8200")
+        vm.onDetailChange(VehicleDetail.Make, "Honda")
+        vm.onDetailChange(VehicleDetail.Year, "20a25")
+        vm.onDetailChange(VehicleDetail.PurchasePrice, "20,50,000")
+        vm.onPurchaseDateChange(LocalDate.of(2025, 2, 14))
+        vm.onHybridChange(true)
+        vm.onDefaultGradeChange(FuelGrade.E20)
+        vm.save()
+        val id = (vm.events.first() as VehicleEditorEvent.Saved).vehicleId
+        val draft = vehicles.addedDrafts.single()
+        assertThat(draft.year).isEqualTo(2025)
+        assertThat(draft.purchasePrice).isEqualTo(Money(205_000_000))
+        assertThat(draft.isHybrid).isTrue()
+        assertThat(draft.defaultGrade).isEqualTo(FuelGrade.E20)
+
+        val edit = viewModel(vehicleId = id)
+        assertThat(edit.state.value.detail(VehicleDetail.Make)).isEqualTo("Honda")
+        assertThat(edit.state.value.purchaseDate).isEqualTo(LocalDate.of(2025, 2, 14))
+        assertThat(edit.state.value.defaultGrade).isEqualTo(FuelGrade.E20)
+        // A purchase reading above today's is flagged.
+        edit.onDetailChange(VehicleDetail.PurchaseOdometer, "9000")
+        edit.save()
+        assertThat(edit.state.value.errors).containsExactly(VehicleDraftError.PurchaseOdometerInvalid)
     }
 }

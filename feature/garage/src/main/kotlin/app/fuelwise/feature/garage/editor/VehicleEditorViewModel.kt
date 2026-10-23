@@ -8,12 +8,11 @@ import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
-import app.fuelwise.core.domain.vehicle.RegistrationNumber
 import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
-import app.fuelwise.core.domain.vehicle.VehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
 import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.model.EmissionNorm
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.VehicleType
@@ -21,6 +20,7 @@ import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.NumberInput
 import app.fuelwise.feature.garage.VehicleEditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,43 +31,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * Form state for design.md screen 2. Numbers are kept as text while typing and parsed on save.
- * In edit mode the fuel setup and starting odometer are fixed: changing them would rewrite history.
- */
-data class VehicleFormState(
-    val isLoading: Boolean = false,
-    val isEditing: Boolean = false,
-    val onboarding: Boolean = false,
-    val name: String = "",
-    val type: VehicleType = VehicleType.Car,
-    val fuelSetup: FuelSetup = FuelSetup.Petrol,
-    val odometer: String = "",
-    val capacities: List<String> = listOf(""),
-    val registration: String = "",
-    val emissionNorm: EmissionNorm? = null,
-    val claimed: String = "",
-    val moreExpanded: Boolean = false,
-    /** Shown only after the first save attempt, so an empty form doesn't open covered in red. */
-    val errors: Set<VehicleDraftError> = emptySet(),
-    val isSaving: Boolean = false,
-    /**
-     * Car Bluetooth for automatic trips (design.md screen 22, PRD F-21.3): offered when editing a saved vehicle
-     * while automatic trips are available. [carLinkName] is the linked car, or null.
-     */
-    val carBluetoothOffered: Boolean = false,
-    val carLinked: Boolean = false,
-    val carLinkName: String? = null,
-) {
-    /** Two-wheelers have no car kit to link (design.md: "Two-wheelers can skip this"). */
-    val showCarBluetooth: Boolean
-        get() = carBluetoothOffered && type != VehicleType.Scooter && type != VehicleType.Motorcycle
-}
-
 sealed interface VehicleEditorEvent {
     data class Saved(val vehicleId: String, val onboarding: Boolean) : VehicleEditorEvent
 }
 
+@Suppress("TooManyFunctions") // One handler per form field, as the screen needs.
 @HiltViewModel
 class VehicleEditorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -133,6 +101,10 @@ class VehicleEditorViewModel @Inject constructor(
                 registration = vehicle.registrationNumber.orEmpty(),
                 emissionNorm = vehicle.emissionNorm,
                 claimed = vehicle.claimedKmPerUnit?.let(::plain).orEmpty(),
+                details = vehicle.detailsText(),
+                purchaseDate = vehicle.purchaseDate,
+                isHybrid = vehicle.isHybrid,
+                defaultGrade = vehicle.tanks.firstNotNullOfOrNull { t -> t.defaultGrade },
                 moreExpanded = true,
             )
         }
@@ -179,6 +151,27 @@ class VehicleEditorViewModel @Inject constructor(
 
     fun onClaimedChange(value: String) = edit { copy(claimed = NumberInput.sanitize(value, 1)) }
 
+    fun onDetailChange(field: VehicleDetail, value: String) = edit {
+        copy(details = details + (field to field.sanitize(value)))
+    }
+
+    fun onPurchaseDateChange(value: LocalDate?) = edit { copy(purchaseDate = value) }
+
+    fun onHybridChange(value: Boolean) = edit { copy(isHybrid = value) }
+
+    /** Tapping the chosen grade again clears it. */
+    fun onDefaultGradeChange(value: FuelGrade) = edit {
+        copy(
+            defaultGrade = if (defaultGrade ==
+                value
+            ) {
+                null
+            } else {
+                value
+            },
+        )
+    }
+
     fun onToggleMore() = edit { copy(moreExpanded = !moreExpanded) }
 
     fun save() {
@@ -211,32 +204,16 @@ class VehicleEditorViewModel @Inject constructor(
         }
     }
 
-    private fun VehicleFormState.toDraft() = VehicleDraft(
-        name = name,
-        type = type,
-        fuelSetup = fuelSetup,
-        odometerKm = NumberInput.parseDecimal(odometer),
-        tankCapacities = capacities.map(NumberInput::parseDecimal),
-        registrationNumber = registration,
-        emissionNorm = emissionNorm,
-        claimedKmPerUnit = NumberInput.parseDecimal(claimed),
-    )
-
-    private fun Vehicle.applyDraft(draft: VehicleDraft) = copy(
-        name = draft.name.trim(),
-        type = draft.type,
-        registrationNumber = draft.registrationNumber.takeIf { it.isNotBlank() }?.let(RegistrationNumber::format),
-        emissionNorm = draft.emissionNorm,
-        claimedKmPerUnit = draft.claimedKmPerUnit,
-        tanks = tanks.mapIndexed { i, tank -> tank.copy(capacity = draft.tankCapacities.getOrNull(i)) },
-    )
-
     private companion object {
         const val MAX_REG_INPUT = 16
         val MORE_ERRORS = setOf(
             VehicleDraftError.CapacityNotPositive,
             VehicleDraftError.RegistrationInvalid,
             VehicleDraftError.ClaimedNotPositive,
+            VehicleDraftError.YearInvalid,
+            VehicleDraftError.PurchaseInFuture,
+            VehicleDraftError.PurchaseOdometerInvalid,
+            VehicleDraftError.PurchasePriceNotPositive,
         )
 
         fun plain(value: Double): String = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()

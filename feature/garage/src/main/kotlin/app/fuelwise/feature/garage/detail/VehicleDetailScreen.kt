@@ -43,6 +43,7 @@ import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.ui.entry.EntryLabels
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.feature.garage.R
@@ -71,7 +72,7 @@ internal fun VehicleDetailScreen(
     }
 }
 
-/** Vehicle detail (design.md screen 22). Photo, purchase details and car Bluetooth arrive with their features. */
+/** Vehicle detail (design.md screen 22). The header photo arrives with vehicle photos. */
 @Composable
 internal fun VehicleDetailContent(
     vehicle: Vehicle,
@@ -105,6 +106,7 @@ internal fun VehicleDetailContent(
                         Box(Modifier.size(8.dp).background(VehicleLabels.energyColor(tank.energyType), CircleShape))
                         Text(
                             stringResource(VehicleLabels.energy(tank.energyType)) +
+                                tank.defaultGrade?.let { " · " + stringResource(EntryLabels.grade(it)) }.orEmpty() +
                                 if (tank.isPrimary &&
                                     vehicle.isBiFuel
                                 ) {
@@ -148,6 +150,7 @@ internal fun VehicleDetailContent(
                     },
                 )
             }
+            Purchase(vehicle)
             Column(Modifier.padding(horizontal = FwTheme.spacing.gutter)) {
                 ActionRow(
                     icon = if (vehicle.isArchived) FwIcons.Unarchive else FwIcons.Archive,
@@ -199,6 +202,7 @@ private fun Header(vehicle: Vehicle) {
             modifier = Modifier.size(32.dp),
         )
         Text(vehicle.name, style = FwTheme.type.h1, color = FwTheme.colors.bg, modifier = Modifier.padding(top = 12.dp))
+        modelLine(vehicle)?.let { Text(it, style = FwTheme.type.bodyS, color = FwTheme.colors.bg) }
         Text(
             listOfNotNull(
                 vehicle.registrationNumber,
@@ -206,6 +210,31 @@ private fun Header(vehicle: Vehicle) {
             ).joinToString(" · "),
             style = FwTheme.type.monoS,
             color = FwTheme.colors.bg.copy(alpha = 0.75f),
+        )
+    }
+}
+
+/** Purchase details (design.md screen 22). */
+@Composable
+private fun Purchase(vehicle: Vehicle) {
+    Section(stringResource(R.string.editor_purchase_section)) {
+        ValueRow(
+            stringResource(R.string.editor_purchase_date),
+            vehicle.purchaseDate?.let {
+                IndianNumberFormat.date(it)
+            },
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_purchase_odometer),
+            vehicle.purchaseOdometerKm?.let {
+                stringResource(R.string.garage_km, IndianNumberFormat.decimal(it, 0))
+            },
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_purchase_price),
+            vehicle.purchasePrice?.let(IndianNumberFormat::rupeesWhole),
         )
     }
 }
@@ -287,6 +316,14 @@ private fun DeleteDialog(
         },
     )
 }
+
+/** "Tata Safari XZ+ · 2023 · Hybrid", from what was filled in (PRD F-01.1, F-01.2). */
+@Composable
+private fun modelLine(vehicle: Vehicle): String? = listOfNotNull(
+    listOfNotNull(vehicle.make, vehicle.model, vehicle.variant).joinToString(" ").ifEmpty { null },
+    vehicle.year?.toString(),
+    if (vehicle.isHybrid) stringResource(R.string.editor_hybrid) else null,
+).joinToString(" · ").ifEmpty { null }
 
 private fun normName(norm: EmissionNorm): Int = when (norm) {
     EmissionNorm.BS3 -> R.string.norm_bs3

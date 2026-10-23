@@ -7,6 +7,7 @@ import app.fuelwise.core.database.model.VehicleWithTanks
 import app.fuelwise.core.model.CustomParameters
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.EnergyType
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Tank
 import app.fuelwise.core.model.Vehicle
@@ -45,6 +46,7 @@ internal fun TankEntity.toModel() = Tank(
     energyType = enumValueOrNull<EnergyType>(energyType) ?: EnergyType.PETROL,
     capacity = capacity,
     isPrimary = isPrimary,
+    defaultGrade = defaultGrade?.let { enumValueOrNull<FuelGrade>(it) },
 )
 
 /** Fields the model doesn't carry (start-odometer zone) come from [existing]. */
@@ -80,7 +82,7 @@ internal fun Tank.toEntity(vehicleId: String, sync: SyncMeta) = TankEntity(
     energyType = energyType.name,
     capacity = capacity,
     isPrimary = isPrimary,
-    defaultGrade = null,
+    defaultGrade = defaultGrade?.name,
     sync = sync,
 )
 

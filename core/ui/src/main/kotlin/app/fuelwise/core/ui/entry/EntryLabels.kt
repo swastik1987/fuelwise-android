@@ -68,7 +68,8 @@ object EntryLabels {
     /** A category's icon: a custom category's chosen one (PRD F-04.2), else its preset's. */
     @DrawableRes
     fun categoryIcon(category: Category?): Int =
-        category?.icon?.let { key -> CUSTOM_ICONS.firstOrNull { it.first == key }?.second } ?: categoryIcon(category?.systemKey)
+        category?.icon?.let { key -> CUSTOM_ICONS.firstOrNull { it.first == key }?.second }
+            ?: categoryIcon(category?.systemKey)
 
     /** Icons a custom category can use, by stable key (stored on the row; never reorder keys). */
     val CUSTOM_ICONS: List<Pair<String, Int>> = listOf(

@@ -24,4 +24,18 @@
     <string name="expense_repeat">दोहराएँ</string>
     <string name="expense_repeat_body">EMI, पार्किंग पास और दूसरे तय खर्चों के लिए। आगे की एंट्री अपने-आप जुड़ेंगी, आप बस पक्का करें।</string>
     <string name="expense_repeat_every">हर</string>
+    <string name="categories_title">खर्च की श्रेणियाँ</string>
+    <string name="categories_back">वापस</string>
+    <string name="categories_add">श्रेणी जोड़ें</string>
+    <string name="categories_edit">श्रेणी बदलें</string>
+    <string name="categories_name">नाम</string>
+    <string name="categories_reset_hint">पहले वाले नाम पर लौटने के लिए नाम मिटा दें।</string>
+    <string name="categories_icon">आइकन</string>
+    <string name="categories_show">खर्च जोड़ते समय दिखाएँ</string>
+    <string name="categories_show_body">छिपी श्रेणियाँ पुराने खर्चों पर बनी रहती हैं।</string>
+    <string name="categories_save">सेव करें</string>
+    <string name="categories_delete">श्रेणी मिटाएँ</string>
+    <string name="categories_hidden">छिपी हुई</string>
+    <string name="categories_deleted">श्रेणी मिटा दी गई</string>
+    <string name="categories_hidden_used">कुछ खर्चों में इस्तेमाल हुई है, इसलिए छिपा दी गई</string>
 </resources>

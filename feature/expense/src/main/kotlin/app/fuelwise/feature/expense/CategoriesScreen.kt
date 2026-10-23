@@ -96,7 +96,7 @@ internal fun CategoriesContent(state: CategoriesUiState, actions: CategoriesActi
         FwTopBar(
             title = stringResource(R.string.categories_title),
             onBack = actions.onBack,
-            backContentDescription = stringResource(R.string.expense_back),
+            backContentDescription = stringResource(R.string.categories_back),
         )
         LazyColumn(Modifier.weight(1f).padding(horizontal = FwTheme.spacing.gutter)) {
             items(state.categories, key = { it.id }) { category ->
@@ -132,7 +132,9 @@ internal fun CategoriesContent(state: CategoriesUiState, actions: CategoriesActi
 private fun CategorySheet(category: Category?, actions: CategoriesActions, onDismiss: () -> Unit) {
     val displayName = category?.let { categoryName(it) }.orEmpty()
     var name by rememberSaveable(category?.id) { mutableStateOf(displayName) }
-    var icon by rememberSaveable(category?.id) { mutableStateOf(category?.icon ?: EntryLabels.CUSTOM_ICONS.first().first) }
+    var icon by rememberSaveable(category?.id) {
+        mutableStateOf(category?.icon ?: EntryLabels.CUSTOM_ICONS.first().first)
+    }
     val custom = category == null || !category.isSystem
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -157,7 +159,11 @@ private fun CategorySheet(category: Category?, actions: CategoriesActions, onDis
                 imeAction = ImeAction.Done,
             )
             if (category?.isSystem == true) {
-                Text(stringResource(R.string.categories_reset_hint), style = FwTheme.type.caption, color = FwTheme.colors.ink2)
+                Text(
+                    stringResource(R.string.categories_reset_hint),
+                    style = FwTheme.type.caption,
+                    color = FwTheme.colors.ink2,
+                )
             }
             if (custom) {
                 FlowRow(
@@ -180,6 +186,7 @@ private fun CategorySheet(category: Category?, actions: CategoriesActions, onDis
                 onClick = {
                     when {
                         category == null -> actions.onAdd(name, icon)
+
                         // Unchanged: don't freeze a preset's translated name as a custom one.
                         name != displayName -> actions.onRename(category.id, name)
                     }

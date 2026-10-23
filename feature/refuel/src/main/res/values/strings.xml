@@ -6,6 +6,11 @@
     <string name="refuel_title_edit_charge">Edit charge</string>
     <string name="refuel_close">Close</string>
     <string name="refuel_odometer">Odometer · km</string>
+    <!-- PRD F-02.4. Result: 1 last fill reading, 2 the odometer it works out to (both km) -->
+    <string name="refuel_mode_odometer">Odometer</string>
+    <string name="refuel_trip_meter">Trip meter</string>
+    <string name="refuel_trip_meter_since">Trip meter since last fill</string>
+    <string name="refuel_trip_meter_result">Last fill %1$s km + trip = %2$s km</string>
     <string name="refuel_odometer_cd">Odometer, %1$s km</string>
     <string name="refuel_use_prediction">Use %1$s</string>
     <string name="refuel_error_odo_low">Lower than your last entry: %1$s km on %2$s.</string>

@@ -17,7 +17,9 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.entry.PriceTriangle.Field
 import app.fuelwise.core.domain.entry.gpsDistances
+import app.fuelwise.core.domain.entry.odometerFromTripMeter
 import app.fuelwise.core.domain.entry.odometerReadings
+import app.fuelwise.core.domain.entry.previousFillOdometer
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.PriceDefault
 import app.fuelwise.core.domain.prices.choosePriceDefault
@@ -74,6 +76,9 @@ class RefuelViewModel @Inject constructor(
     private val route = savedStateHandle.toRoute<RefuelRoute>()
     private var editing: Refuel? = null
     private var tankFills: List<Refuel> = emptyList()
+
+    /** Every tank's fills, for the trip meter's previous reading (PRD F-02.4). */
+    private var vehicleFills: List<Refuel> = emptyList()
 
     /** Home charging tariff from Settings (PRD F-02.5, F-18); Home AC charges start from it when set. */
     private var homeTariff: Money? = null
@@ -175,6 +180,8 @@ class RefuelViewModel @Inject constructor(
         val refuels = entries.observeRefuels(vehicle.id).first()
         val expenses = entries.observeExpenses(vehicle.id).first()
         tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
+        vehicleFills = refuels
+        _state.update { it.withPreviousFill() }
         homeTariff = userData.userData.first().homeTariff
         // A finished trip's odometer counts too (PRD F-07.6), and so does distance recorded since the last reading
         // (PRD F-21.5), so the hint follows recent driving. A hint only: the typed value always wins.
@@ -254,7 +261,8 @@ class RefuelViewModel @Inject constructor(
         val field = _state.value.focus ?: return
         _state.update { s ->
             when (field) {
-                NumericField.Odometer -> s.copy(odometer = KeypadInput.apply(s.odometer, key, maxDecimals = 1))
+                NumericField.Odometer -> s.tripMeter?.let { trip -> s.withTripMeter(KeypadInput.apply(trip, key, 1)) }
+                    ?: s.copy(odometer = KeypadInput.apply(s.odometer, key, maxDecimals = 1))
 
                 NumericField.Quantity -> s.triangleEdit(Field.Quantity, KeypadInput.apply(s.quantity, key, 2))
 
@@ -268,6 +276,15 @@ class RefuelViewModel @Inject constructor(
                     durationMin = KeypadInput.apply(s.durationMin, key, 0, maxIntegerDigits = 4),
                 )
             }.revalidated()
+        }
+    }
+
+    /** Odometer or trip meter since the last fill (PRD F-02.4). Switching clears what was typed. */
+    fun onTripMeterMode(on: Boolean) = _state.update { s ->
+        if (on && s.previousFillOdometer == null) {
+            s
+        } else {
+            s.copy(tripMeter = if (on) "" else null, odometer = "", focus = NumericField.Odometer).revalidated()
         }
     }
 
@@ -348,7 +365,7 @@ class RefuelViewModel @Inject constructor(
     }
 
     fun onDateTime(utcMs: Long) {
-        _state.update { it.copy(dateTimeUtcMs = utcMs).revalidated() }
+        _state.update { it.copy(dateTimeUtcMs = utcMs).withPreviousFill().revalidated() }
     }
 
     fun onTank(index: Int) {
@@ -428,6 +445,23 @@ class RefuelViewModel @Inject constructor(
 
             Field.Total -> copy(total = solved.total?.let(MoneyInput::plain).orEmpty())
         }
+    }
+
+    /** The previous fill for this date; a trip meter already typed is converted again. */
+    private fun RefuelFormState.withPreviousFill(): RefuelFormState {
+        val previous = previousFillOdometer(vehicleFills, dateTimeUtcMs, editing?.id)
+        val next = copy(previousFillOdometer = previous)
+        return when {
+            tripMeter == null -> next
+            previous == null -> next.copy(tripMeter = null, odometer = "")
+            else -> next.withTripMeter(tripMeter)
+        }
+    }
+
+    private fun RefuelFormState.withTripMeter(trip: String): RefuelFormState {
+        val km = NumberInput.parseDecimal(trip)
+        val odo = previousFillOdometer?.let { prev -> km?.let { odometerFromTripMeter(prev, it) } }
+        return copy(tripMeter = trip, odometer = odo?.let { "%.1f".format(java.util.Locale.ROOT, it) }.orEmpty())
     }
 
     private fun RefuelFormState.revalidated(): RefuelFormState {

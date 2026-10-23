@@ -61,6 +61,16 @@ class RefuelScreensTest {
 
     @Test fun fuelDark() = capture("add_fuel_dark", true) { RefuelContent(fuel, RefuelActions(), {}, now) }
 
+    @Test fun tripMeterLight() = capture("add_fuel_trip_meter_light", false) {
+        val trip = fuel.copy(tripMeter = "418.5", previousFillOdometer = 41_900.0, odometer = "42318.5")
+        RefuelContent(trip, RefuelActions(), {}, now)
+    }
+
+    @Test fun tripMeterDark() = capture("add_fuel_trip_meter_dark", true) {
+        val trip = fuel.copy(tripMeter = "418.5", previousFillOdometer = 41_900.0, odometer = "42318.5")
+        RefuelContent(trip, RefuelActions(), {}, now)
+    }
+
     @Test fun chargeLight() = capture("add_charge_light", false) { RefuelContent(charge, RefuelActions(), {}, now) }
 
     @Test fun rewardLight() = capture("reward_light", false) {

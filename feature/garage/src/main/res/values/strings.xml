@@ -35,6 +35,17 @@
     <string name="editor_photo_change">Change photo</string>
     <string name="editor_photo_remove">Remove photo</string>
     <string name="editor_photo_failed">Couldn\'t open that photo. Try another.</string>
+    <!-- Custom parameters (PRD F-01.4). Units: 1 = L, kg or kWh -->
+    <string name="editor_custom_section">For estimates (optional)</string>
+    <string name="editor_custom_hint">Leave blank to use your own fill-ups. Anything you set here shows as manual.</string>
+    <string name="editor_custom_consumption">Mileage</string>
+    <string name="editor_custom_price">Fuel price</string>
+    <string name="editor_custom_price_unit">₹/%1$s</string>
+    <string name="editor_custom_range">Range on a full tank</string>
+    <string name="editor_error_custom">Enter a number above 0, or leave it blank</string>
+    <string name="detail_custom">Custom parameters</string>
+    <string name="detail_manual">%1$s · manual</string>
+    <string name="detail_from_history">From your fill-ups</string>
     <!-- PRD F-01.1 / F-01.2 details -->
     <string name="editor_default_grade">Usual petrol grade</string>
     <string name="editor_hybrid">Hybrid (HEV)</string>

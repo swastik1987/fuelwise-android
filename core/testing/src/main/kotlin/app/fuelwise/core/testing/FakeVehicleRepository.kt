@@ -54,6 +54,7 @@ class FakeVehicleRepository(initial: List<Vehicle> = emptyList()) : VehicleRepos
             purchaseOdometerKm = draft.purchaseOdometerKm,
             purchasePrice = draft.purchasePrice,
             isHybrid = draft.isHybrid,
+            custom = draft.custom,
             sortOrder = live.value.size,
         )
         live.update { it + vehicle }

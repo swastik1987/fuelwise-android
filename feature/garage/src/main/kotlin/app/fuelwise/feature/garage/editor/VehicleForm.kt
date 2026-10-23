@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import app.fuelwise.core.domain.vehicle.RegistrationNumber
 import app.fuelwise.core.domain.vehicle.VehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
+import app.fuelwise.core.model.CustomParameters
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -69,6 +70,11 @@ enum class VehicleDetail(val maxLength: Int) {
     Year(YEAR_DIGITS),
     PurchaseOdometer(MAX_NUMBER),
     PurchasePrice(MAX_NUMBER),
+
+    // PRD F-01.4: overrides for estimates.
+    CustomKmPerUnit(MAX_NUMBER),
+    CustomPrice(MAX_NUMBER),
+    CustomRange(MAX_NUMBER),
 }
 
 private const val MAX_TEXT = 30
@@ -80,8 +86,14 @@ private const val MAX_NUMBER = 14
 /** Cleans what was typed: digits for the year, a number for the reading and the price. */
 internal fun VehicleDetail.sanitize(value: String): String = when (this) {
     VehicleDetail.Year -> value.filter(Char::isDigit)
-    VehicleDetail.PurchaseOdometer -> NumberInput.sanitize(value, 1)
-    VehicleDetail.PurchasePrice -> NumberInput.sanitize(value, 2)
+
+    VehicleDetail.PurchaseOdometer, VehicleDetail.CustomRange -> NumberInput.sanitize(value, 1)
+
+    VehicleDetail.PurchasePrice, VehicleDetail.CustomKmPerUnit, VehicleDetail.CustomPrice -> NumberInput.sanitize(
+        value,
+        2,
+    )
+
     else -> value
 }.take(maxLength)
 
@@ -103,6 +115,11 @@ internal fun VehicleFormState.toDraft() = VehicleDraft(
     purchasePrice = detail(VehicleDetail.PurchasePrice).takeIf { it.isNotBlank() }?.let(MoneyInput::parse),
     isHybrid = isHybrid && hasPetrolTank && !fuelSetup.isBiFuel,
     defaultGrade = defaultGrade.takeIf { hasPetrolTank },
+    custom = CustomParameters(
+        kmPerUnit = NumberInput.parseDecimal(detail(VehicleDetail.CustomKmPerUnit)),
+        pricePerUnit = detail(VehicleDetail.CustomPrice).takeIf { it.isNotBlank() }?.let(MoneyInput::parse),
+        rangeKm = NumberInput.parseDecimal(detail(VehicleDetail.CustomRange)),
+    ),
 )
 
 /** The saved vehicle's details as form text. */
@@ -113,6 +130,9 @@ internal fun Vehicle.detailsText(): Map<VehicleDetail, String> = buildMap {
     year?.let { put(VehicleDetail.Year, it.toString()) }
     purchaseOdometerKm?.let { put(VehicleDetail.PurchaseOdometer, NumberInput.plain(it)) }
     purchasePrice?.let { put(VehicleDetail.PurchasePrice, MoneyInput.plain(it)) }
+    custom.kmPerUnit?.let { put(VehicleDetail.CustomKmPerUnit, NumberInput.plain(it)) }
+    custom.pricePerUnit?.let { put(VehicleDetail.CustomPrice, MoneyInput.plain(it)) }
+    custom.rangeKm?.let { put(VehicleDetail.CustomRange, NumberInput.plain(it)) }
 }
 
 internal fun Vehicle.applyDraft(draft: VehicleDraft) = copy(
@@ -129,6 +149,7 @@ internal fun Vehicle.applyDraft(draft: VehicleDraft) = copy(
     purchaseOdometerKm = draft.purchaseOdometerKm,
     purchasePrice = draft.purchasePrice,
     isHybrid = draft.isHybrid,
+    custom = draft.custom,
     tanks = tanks.mapIndexed { i, tank ->
         tank.copy(
             capacity = draft.tankCapacities.getOrNull(i),

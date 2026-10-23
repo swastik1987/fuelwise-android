@@ -151,7 +151,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 **F-01.3 Claimed efficiency.** ✅ built Optional ARAI/claimed figure (km/L, km/kg, km/kWh). Used for "your real vs claimed" comparisons.
 
-**F-01.4 Custom parameters.** (stored; editing UI not yet) The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
+**F-01.4 Custom parameters.** ✅ built 23 Oct 2026 (mileage, fuel price and full-tank range under "For estimates" on the vehicle form; vehicle detail shows them as manual, or "From your fill-ups"; tank capacity is the tank field) The user can override computed values used for estimates: consumption, fuel price, range and tank capacity. Mark them "manual" in the UI.
 
 **F-01.5 Multiple vehicles.** ✅ built ("All vehicles" view arrives with stats, M5) Unlimited. A global vehicle switcher exists. "All vehicles" aggregate view is available for stats.
 

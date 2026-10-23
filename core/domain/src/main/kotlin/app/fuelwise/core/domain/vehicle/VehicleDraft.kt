@@ -1,5 +1,6 @@
 package app.fuelwise.core.domain.vehicle
 
+import app.fuelwise.core.model.CustomParameters
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelSetup
@@ -34,6 +35,8 @@ data class VehicleDraft(
     val isHybrid: Boolean = false,
     /** PRD F-01.2: the grade a petrol tank's first fill-up starts on. */
     val defaultGrade: FuelGrade? = null,
+    /** PRD F-01.4: overrides for estimates; null uses the vehicle's own history. */
+    val custom: CustomParameters = CustomParameters(),
 )
 
 enum class VehicleDraftError {
@@ -48,6 +51,7 @@ enum class VehicleDraftError {
     PurchaseInFuture,
     PurchaseOdometerInvalid,
     PurchasePriceNotPositive,
+    CustomNotPositive,
 }
 
 class ValidateVehicleDraft @Inject constructor(private val clock: Clock) {
@@ -67,6 +71,9 @@ class ValidateVehicleDraft @Inject constructor(private val clock: Clock) {
         }
         if (draft.claimedKmPerUnit != null && draft.claimedKmPerUnit <= 0.0) add(VehicleDraftError.ClaimedNotPositive)
         addAll(purchaseErrors(draft))
+        val custom = draft.custom
+        val overrides = listOfNotNull(custom.kmPerUnit, custom.rangeKm, custom.pricePerUnit?.paise?.toDouble())
+        if (overrides.any { it <= 0.0 }) add(VehicleDraftError.CustomNotPositive)
     }
 
     /** Model years run up to next year (new models go on sale early); a purchase can't be in the future. */

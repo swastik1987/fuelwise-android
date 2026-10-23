@@ -430,6 +430,7 @@ private fun MoreDetails(state: VehicleFormState, actions: VehicleEditorActions) 
             if (state.hasPetrolTank) PetrolDetails(state, actions)
             ModelDetails(state, actions.onDetail)
             PurchaseDetails(state, actions)
+            CustomParameters(state, actions.onDetail)
             actions.onLinkCar?.takeIf {
                 state.showCarBluetooth
             }?.let { link -> CarBluetoothRow(state, link, actions.onUnlinkCar) }
@@ -523,6 +524,42 @@ private fun PurchaseDetails(state: VehicleFormState, actions: VehicleEditorActio
     }
 }
 
+/**
+ * Overrides for estimates (PRD F-01.4): range left, trip cost and the like use these instead of the vehicle's own
+ * history, and show them as "manual".
+ */
+@Composable
+private fun CustomParameters(state: VehicleFormState, onDetail: (VehicleDetail, String) -> Unit) {
+    val unit = stringResource(VehicleLabels.unit(state.fuelSetup.tanks.first().canonicalUnit))
+    val error = state.errors.messageFor(VehicleDraftError.CustomNotPositive)
+    FwOverline(stringResource(R.string.editor_custom_section))
+    Text(stringResource(R.string.editor_custom_hint), style = FwTheme.type.caption, color = FwTheme.colors.ink2)
+    DetailField(
+        state,
+        VehicleDetail.CustomKmPerUnit,
+        R.string.editor_custom_consumption,
+        onDetail,
+        unit = stringResource(R.string.editor_claimed_unit, unit),
+        error = error.takeIf { state.detail(VehicleDetail.CustomKmPerUnit).isNotEmpty() },
+    )
+    DetailField(
+        state,
+        VehicleDetail.CustomPrice,
+        R.string.editor_custom_price,
+        onDetail,
+        unit = stringResource(R.string.editor_custom_price_unit, unit),
+        error = error.takeIf { state.detail(VehicleDetail.CustomPrice).isNotEmpty() },
+    )
+    DetailField(
+        state,
+        VehicleDetail.CustomRange,
+        R.string.editor_custom_range,
+        onDetail,
+        unit = stringResource(app.fuelwise.core.ui.R.string.unit_km),
+        error = error.takeIf { state.detail(VehicleDetail.CustomRange).isNotEmpty() },
+    )
+}
+
 @Composable
 private fun DetailField(
     state: VehicleFormState,
@@ -533,8 +570,7 @@ private fun DetailField(
     unit: String? = null,
     error: String? = null,
 ) {
-    val numeric = field == VehicleDetail.Year || field == VehicleDetail.PurchaseOdometer ||
-        field == VehicleDetail.PurchasePrice
+    val numeric = field !in TEXT_DETAILS
     FwTextField(
         value = state.detail(field),
         onValueChange = { onDetail(field, it) },
@@ -568,6 +604,7 @@ private fun errorMessage(error: VehicleDraftError): Int = when (error) {
     VehicleDraftError.PurchaseInFuture -> R.string.editor_error_purchase_date
     VehicleDraftError.PurchaseOdometerInvalid -> R.string.editor_error_purchase_odometer
     VehicleDraftError.PurchasePriceNotPositive -> R.string.editor_error_purchase_price
+    VehicleDraftError.CustomNotPositive -> R.string.editor_error_custom
 }
 
 private fun normLabel(norm: EmissionNorm): Int = when (norm) {
@@ -588,3 +625,4 @@ private val PICKER_TYPES = listOf(
 private const val EXPANDED_ROTATION = 180f
 private val YEAR_WIDTH = 104.dp
 private val PHOTO_SIZE = 72.dp
+private val TEXT_DETAILS = setOf(VehicleDetail.Make, VehicleDetail.Model, VehicleDetail.Variant)

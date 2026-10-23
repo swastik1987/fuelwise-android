@@ -47,14 +47,15 @@ import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.location.BatterySaverHelp
 import app.fuelwise.core.location.rememberCarBluetoothLinker
 
 /**
  * Where setup is. [Disclosure] is Play's prominent disclosure and always comes first, before any permission prompt
  * (PRD F-21.3, §9). [Denied] is the one-tap fallback when "Allow all the time" is refused. [Car] is the optional car
- * Bluetooth step (Android 12+, with at least one car).
+ * Bluetooth step (Android 12+, with at least one car). [Battery] is the phone-maker battery saver fix (PRD F-21.7).
  */
-internal enum class SetupStep { Disclosure, Activity, Location, Car, Denied }
+internal enum class SetupStep { Disclosure, Activity, Location, Car, Battery, Denied }
 
 internal data class SetupActions(
     val onClose: () -> Unit = {},
@@ -67,6 +68,7 @@ internal data class SetupActions(
     /** Opens the system chooser to link this vehicle's car Bluetooth. */
     val onLinkCar: (vehicleId: String) -> Unit = {},
     val onContinue: () -> Unit = {},
+    val battery: BatteryActions = BatteryActions(),
 )
 
 /** Automatic trips setup (design.md screen 32). Opened from Trips or Settings, never on first run. */
@@ -86,7 +88,8 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
     }
     val carStep = linker != null && cars.isNotEmpty()
     // "Allow all the time" granted: the optional car step, or done.
-    val afterLocation = { if (carStep) step = SetupStep.Car else viewModel.finish(oneTap = false) }
+    val afterLocation = { step = if (carStep) SetupStep.Car else SetupStep.Battery }
+    val (battery, batteryActions) = rememberBatteryCheck(onFinish = { viewModel.finish(oneTap = false) })
 
     val background = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) afterLocation() else step = SetupStep.Denied
@@ -126,6 +129,7 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
             SetupStep.Activity -> SetupStep.Disclosure
             SetupStep.Location -> if (needsActivityStep()) SetupStep.Activity else SetupStep.Disclosure
             SetupStep.Car, SetupStep.Denied -> SetupStep.Location
+            SetupStep.Battery -> if (carStep) SetupStep.Car else SetupStep.Location
         }
     }
     BackHandler(enabled = step != SetupStep.Disclosure) { back() }
@@ -136,6 +140,7 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
         previewVehicle = previewVehicle,
         cars = cars,
         carStep = carStep,
+        battery = battery,
         actions = SetupActions(
             onClose = onClose,
             onTurnOn = {
@@ -155,7 +160,8 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
                 linkingFor = id
                 linker?.invoke()
             },
-            onContinue = { viewModel.finish(oneTap = false) },
+            onContinue = { step = SetupStep.Battery },
+            battery = batteryActions,
         ),
     )
 }
@@ -168,8 +174,9 @@ internal fun AutoTripSetupContent(
     actions: SetupActions,
     cars: List<SetupCar> = emptyList(),
     carStep: Boolean = false,
+    battery: BatteryCheck = BatteryCheck.NotRun,
 ) {
-    val total = (if (needsActivityStep()) 1 else 0) + 1 + (if (carStep) 1 else 0)
+    val total = (if (needsActivityStep()) 1 else 0) + 1 + (if (carStep) 1 else 0) + 1
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         if (step == SetupStep.Disclosure) {
             FwTopBar(title = "", onBack = actions.onClose, backContentDescription = stringResource(R.string.auto_close))
@@ -184,9 +191,18 @@ internal fun AutoTripSetupContent(
         ) {
             when (step) {
                 SetupStep.Disclosure -> Disclosure()
+
                 SetupStep.Activity -> ActivityStep(activityRefused, total)
+
                 SetupStep.Location -> LocationStep(total)
-                SetupStep.Car -> CarStep(cars, total, actions.onLinkCar)
+
+                SetupStep.Car -> CarStep(cars, total - 1, total, actions.onLinkCar)
+
+                SetupStep.Battery -> {
+                    StepLabel(total, total)
+                    BatterySaverBody(BatterySaverHelp.brand, battery)
+                }
+
                 SetupStep.Denied -> DeniedStep(previewVehicle)
             }
         }
@@ -219,6 +235,8 @@ internal fun AutoTripSetupContent(
                     actions.onContinue,
                     Modifier.fillMaxWidth(),
                 )
+
+                SetupStep.Battery -> BatteryButtons(battery, actions.battery)
 
                 SetupStep.Denied -> {
                     FwPrimaryButton(stringResource(R.string.auto_one_tap), actions.onOneTap, Modifier.fillMaxWidth())
@@ -276,8 +294,8 @@ private fun ColumnScope.LocationStep(total: Int) {
 
 /** Optional (design.md screen 32, step 3): link each car's Bluetooth; two-wheelers aren't listed. */
 @Composable
-private fun ColumnScope.CarStep(cars: List<SetupCar>, total: Int, onLink: (String) -> Unit) {
-    StepLabel(total, total, optional = true)
+private fun ColumnScope.CarStep(cars: List<SetupCar>, number: Int, total: Int, onLink: (String) -> Unit) {
+    StepLabel(number, total, optional = true)
     Headline(stringResource(R.string.auto_car_title))
     Body(stringResource(R.string.auto_car_body))
     Column(

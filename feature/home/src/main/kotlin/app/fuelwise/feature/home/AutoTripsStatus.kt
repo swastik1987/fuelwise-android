@@ -17,19 +17,30 @@ data class AutoTripControls(
     val pill: AutoTripPill? = null,
     val onPause: (AutoTripPause) -> Unit = {},
     val onResume: () -> Unit = {},
+    /** Amber "Blocked by battery saver" leads to the fix screen (design.md screen 33). */
+    val onFixBattery: () -> Unit = {},
 )
 
-/** "Auto trips on" (green) or "Paused until 18:00" (grey) in Home's top bar; a tap opens the pause choices. */
+/**
+ * "Auto trips on" (green), "Paused until 18:00" (grey) or "Blocked by battery saver" (amber) in Home's top bar. A tap
+ * opens the pause choices, or the battery-saver fix when blocked.
+ */
 @Composable
 internal fun AutoTripsStatus(pill: AutoTripPill, onClick: () -> Unit) {
     val until = pill.pausedUntilUtcMs
     val label = when {
+        until == null && pill.blocked -> stringResource(R.string.home_auto_blocked)
         until == Long.MAX_VALUE -> stringResource(R.string.home_auto_paused)
         until != null -> stringResource(R.string.home_auto_paused_until, pauseEnd(until))
         pill.oneTap -> stringResource(R.string.home_auto_one_tap)
         else -> stringResource(R.string.home_auto_on)
     }
-    FwStatusPill(label, if (until != null) FwStatus.Neutral else FwStatus.Positive, onClick)
+    val status = when {
+        until != null -> FwStatus.Neutral
+        pill.blocked -> FwStatus.Warning
+        else -> FwStatus.Positive
+    }
+    FwStatusPill(label, status, onClick)
 }
 
 /** Pause for 1 hour, until tomorrow, or until turned back on; resume when paused. */

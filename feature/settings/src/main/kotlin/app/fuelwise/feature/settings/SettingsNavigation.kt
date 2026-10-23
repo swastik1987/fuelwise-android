@@ -34,6 +34,8 @@ data class SettingsLinks(
     val onImport: () -> Unit = {},
     /** "Automatic trips" while off → setup (design.md screen 32). Null hides the row. */
     val onAutoTripSetup: (() -> Unit)? = null,
+    /** The battery-saver fix (PRD F-21.7), while automatic trips are on. */
+    val onBatterySaver: () -> Unit = {},
     /** After "Delete all data": start over at onboarding. */
     val onDataDeleted: () -> Unit = {},
 )

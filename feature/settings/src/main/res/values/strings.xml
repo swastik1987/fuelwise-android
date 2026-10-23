@@ -124,6 +124,8 @@
     <string name="units_own">Own units for this vehicle</string>
     <string name="units_own_body">Off follows the default units.</string>
     <!-- Location privacy and retention (PRD F-21.6). -->
+    <string name="settings_battery_saver">Battery saver</string>
+    <string name="settings_battery_saver_value">Check this phone</string>
     <string name="settings_route_retention">Keep routes for</string>
     <string name="settings_route_retention_body">After this, a trip keeps its distance, time and cost, but not its map.</string>
     <string name="settings_route_retention_30">30 days</string>

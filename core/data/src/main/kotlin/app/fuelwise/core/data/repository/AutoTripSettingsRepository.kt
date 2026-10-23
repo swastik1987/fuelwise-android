@@ -3,6 +3,7 @@ package app.fuelwise.core.data.repository
 import app.fuelwise.core.datastore.PreferencesDataSource
 import app.fuelwise.core.datastore.carLink
 import app.fuelwise.core.datastore.copy
+import java.time.Clock
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -21,6 +22,8 @@ data class AutoTripSettings(
     val lastActivityEventUtcMs: Long?,
     /** Car Bluetooth by vehicle id: connecting starts a trip for that vehicle (PRD F-21.3). */
     val carLinks: Map<String, CarLink> = emptyMap(),
+    /** When automatic trips were last turned on; the health check counts silence from here (PRD F-21.7). */
+    val enabledAtUtcMs: Long? = null,
 ) {
     /** The vehicle whose car Bluetooth has [address], if any. */
     fun vehicleFor(address: String): String? =
@@ -48,8 +51,10 @@ interface AutoTripSettingsRepository {
     suspend fun setCarLink(vehicleId: String, link: CarLink?)
 }
 
-internal class DataStoreAutoTripSettingsRepository @Inject constructor(private val source: PreferencesDataSource) :
-    AutoTripSettingsRepository {
+internal class DataStoreAutoTripSettingsRepository @Inject constructor(
+    private val source: PreferencesDataSource,
+    private val clock: Clock,
+) : AutoTripSettingsRepository {
     override val settings: Flow<AutoTripSettings> = source.preferences.map { p ->
         AutoTripSettings(
             available = !p.featureFlags.automaticTripsOff,
@@ -60,14 +65,17 @@ internal class DataStoreAutoTripSettingsRepository @Inject constructor(private v
             carLinks = p.autoTrips.carLinksMap.mapValues { (_, l) ->
                 CarLink(l.address, l.associationId, l.name.ifEmpty { null })
             },
+            enabledAtUtcMs = p.autoTrips.enabledAt.takeIf { it > 0 },
         )
     }
 
     override suspend fun setEnabled(enabled: Boolean, oneTap: Boolean) = source.update {
+        val turningOn = enabled && !autoTrips.enabled
         autoTrips = autoTrips.copy {
             this.enabled = enabled
             this.oneTap = enabled && oneTap
             pausedUntil = 0
+            if (turningOn) enabledAt = clock.millis()
         }
     }
 

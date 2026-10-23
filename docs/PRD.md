@@ -724,7 +724,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - **Places that are never recorded (optional):** the user can mark home or other spots; points within 200 m are trimmed from route ends so the start/end of every trip doesn't reveal exact addresses in shared GPX/maps.
 - **Delete:** "Delete all location history" in Settings, separate from "Delete all data".
 
-**F-21.7 Phone-maker battery-saver guidance (R1)**
+**F-21.7 Phone-maker battery-saver guidance (R1)** ✅ built 23 Oct 2026 (steps for Xiaomi, Samsung, OPPO/realme/OnePlus, vivo/iQOO, Huawei/Honor and others; deep links with fallback to the system battery screen; "Done — test it" checks Unrestricted battery use and no background restriction, a maker's autostart switch can't be read; health check turns the Home pill amber)
 - Many Android phones sold in India stop background apps aggressively, which kills automatic trips.
 - **Guidance:** during automatic-trip setup, detect the manufacturer and show brand-specific steps (with a deep link to the battery-optimisation settings screen where one exists).
   - Use the system settings intent; do **not** declare `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` without first checking Play's acceptable-use policy for it.

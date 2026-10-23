@@ -183,4 +183,34 @@
     <string name="auto_car_not_linked">Not linked</string>
     <string name="auto_car_link">Link</string>
     <string name="auto_car_change">Change</string>
+    <!-- Battery saver fix (PRD F-21.7, design.md screen 33). %1$s is the app's name as the phone lists it. -->
+    <string name="battery_title">Stop battery saver closing trips</string>
+    <string name="battery_body">Your phone pauses apps in the background. These settings let automatic trips keep running.</string>
+    <string name="battery_step">Step %1$d</string>
+    <string name="battery_test">Done — test it</string>
+    <string name="battery_skip">Skip for now</string>
+    <string name="battery_finish">Finish</string>
+    <string name="battery_checking">Checking background access…</string>
+    <string name="battery_passed">It works. Automatic trips can run on this phone.</string>
+    <string name="battery_blocked">Still blocked. Check the battery setting again.</string>
+    <string name="battery_brand_xiaomi">Xiaomi / Redmi / POCO</string>
+    <string name="battery_brand_samsung">Samsung</string>
+    <string name="battery_brand_oppo">OPPO / realme / OnePlus</string>
+    <string name="battery_brand_vivo">vivo / iQOO</string>
+    <string name="battery_brand_huawei">Huawei / Honor</string>
+    <string name="battery_brand_other">Your phone</string>
+    <string name="battery_xiaomi_1">Settings → Apps → %1$s</string>
+    <string name="battery_xiaomi_2">Battery saver → No restrictions</string>
+    <string name="battery_xiaomi_3">Autostart → On</string>
+    <string name="battery_samsung_1">Settings → Apps → %1$s → Battery</string>
+    <string name="battery_samsung_2">Choose Unrestricted</string>
+    <string name="battery_samsung_3">Settings → Battery → Background usage limits: keep %1$s out of sleeping apps</string>
+    <string name="battery_oppo_1">Settings → Apps → %1$s → Battery usage</string>
+    <string name="battery_oppo_2">Turn on Allow background activity and Allow auto launch</string>
+    <string name="battery_vivo_1">Settings → Battery → Background power consumption → %1$s → Allow</string>
+    <string name="battery_vivo_2">Settings → Apps → Autostart → %1$s → On</string>
+    <string name="battery_huawei_1">Settings → Battery → App launch → %1$s</string>
+    <string name="battery_huawei_2">Manage manually, and turn on all three switches</string>
+    <string name="battery_other_1">Settings → Apps → %1$s → Battery</string>
+    <string name="battery_other_2">Choose Unrestricted (or Not optimised)</string>
 </resources>

@@ -88,6 +88,8 @@ data class HomeActions(
     /** Starts a GPS trip, asking for location first if needed; opens the live trip if one is already recording. */
     val onStartTrip: () -> Unit = {},
     val onOpenPrices: () -> Unit = {},
+    /** The battery-saver fix (PRD F-21.7), from the amber pill. */
+    val onFixBattery: () -> Unit = {},
 )
 
 @Composable
@@ -101,7 +103,7 @@ internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltVie
         viewModel::setHideAmounts,
         viewModel::dismissMilestone,
         viewModel::confirmAutoEntries,
-        AutoTripControls(autoTrips, viewModel::pauseAutoTrips, viewModel::resumeAutoTrips),
+        AutoTripControls(autoTrips, viewModel::pauseAutoTrips, viewModel::resumeAutoTrips, actions.onFixBattery),
     )
 }
 
@@ -141,7 +143,17 @@ internal fun HomeContent(
                 ) {
                     VehicleSwitcherPill(state.vehicle, onClick = { switcherOpen = true })
                     Spacer(Modifier.weight(1f))
-                    autoTrips.pill?.let { AutoTripsStatus(it) { pauseSheet = true } }
+                    autoTrips.pill?.let { pill ->
+                        AutoTripsStatus(pill) {
+                            if (pill.blocked &&
+                                pill.pausedUntilUtcMs == null
+                            ) {
+                                autoTrips.onFixBattery()
+                            } else {
+                                pauseSheet = true
+                            }
+                        }
+                    }
                     IconButton(onClick = { onHideAmounts(!state.hideAmounts) }) {
                         Icon(
                             painterResource(if (state.hideAmounts) FwIcons.VisibilityOff else FwIcons.Visibility),

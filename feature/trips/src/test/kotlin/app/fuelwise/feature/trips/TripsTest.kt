@@ -508,6 +508,20 @@ class TripsTest {
         )
     }
 
+    @Test fun batteryXiaomiLight() = capture("battery_saver_xiaomi_light", false) {
+        androidx.compose.foundation.layout.Column {
+            BatterySaverBody(app.fuelwise.core.domain.trip.PhoneBrand.Xiaomi, BatteryCheck.Blocked)
+            BatterySaverButtons(BatteryCheck.Blocked, BatteryActions())
+        }
+    }
+
+    @Test fun batteryPassedDark() = capture("battery_saver_passed_dark", true) {
+        androidx.compose.foundation.layout.Column {
+            BatterySaverBody(app.fuelwise.core.domain.trip.PhoneBrand.Samsung, BatteryCheck.Passed)
+            BatterySaverButtons(BatteryCheck.Passed, BatteryActions())
+        }
+    }
+
     @Test fun autoDeniedDark() = capture("auto_setup_denied_dark", true) {
         AutoTripSetupContent(SetupStep.Denied, false, "Safari", SetupActions())
     }

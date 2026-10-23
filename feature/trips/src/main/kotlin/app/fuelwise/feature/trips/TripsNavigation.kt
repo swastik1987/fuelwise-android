@@ -25,6 +25,10 @@ data object LiveTripRoute
 @Serializable
 data object AutoTripSetupRoute
 
+/** Phone-maker battery-saver fix (design.md screen 33, PRD F-21.7), from Home's amber pill or Settings. */
+@Serializable
+data object BatterySaverRoute
+
 /**
  * Key on the Trips back-stack entry's SavedStateHandle: the detail screen hands back a trip id to delete, and the
  * list performs the delete so it can offer the 10-second undo.
@@ -54,4 +58,5 @@ fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
     composable<TripDetailRoute> { TripDetailScreen(links) }
     composable<LiveTripRoute> { LiveTripScreen(links) }
     composable<AutoTripSetupRoute> { AutoTripSetupScreen(onClose = links.onBack) }
+    composable<BatterySaverRoute> { BatterySaverScreen(onClose = links.onBack) }
 }

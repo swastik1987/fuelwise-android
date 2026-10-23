@@ -112,6 +112,8 @@
     <string name="units_same_as_default">डिफ़ॉल्ट जैसी</string>
     <string name="units_own">इस गाड़ी की अपनी यूनिट</string>
     <string name="units_own_body">बंद रखने पर डिफ़ॉल्ट यूनिट लागू होंगी।</string>
+    <string name="settings_battery_saver">बैटरी सेवर</string>
+    <string name="settings_battery_saver_value">यह फ़ोन जाँचें</string>
     <string name="settings_route_retention">रूट कितने समय रखें</string>
     <string name="settings_route_retention_body">इसके बाद यात्रा की दूरी, समय और खर्च रहते हैं, पर नक्शा नहीं।</string>
     <string name="settings_route_retention_30">30 दिन</string>

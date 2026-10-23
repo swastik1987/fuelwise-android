@@ -65,6 +65,31 @@ object EntryLabels {
         SystemCategory.Other, null -> FwIcons.MoreHoriz
     }
 
+    /** A category's icon: a custom category's chosen one (PRD F-04.2), else its preset's. */
+    @DrawableRes
+    fun categoryIcon(category: Category?): Int =
+        category?.icon?.let { key -> CUSTOM_ICONS.firstOrNull { it.first == key }?.second } ?: categoryIcon(category?.systemKey)
+
+    /** Icons a custom category can use, by stable key (stored on the row; never reorder keys). */
+    val CUSTOM_ICONS: List<Pair<String, Int>> = listOf(
+        "service" to FwIcons.Service,
+        "repair" to FwIcons.Repair,
+        "tyres" to FwIcons.Tyres,
+        "parking" to FwIcons.Parking,
+        "wash" to FwIcons.CarWash,
+        "shopping" to FwIcons.ShoppingBag,
+        "document" to FwIcons.Document,
+        "card" to FwIcons.CreditCard,
+        "cash" to FwIcons.Cash,
+        "shield" to FwIcons.Shield,
+        "route" to FwIcons.Route,
+        "car" to FwIcons.Car,
+        "bolt" to FwIcons.Bolt,
+        "business" to FwIcons.Business,
+        "person" to FwIcons.Person,
+        "other" to FwIcons.MoreHoriz,
+    )
+
     /** Tolls use the premium/other energy colour (design.md mocks); everything else is neutral ink-2. */
     fun categoryTint(key: SystemCategory?, neutral: Color): Color = when (key) {
         SystemCategory.TollFastag, SystemCategory.TollCash -> EnergyColors.Premium

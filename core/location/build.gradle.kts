@@ -11,6 +11,8 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.ui)
     implementation(libs.androidx.core.ktx)
+    // The car Bluetooth chooser launcher (PRD F-21.3), shared by setup and the vehicle editor.
+    implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.coroutines.core)
     // Fused Location Provider for GPS trips (PRD F-07.2; approved 19 Oct 2026, PRD §9).
     implementation(libs.play.services.location)

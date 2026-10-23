@@ -1,6 +1,7 @@
 package app.fuelwise.core.data.repository
 
 import app.fuelwise.core.datastore.PreferencesDataSource
+import app.fuelwise.core.datastore.carLink
 import app.fuelwise.core.datastore.copy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -18,10 +19,19 @@ data class AutoTripSettings(
     val oneTap: Boolean,
     /** Last activity-detection event, for the battery-saver health check (PRD F-21.7). */
     val lastActivityEventUtcMs: Long?,
+    /** Car Bluetooth by vehicle id: connecting starts a trip for that vehicle (PRD F-21.3). */
+    val carLinks: Map<String, CarLink> = emptyMap(),
 ) {
+    /** The vehicle whose car Bluetooth has [address], if any. */
+    fun vehicleFor(address: String): String? =
+        carLinks.entries.firstOrNull { it.value.address.equals(address, ignoreCase = true) }?.key
+
     /** Whether a drive detected at [nowUtcMs] should be acted on. */
     fun isWatching(nowUtcMs: Long): Boolean = available && enabled && (pausedUntilUtcMs ?: 0) <= nowUtcMs
 }
+
+/** A vehicle's car Bluetooth, linked through Companion Device Manager on this phone. */
+data class CarLink(val address: String, val associationId: Int, val name: String?)
 
 interface AutoTripSettingsRepository {
     val settings: Flow<AutoTripSettings>
@@ -33,6 +43,9 @@ interface AutoTripSettingsRepository {
     suspend fun pauseUntil(utcMs: Long?)
 
     suspend fun recordActivityEvent(utcMs: Long)
+
+    /** Links [vehicleId] to a car's Bluetooth, or unlinks it with null. */
+    suspend fun setCarLink(vehicleId: String, link: CarLink?)
 }
 
 internal class DataStoreAutoTripSettingsRepository @Inject constructor(private val source: PreferencesDataSource) :
@@ -44,6 +57,9 @@ internal class DataStoreAutoTripSettingsRepository @Inject constructor(private v
             pausedUntilUtcMs = p.autoTrips.pausedUntil.takeIf { it > 0 },
             oneTap = p.autoTrips.oneTap,
             lastActivityEventUtcMs = p.autoTrips.lastActivityEventAt.takeIf { it > 0 },
+            carLinks = p.autoTrips.carLinksMap.mapValues { (_, l) ->
+                CarLink(l.address, l.associationId, l.name.ifEmpty { null })
+            },
         )
     }
 
@@ -61,5 +77,22 @@ internal class DataStoreAutoTripSettingsRepository @Inject constructor(private v
 
     override suspend fun recordActivityEvent(utcMs: Long) = source.update {
         autoTrips = autoTrips.copy { lastActivityEventAt = utcMs }
+    }
+
+    override suspend fun setCarLink(vehicleId: String, link: CarLink?) = source.update {
+        autoTrips = autoTrips.copy {
+            if (link == null) {
+                carLinks.remove(vehicleId)
+            } else {
+                carLinks.put(
+                    vehicleId,
+                    carLink {
+                        address = link.address
+                        associationId = link.associationId
+                        name = link.name.orEmpty()
+                    },
+                )
+            }
+        }
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
@@ -491,6 +492,20 @@ class TripsTest {
 
     @Test fun autoLocationLight() = capture("auto_setup_location_light", false) {
         AutoTripSetupContent(SetupStep.Location, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoCarStepLight() = capture("auto_setup_car_light", false) {
+        AutoTripSetupContent(
+            SetupStep.Car,
+            false,
+            "Safari",
+            SetupActions(),
+            cars = listOf(
+                SetupCar("safari", "Safari", CarLink("AA:BB:CC:DD:EE:FF", 3, "Safari Audio")),
+                SetupCar("ertiga", "Ertiga", null),
+            ),
+            carStep = true,
+        )
     }
 
     @Test fun autoDeniedDark() = capture("auto_setup_denied_dark", true) {

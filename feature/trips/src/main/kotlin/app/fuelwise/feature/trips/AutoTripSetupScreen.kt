@@ -47,12 +47,14 @@ import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.location.rememberCarBluetoothLinker
 
 /**
  * Where setup is. [Disclosure] is Play's prominent disclosure and always comes first, before any permission prompt
- * (PRD F-21.3, §9). [Denied] is the one-tap fallback when "Allow all the time" is refused.
+ * (PRD F-21.3, §9). [Denied] is the one-tap fallback when "Allow all the time" is refused. [Car] is the optional car
+ * Bluetooth step (Android 12+, with at least one car).
  */
-internal enum class SetupStep { Disclosure, Activity, Location, Denied }
+internal enum class SetupStep { Disclosure, Activity, Location, Car, Denied }
 
 internal data class SetupActions(
     val onClose: () -> Unit = {},
@@ -62,6 +64,9 @@ internal data class SetupActions(
     val onOneTap: () -> Unit = {},
     val onRetry: () -> Unit = {},
     val onBack: () -> Unit = {},
+    /** Opens the system chooser to link this vehicle's car Bluetooth. */
+    val onLinkCar: (vehicleId: String) -> Unit = {},
+    val onContinue: () -> Unit = {},
 )
 
 /** Automatic trips setup (design.md screen 32). Opened from Trips or Settings, never on first run. */
@@ -69,17 +74,27 @@ internal data class SetupActions(
 internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val previewVehicle by viewModel.previewVehicle.collectAsStateWithLifecycle()
+    val cars by viewModel.cars.collectAsStateWithLifecycle()
     var step by rememberSaveable { mutableStateOf(SetupStep.Disclosure) }
     var activityRefused by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(viewModel) { viewModel.done.collect { onClose() } }
+    // Which vehicle the system chooser is linking; the chooser hands back only the car.
+    var linkingFor by rememberSaveable { mutableStateOf<String?>(null) }
+    val linker = rememberCarBluetoothLinker { link ->
+        linkingFor?.let { viewModel.linkCar(it, link) }
+        linkingFor = null
+    }
+    val carStep = linker != null && cars.isNotEmpty()
+    // "Allow all the time" granted: the optional car step, or done.
+    val afterLocation = { if (carStep) step = SetupStep.Car else viewModel.finish(oneTap = false) }
 
     val background = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) viewModel.finish(oneTap = false) else step = SetupStep.Denied
+        if (granted) afterLocation() else step = SetupStep.Denied
     }
     // Android 11+ won't offer "all the time" in the first dialog: while-in-use first, then the settings page.
     val foreground = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         when {
-            context.hasBackgroundLocation() -> viewModel.finish(oneTap = false)
+            context.hasBackgroundLocation() -> afterLocation()
             !context.granted(Manifest.permission.ACCESS_FINE_LOCATION) -> step = SetupStep.Denied
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> background.launch(BACKGROUND_LOCATION)
             else -> step = SetupStep.Denied
@@ -90,7 +105,7 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
     }
     val askLocation = {
         when {
-            context.hasBackgroundLocation() -> viewModel.finish(oneTap = false)
+            context.hasBackgroundLocation() -> afterLocation()
 
             context.granted(
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -102,7 +117,7 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
     }
     // Back from the app's settings page: "Allow all the time" may have been picked there.
     LifecycleResumeEffect(step) {
-        if (step == SetupStep.Denied && context.hasBackgroundLocation()) viewModel.finish(oneTap = false)
+        if (step == SetupStep.Denied && context.hasBackgroundLocation()) afterLocation()
         onPauseOrDispose {}
     }
     val back = {
@@ -110,7 +125,7 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
             SetupStep.Disclosure -> SetupStep.Disclosure.also { onClose() }
             SetupStep.Activity -> SetupStep.Disclosure
             SetupStep.Location -> if (needsActivityStep()) SetupStep.Activity else SetupStep.Disclosure
-            SetupStep.Denied -> SetupStep.Location
+            SetupStep.Car, SetupStep.Denied -> SetupStep.Location
         }
     }
     BackHandler(enabled = step != SetupStep.Disclosure) { back() }
@@ -119,6 +134,8 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
         step = step,
         activityRefused = activityRefused,
         previewVehicle = previewVehicle,
+        cars = cars,
+        carStep = carStep,
         actions = SetupActions(
             onClose = onClose,
             onTurnOn = {
@@ -134,6 +151,11 @@ internal fun AutoTripSetupScreen(onClose: () -> Unit, viewModel: AutoTripSetupVi
             onOneTap = { viewModel.finish(oneTap = true) },
             onRetry = { context.openAppSettings() },
             onBack = back,
+            onLinkCar = { id ->
+                linkingFor = id
+                linker?.invoke()
+            },
+            onContinue = { viewModel.finish(oneTap = false) },
         ),
     )
 }
@@ -144,7 +166,10 @@ internal fun AutoTripSetupContent(
     activityRefused: Boolean,
     previewVehicle: String?,
     actions: SetupActions,
+    cars: List<SetupCar> = emptyList(),
+    carStep: Boolean = false,
 ) {
+    val total = (if (needsActivityStep()) 1 else 0) + 1 + (if (carStep) 1 else 0)
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         if (step == SetupStep.Disclosure) {
             FwTopBar(title = "", onBack = actions.onClose, backContentDescription = stringResource(R.string.auto_close))
@@ -159,8 +184,9 @@ internal fun AutoTripSetupContent(
         ) {
             when (step) {
                 SetupStep.Disclosure -> Disclosure()
-                SetupStep.Activity -> ActivityStep(activityRefused)
-                SetupStep.Location -> LocationStep()
+                SetupStep.Activity -> ActivityStep(activityRefused, total)
+                SetupStep.Location -> LocationStep(total)
+                SetupStep.Car -> CarStep(cars, total, actions.onLinkCar)
                 SetupStep.Denied -> DeniedStep(previewVehicle)
             }
         }
@@ -185,6 +211,12 @@ internal fun AutoTripSetupContent(
                 SetupStep.Location -> FwPrimaryButton(
                     stringResource(R.string.auto_open_settings),
                     actions.onAllowLocation,
+                    Modifier.fillMaxWidth(),
+                )
+
+                SetupStep.Car -> FwPrimaryButton(
+                    stringResource(R.string.auto_continue),
+                    actions.onContinue,
                     Modifier.fillMaxWidth(),
                 )
 
@@ -219,16 +251,16 @@ private fun ColumnScope.Disclosure() {
 }
 
 @Composable
-private fun ColumnScope.ActivityStep(refused: Boolean) {
-    StepLabel(1)
+private fun ColumnScope.ActivityStep(refused: Boolean, total: Int) {
+    StepLabel(1, total)
     Headline(stringResource(R.string.auto_activity_title))
     Body(stringResource(R.string.auto_activity_body))
     if (refused) Note(stringResource(R.string.auto_activity_refused))
 }
 
 @Composable
-private fun ColumnScope.LocationStep() {
-    StepLabel(if (needsActivityStep()) 2 else 1)
+private fun ColumnScope.LocationStep(total: Int) {
+    StepLabel(if (needsActivityStep()) 2 else 1, total)
     Headline(stringResource(R.string.auto_location_title))
     Body(stringResource(R.string.auto_location_body))
     // An illustration of Android's page, not the real thing: which option to pick.
@@ -240,6 +272,41 @@ private fun ColumnScope.LocationStep() {
         Option(stringResource(R.string.auto_location_deny))
     }
     Note(stringResource(R.string.auto_location_illustration))
+}
+
+/** Optional (design.md screen 32, step 3): link each car's Bluetooth; two-wheelers aren't listed. */
+@Composable
+private fun ColumnScope.CarStep(cars: List<SetupCar>, total: Int, onLink: (String) -> Unit) {
+    StepLabel(total, total, optional = true)
+    Headline(stringResource(R.string.auto_car_title))
+    Body(stringResource(R.string.auto_car_body))
+    Column(
+        Modifier.padding(top = FwTheme.spacing.l),
+        verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs),
+    ) {
+        cars.forEach { car ->
+            FwCard(Modifier.fillMaxWidth(), onClick = { onLink(car.vehicleId) }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(FwIcons.Car), null, tint = FwTheme.colors.ink2)
+                    Spacer(Modifier.size(FwTheme.spacing.s))
+                    Column(Modifier.weight(1f)) {
+                        Text(car.name, style = FwTheme.type.label, color = FwTheme.colors.ink)
+                        Text(
+                            car.link?.let { it.name ?: stringResource(R.string.auto_car_linked) }
+                                ?: stringResource(R.string.auto_car_not_linked),
+                            style = FwTheme.type.caption,
+                            color = FwTheme.colors.ink2,
+                        )
+                    }
+                    Text(
+                        stringResource(if (car.link == null) R.string.auto_car_link else R.string.auto_car_change),
+                        style = FwTheme.type.label,
+                        color = FwTheme.colors.accent,
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -302,9 +369,12 @@ private fun Note(text: String) {
 }
 
 @Composable
-private fun StepLabel(number: Int) {
-    val total = if (needsActivityStep()) 2 else 1
-    FwOverline(stringResource(R.string.auto_step, number, total), Modifier.padding(top = FwTheme.spacing.s))
+private fun StepLabel(number: Int, total: Int, optional: Boolean = false) {
+    val label = stringResource(R.string.auto_step, number, total)
+    FwOverline(
+        if (optional) stringResource(R.string.auto_step_optional, label) else label,
+        Modifier.padding(top = FwTheme.spacing.s),
+    )
 }
 
 @Composable

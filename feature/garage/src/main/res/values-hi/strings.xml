@@ -79,4 +79,10 @@
     <string name="garage_backup_ok">चालू</string>
     <string name="garage_backup_error">ध्यान दें</string>
     <string name="garage_backup_off">बंद</string>
+    <string name="editor_car_bluetooth">अपने-आप यात्राओं के लिए कार ब्लूटूथ</string>
+    <string name="editor_car_bluetooth_none">लिंक नहीं है</string>
+    <string name="editor_car_bluetooth_linked">लिंक है</string>
+    <string name="editor_car_bluetooth_change">दूसरी कार लिंक करें</string>
+    <string name="editor_car_bluetooth_unlink">अनलिंक करें</string>
+    <string name="editor_car_bluetooth_hint">इस कार का ब्लूटूथ जुड़ते ही इस वाहन की यात्रा शुरू होती है।</string>
 </resources>

@@ -44,7 +44,9 @@ class ExpenseViewModelTest {
     private val reminders = FakeReminderRepository()
 
     private fun viewModel(toll: Boolean = false, extra: Map<String, Any?> = emptyMap()) = ExpenseViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "safari", "expenseId" to null, "toll" to toll) + extra),
+        savedStateHandle = SavedStateHandle(
+            mapOf("vehicleId" to "safari", "expenseId" to null, "toll" to toll) + extra,
+        ),
         vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari)),
         categories = categories,
         entries = entries,

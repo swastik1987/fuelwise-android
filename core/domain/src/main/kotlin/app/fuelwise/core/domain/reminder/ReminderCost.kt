@@ -33,8 +33,8 @@ data class ReminderCost(val completionId: String, val vehicleId: String, val cat
 
         fun decode(text: String?): ReminderCost? {
             val parts = text?.split(SEP)?.takeIf { it.size == FIELDS && it[0] == VERSION } ?: return null
-            if (parts.drop(1).any(String::isBlank)) return null
-            return ReminderCost(parts[1], parts[2], parts[3])
+            val (completionId, vehicleId, categoryId) = parts.drop(1)
+            return if (parts.any(String::isBlank)) null else ReminderCost(completionId, vehicleId, categoryId)
         }
     }
 }

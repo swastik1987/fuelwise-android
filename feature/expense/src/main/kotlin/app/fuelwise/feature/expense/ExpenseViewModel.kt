@@ -195,10 +195,21 @@ class ExpenseViewModel @Inject constructor(
                     tripId = editing?.tripId ?: route.tripId,
                 ),
             )
-            if (s.repeat && editing == null) saveRecurrence(s, vehicle.id, categoryId, amount)
-            if (editing == null) route.completionId?.let { reminders.attachExpense(it, savedId) }
+            if (editing == null) afterAdding(s, savedId, vehicle.id, categoryId, amount)
             savedChannel.send(Unit)
         }
+    }
+
+    /** A new entry may start a recurrence, and may be the cost of a reminder's "Done" (PRD F-11.4). */
+    private suspend fun afterAdding(
+        s: ExpenseFormState,
+        id: String,
+        vehicleId: String,
+        categoryId: String,
+        amount: Money,
+    ) {
+        if (s.repeat) saveRecurrence(s, vehicleId, categoryId, amount)
+        route.completionId?.let { reminders.attachExpense(it, id) }
     }
 
     /** This entry is the first occurrence; the recurrence starts at the next one, so nothing is created twice. */

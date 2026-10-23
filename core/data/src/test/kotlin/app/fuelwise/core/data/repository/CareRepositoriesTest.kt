@@ -78,6 +78,26 @@ class CareRepositoriesTest {
     @After
     fun tearDown() = db.close()
 
+    @Test
+    fun aVehicleKeepsOnePhotoAndANewOneReplacesIt() = runTest {
+        val photos = OfflineVehiclePhotoRepository(db.documentDao(), documents)
+        photos.setPhoto("v1", byteArrayOf(1, 2))
+        photos.setPhoto("v1", byteArrayOf(3, 4, 5))
+        photos.setPhoto("v2", byteArrayOf(9))
+        val all = photos.observePhotos().first()
+        assertThat(all.keys).containsExactly("v1", "v2")
+        assertThat(
+            photos.read(all.getValue("v1")).toList(),
+        ).containsExactly(3.toByte(), 4.toByte(), 5.toByte()).inOrder()
+        // The replaced file is gone; its row is a tombstone (CLAUDE.md rule 3).
+        assertThat(files).hasSize(2)
+        photos.removePhoto("v1")
+        assertThat(photos.observePhotos().first().keys).containsExactly("v2")
+        // Document attachments aren't vehicle photos.
+        documents.addAttachment("v2", Attachment.OwnerType.Document, byteArrayOf(7), "image/jpeg")
+        assertThat(photos.read(photos.observePhotos().first().getValue("v2")).toList()).containsExactly(9.toByte())
+    }
+
     private fun date(y: Int, m: Int, d: Int) = LocalDate.of(y, m, d).atStartOfDay(zone).toInstant().toEpochMilli()
 
     @Test

@@ -1,5 +1,6 @@
 package app.fuelwise.feature.garage.editor
 
+import androidx.compose.ui.graphics.ImageBitmap
 import app.fuelwise.core.domain.vehicle.RegistrationNumber
 import app.fuelwise.core.domain.vehicle.VehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
@@ -35,6 +36,9 @@ data class VehicleFormState(
     /** PRD F-01.2: petrol only. */
     val isHybrid: Boolean = false,
     val defaultGrade: FuelGrade? = null,
+    /** The vehicle's photo as shown on the form (PRD F-01.1); saved with the vehicle. */
+    val photo: ImageBitmap? = null,
+    val photoFailed: Boolean = false,
     val moreExpanded: Boolean = false,
     /** Shown only after the first save attempt, so an empty form doesn't open covered in red. */
     val errors: Set<VehicleDraftError> = emptySet(),

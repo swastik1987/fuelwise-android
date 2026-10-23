@@ -1,5 +1,6 @@
 package app.fuelwise.feature.garage.list
 
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,7 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.sum
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
+import app.fuelwise.feature.garage.photo.VehiclePhotoLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import javax.inject.Inject
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,6 +43,8 @@ sealed interface GarageUiState {
         val documentsExpiring: Int = 0,
         val fastagEstimate: Money? = null,
         val backup: BackupHealth = BackupHealth.Off,
+        /** Card photos (design.md screen 21), by vehicle id. */
+        val photos: Map<String, ImageBitmap> = emptyMap(),
     ) : GarageUiState
 }
 
@@ -59,9 +64,10 @@ class GarageViewModel @Inject constructor(
     fastag: FastagRepository,
     entries: EntryRepository,
     backupSettings: BackupSettingsRepository,
+    photos: VehiclePhotoLoader,
     clock: Clock,
 ) : ViewModel() {
-    val uiState: StateFlow<GarageUiState> = combine(
+    private val ready = combine(
         vehicles.observeVehicles(includeArchived = true),
         statuses(),
         documents.observeDocuments(),
@@ -84,7 +90,10 @@ class GarageViewModel @Inject constructor(
             },
         )
     }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), GarageUiState.Loading)
+
+    val uiState: StateFlow<GarageUiState> =
+        combine(ready, photos.observe(CARD_PX).onStart { emit(emptyMap()) }) { s, p -> s.copy(photos = p) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), GarageUiState.Loading)
 
     private val eventChannel = Channel<GarageEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
@@ -105,6 +114,7 @@ class GarageViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
+        const val CARD_PX = 720
         const val EXPIRING_MS = 30L * 24 * 60 * 60 * 1000
     }
 }

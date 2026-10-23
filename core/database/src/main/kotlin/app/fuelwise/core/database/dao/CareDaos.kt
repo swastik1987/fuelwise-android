@@ -98,6 +98,9 @@ interface DocumentDao {
     @Query("SELECT * FROM attachment WHERE ownerId = :ownerId AND deletedAt IS NULL ORDER BY createdAt")
     fun observeAttachments(ownerId: String): Flow<List<AttachmentEntity>>
 
+    @Query("SELECT * FROM attachment WHERE ownerType = :ownerType AND deletedAt IS NULL ORDER BY createdAt")
+    fun observeAttachmentsOfType(ownerType: String): Flow<List<AttachmentEntity>>
+
     @Query("SELECT * FROM attachment WHERE id = :id AND deletedAt IS NULL")
     suspend fun attachment(id: String): AttachmentEntity?
 

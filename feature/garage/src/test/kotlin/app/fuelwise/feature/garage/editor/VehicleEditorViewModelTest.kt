@@ -1,6 +1,11 @@
 package app.fuelwise.feature.garage.editor
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.SavedStateHandle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
@@ -13,10 +18,12 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.VehicleType
 import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
+import app.fuelwise.core.testing.FakeVehiclePhotoRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -27,8 +34,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35])
 class VehicleEditorViewModelTest {
     @get:Rule
@@ -36,6 +45,7 @@ class VehicleEditorViewModelTest {
 
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari))
     private val userData = FakeUserDataRepository()
+    private val photos = FakeVehiclePhotoRepository()
 
     private fun viewModel(vehicleId: String? = null, onboarding: Boolean = false) = VehicleEditorViewModel(
         savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "onboarding" to onboarding)),
@@ -44,6 +54,9 @@ class VehicleEditorViewModelTest {
         validate = ValidateVehicleDraft(Clock.fixed(Instant.parse("2026-10-23T04:30:00Z"), ZoneOffset.UTC)),
         autoTripSettings = autoTrips,
         carLinker = linker,
+        photos = photos,
+        context = ApplicationProvider.getApplicationContext(),
+        io = main.dispatcher,
     )
 
     private val autoTrips = FakeAutoTripSettingsRepository()
@@ -160,5 +173,34 @@ class VehicleEditorViewModelTest {
         edit.onDetailChange(VehicleDetail.PurchaseOdometer, "9000")
         edit.save()
         assertThat(edit.state.value.errors).containsExactly(VehicleDraftError.PurchaseOdometerInvalid)
+    }
+
+    @Test
+    fun aPickedPhotoIsShrunkSavedWithTheVehicleAndCanBeRemoved() = runTest {
+        // A 4000×2000 camera photo.
+        val file = File.createTempFile("pick", ".jpg").apply {
+            outputStream().use { createBitmap(4000, 2000).compress(Bitmap.CompressFormat.JPEG, 90, it) }
+        }
+        val vm = viewModel(vehicleId = SampleVehicles.safari.id)
+        vm.onPhotoPicked(Uri.fromFile(file))
+        assertThat(vm.state.first { it.photo != null }.photoFailed).isFalse()
+        vm.save()
+        vm.events.first()
+        val saved = photos.jpegs.value.getValue(SampleVehicles.safari.id)
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(saved, 0, saved.size, bounds)
+        assertThat(maxOf(bounds.outWidth, bounds.outHeight)).isAtMost(1280)
+
+        val again = viewModel(vehicleId = SampleVehicles.safari.id)
+        assertThat(again.state.first { it.photo != null }.photo).isNotNull()
+        again.onPhotoRemoved()
+        again.save()
+        again.events.first()
+        assertThat(photos.jpegs.value).isEmpty()
+
+        // Not an image: the form says so and keeps what it had.
+        val broken = File.createTempFile("pick", ".jpg").apply { writeText("not a photo") }
+        again.onPhotoPicked(Uri.fromFile(broken))
+        assertThat(again.state.first { it.photoFailed }.photo).isNull()
     }
 }

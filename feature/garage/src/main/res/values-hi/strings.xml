@@ -29,6 +29,11 @@
     <string name="editor_registration_placeholder">KA 01 AB 1234</string>
     <string name="editor_emission_norm">एमिशन नॉर्म</string>
     <string name="editor_claimed">कंपनी का बताया माइलेज</string>
+    <string name="editor_photo">गाड़ी की फ़ोटो</string>
+    <string name="editor_photo_add">फ़ोटो जोड़ें</string>
+    <string name="editor_photo_change">फ़ोटो बदलें</string>
+    <string name="editor_photo_remove">फ़ोटो हटाएँ</string>
+    <string name="editor_photo_failed">यह फ़ोटो नहीं खुली। कोई और चुनें।</string>
     <string name="editor_default_grade">आम तौर पर पेट्रोल ग्रेड</string>
     <string name="editor_hybrid">हाइब्रिड (HEV)</string>
     <string name="editor_hybrid_hint">पेट्रोल की तरह गिना जाता है, हाइब्रिड टैग के साथ।</string>

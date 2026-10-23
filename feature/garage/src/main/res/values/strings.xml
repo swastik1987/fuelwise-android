@@ -29,6 +29,12 @@
     <string name="editor_registration_placeholder">KA 01 AB 1234</string>
     <string name="editor_emission_norm">Emission norm</string>
     <string name="editor_claimed">Claimed mileage</string>
+    <!-- Vehicle photo (PRD F-01.1) -->
+    <string name="editor_photo">Vehicle photo</string>
+    <string name="editor_photo_add">Add photo</string>
+    <string name="editor_photo_change">Change photo</string>
+    <string name="editor_photo_remove">Remove photo</string>
+    <string name="editor_photo_failed">Couldn\'t open that photo. Try another.</string>
     <!-- PRD F-01.1 / F-01.2 details -->
     <string name="editor_default_grade">Usual petrol grade</string>
     <string name="editor_hybrid">Hybrid (HEV)</string>

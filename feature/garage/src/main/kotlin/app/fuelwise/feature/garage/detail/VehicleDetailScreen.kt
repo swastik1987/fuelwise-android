@@ -1,5 +1,6 @@
 package app.fuelwise.feature.garage.detail
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,7 +30,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,11 +74,12 @@ internal fun VehicleDetailScreen(
             onArchive = viewModel::setArchived,
             onDelete = { onDelete(s.vehicle.id) },
             confirmationMatches = { typed -> viewModel.confirmationMatches(typed, s.vehicle) },
+            photo = s.photo,
         )
     }
 }
 
-/** Vehicle detail (design.md screen 22). The header photo arrives with vehicle photos. */
+/** Vehicle detail (design.md screen 22). */
 @Composable
 internal fun VehicleDetailContent(
     vehicle: Vehicle,
@@ -81,6 +88,7 @@ internal fun VehicleDetailContent(
     onArchive: (Boolean) -> Unit,
     onDelete: () -> Unit,
     confirmationMatches: (String) -> Boolean,
+    photo: ImageBitmap? = null,
 ) {
     var confirmingDelete by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
@@ -98,7 +106,7 @@ internal fun VehicleDetailContent(
             Modifier.verticalScroll(rememberScrollState()).padding(bottom = FwTheme.spacing.xxl),
             verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
         ) {
-            Header(vehicle)
+            Header(vehicle, photo)
             Section(stringResource(R.string.detail_energy)) {
                 vehicle.tanks.forEachIndexed { index, tank ->
                     if (index > 0) HorizontalDivider(color = FwTheme.colors.line)
@@ -185,23 +193,39 @@ internal fun VehicleDetailContent(
 }
 
 @Composable
-private fun Header(vehicle: Vehicle) {
-    // Ink block stands in for the header photo until vehicle photos exist.
-    Column(
-        Modifier
-            .padding(horizontal = FwTheme.spacing.gutter)
-            .fillMaxWidth()
-            .background(FwTheme.colors.ink, FwTheme.radius.card)
-            .padding(FwTheme.spacing.l),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Icon(
-            painterResource(VehicleLabels.typeIcon(vehicle.type)),
-            null,
-            tint = FwTheme.colors.bg,
-            modifier = Modifier.size(32.dp),
+private fun Header(vehicle: Vehicle, photo: ImageBitmap?) {
+    val card = Modifier.padding(horizontal = FwTheme.spacing.gutter).fillMaxWidth().clip(FwTheme.radius.card)
+    if (photo == null) {
+        // No photo: the type glyph on an ink block.
+        Column(card.background(FwTheme.colors.ink).padding(FwTheme.spacing.l)) {
+            Icon(
+                painterResource(VehicleLabels.typeIcon(vehicle.type)),
+                null,
+                tint = FwTheme.colors.bg,
+                modifier = Modifier.size(32.dp),
+            )
+            HeaderText(vehicle, Modifier.padding(top = 12.dp))
+        }
+        return
+    }
+    // The photo with the name over a scrim (design.md screen 22).
+    Box(card.height(PHOTO_HEIGHT)) {
+        Image(photo, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        HeaderText(
+            vehicle,
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(FwTheme.colors.ink.copy(alpha = 0f), FwTheme.colors.ink)))
+                .padding(start = FwTheme.spacing.l, end = FwTheme.spacing.l, top = 40.dp, bottom = FwTheme.spacing.l),
         )
-        Text(vehicle.name, style = FwTheme.type.h1, color = FwTheme.colors.bg, modifier = Modifier.padding(top = 12.dp))
+    }
+}
+
+@Composable
+private fun HeaderText(vehicle: Vehicle, modifier: Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(vehicle.name, style = FwTheme.type.h1, color = FwTheme.colors.bg)
         modelLine(vehicle)?.let { Text(it, style = FwTheme.type.bodyS, color = FwTheme.colors.bg) }
         Text(
             listOfNotNull(
@@ -213,6 +237,8 @@ private fun Header(vehicle: Vehicle) {
         )
     }
 }
+
+private val PHOTO_HEIGHT = 220.dp
 
 /** Purchase details (design.md screen 22). */
 @Composable

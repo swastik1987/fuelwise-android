@@ -148,6 +148,7 @@ internal fun VehicleDetailContent(
                     },
                 )
             }
+            Custom(vehicle)
             Section(stringResource(R.string.detail_registration)) {
                 ValueRow(stringResource(R.string.editor_registration), vehicle.registrationNumber, mono = true)
                 HorizontalDivider(color = FwTheme.colors.line)
@@ -240,6 +241,38 @@ private fun HeaderText(vehicle: Vehicle, modifier: Modifier) {
 
 private val PHOTO_HEIGHT = 220.dp
 
+/** Custom parameters (PRD F-01.4, design.md screen 22): overrides for estimates, marked "manual". */
+@Composable
+private fun Custom(vehicle: Vehicle) {
+    val unit = stringResource(VehicleLabels.unit(vehicle.primaryTank?.energyType?.canonicalUnit ?: return))
+    val history = stringResource(R.string.detail_from_history)
+    val custom = vehicle.custom
+    Section(stringResource(R.string.detail_custom)) {
+        ValueRow(
+            stringResource(R.string.editor_custom_consumption),
+            custom.kmPerUnit?.let {
+                manual(IndianNumberFormat.decimal(it, 1) + " " + stringResource(R.string.editor_claimed_unit, unit))
+            },
+            empty = history,
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_custom_price),
+            custom.pricePerUnit?.let { manual(IndianNumberFormat.rupees(it) + "/" + unit) },
+            empty = history,
+        )
+        HorizontalDivider(color = FwTheme.colors.line)
+        ValueRow(
+            stringResource(R.string.editor_custom_range),
+            custom.rangeKm?.let { manual(stringResource(R.string.garage_km, IndianNumberFormat.decimal(it, 0))) },
+            empty = history,
+        )
+    }
+}
+
+@Composable
+private fun manual(value: String) = stringResource(R.string.detail_manual, value)
+
 /** Purchase details (design.md screen 22). */
 @Composable
 private fun Purchase(vehicle: Vehicle) {
@@ -274,11 +307,11 @@ private fun Section(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun ValueRow(label: String, value: String?, mono: Boolean = false) {
+private fun ValueRow(label: String, value: String?, mono: Boolean = false, empty: String? = null) {
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = FwTheme.type.body, color = FwTheme.colors.ink, modifier = Modifier.weight(1f))
         Text(
-            value ?: stringResource(R.string.detail_not_set),
+            value ?: empty ?: stringResource(R.string.detail_not_set),
             style = if (mono && value != null) FwTheme.type.monoS else FwTheme.type.label,
             color = if (value == null) FwTheme.colors.ink3 else FwTheme.colors.ink,
         )

@@ -262,6 +262,7 @@ class VehicleEditorViewModel @Inject constructor(
             VehicleDraftError.PurchaseInFuture,
             VehicleDraftError.PurchaseOdometerInvalid,
             VehicleDraftError.PurchasePriceNotPositive,
+            VehicleDraftError.CustomNotPositive,
         )
 
         fun plain(value: Double): String = if (value % 1.0 == 0.0) value.toLong().toString() else value.toString()

@@ -7,6 +7,7 @@ import app.fuelwise.core.domain.vehicle.VehicleDraftError.NameTooLong
 import app.fuelwise.core.domain.vehicle.VehicleDraftError.OdometerNegative
 import app.fuelwise.core.domain.vehicle.VehicleDraftError.OdometerRequired
 import app.fuelwise.core.domain.vehicle.VehicleDraftError.RegistrationInvalid
+import app.fuelwise.core.model.CustomParameters
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.VehicleType
@@ -90,5 +91,13 @@ class ValidateVehicleDraftTest {
             VehicleDraftError.PurchasePriceNotPositive,
         )
         assertThat(validate(ok.copy(year = 1949))).containsExactly(VehicleDraftError.YearInvalid)
+    }
+
+    @Test
+    fun `custom parameters must be positive when set`() {
+        val draft = VehicleDraft(name = "Safari", odometerKm = 42_000.0)
+        assertThat(validate(draft.copy(custom = CustomParameters(kmPerUnit = 14.5, rangeKm = 650.0)))).isEmpty()
+        assertThat(validate(draft.copy(custom = CustomParameters(pricePerUnit = Money(0)))))
+            .containsExactly(VehicleDraftError.CustomNotPositive)
     }
 }

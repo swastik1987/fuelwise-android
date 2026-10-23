@@ -139,6 +139,7 @@ class GarageScreensTest {
             purchaseDate = java.time.LocalDate.of(2023, 3, 9),
             purchaseOdometerKm = 12.0,
             purchasePrice = app.fuelwise.core.model.Money(215_000_000),
+            custom = app.fuelwise.core.model.CustomParameters(kmPerUnit = 14.5, rangeKm = 700.0),
         ),
         {},
         {},

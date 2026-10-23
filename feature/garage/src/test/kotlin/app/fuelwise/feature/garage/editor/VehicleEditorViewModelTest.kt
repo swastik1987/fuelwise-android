@@ -203,4 +203,21 @@ class VehicleEditorViewModelTest {
         again.onPhotoPicked(Uri.fromFile(broken))
         assertThat(again.state.first { it.photoFailed }.photo).isNull()
     }
+
+    @Test
+    fun customParametersAreSavedAndCheckedLikeTheOtherNumbers() = runTest {
+        val vm = viewModel(vehicleId = SampleVehicles.safari.id)
+        vm.onDetailChange(VehicleDetail.CustomKmPerUnit, "14.5")
+        vm.onDetailChange(VehicleDetail.CustomRange, "700")
+        vm.onDetailChange(VehicleDetail.CustomPrice, "0")
+        vm.save()
+        assertThat(vm.state.value.errors).containsExactly(VehicleDraftError.CustomNotPositive)
+        vm.onDetailChange(VehicleDetail.CustomPrice, "")
+        vm.save()
+        vm.events.first()
+        val custom = vehicles.observeVehicle(SampleVehicles.safari.id).first()!!.custom
+        assertThat(custom.kmPerUnit).isEqualTo(14.5)
+        assertThat(custom.rangeKm).isEqualTo(700.0)
+        assertThat(custom.pricePerUnit).isNull()
+    }
 }

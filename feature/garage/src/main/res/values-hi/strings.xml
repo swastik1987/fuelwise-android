@@ -34,6 +34,16 @@
     <string name="editor_photo_change">फ़ोटो बदलें</string>
     <string name="editor_photo_remove">फ़ोटो हटाएँ</string>
     <string name="editor_photo_failed">यह फ़ोटो नहीं खुली। कोई और चुनें।</string>
+    <string name="editor_custom_section">अनुमान के लिए (ज़रूरी नहीं)</string>
+    <string name="editor_custom_hint">ख़ाली छोड़ें तो आपकी अपनी फ़िल-अप से गिना जाएगा। यहाँ भरा गया मान मैनुअल दिखेगा।</string>
+    <string name="editor_custom_consumption">माइलेज</string>
+    <string name="editor_custom_price">ईंधन का दाम</string>
+    <string name="editor_custom_price_unit">₹/%1$s</string>
+    <string name="editor_custom_range">फ़ुल टंकी पर रेंज</string>
+    <string name="editor_error_custom">0 से बड़ी संख्या लिखें, या ख़ाली छोड़ें</string>
+    <string name="detail_custom">कस्टम मान</string>
+    <string name="detail_manual">%1$s · मैनुअल</string>
+    <string name="detail_from_history">आपकी फ़िल-अप से</string>
     <string name="editor_default_grade">आम तौर पर पेट्रोल ग्रेड</string>
     <string name="editor_hybrid">हाइब्रिड (HEV)</string>
     <string name="editor_hybrid_hint">पेट्रोल की तरह गिना जाता है, हाइब्रिड टैग के साथ।</string>

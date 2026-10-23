@@ -52,6 +52,9 @@ object NotificationRoutes {
 
     /** The Trips screen starting a GPS trip, asking for location first if needed. */
     const val OPEN_START_TRIP = "start_trip"
+
+    /** Automatic trips setup (PRD F-21.3), from the Quick Settings tile before it's set up. */
+    const val OPEN_AUTO_TRIP_SETUP = "auto_trip_setup"
     const val OPEN_DOCUMENTS = "documents"
 
     /** Scan pump meter (PRD F-15). */

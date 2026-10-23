@@ -10,6 +10,7 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.trip.EstimateTripCost
 import app.fuelwise.core.domain.trip.ExportRange
 import app.fuelwise.core.domain.trip.GpxTrack
 import app.fuelwise.core.domain.trip.GpxWriter
@@ -22,6 +23,7 @@ import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripStatus
+import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.sum
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -61,6 +63,8 @@ data class TripsUiState(
     val interrupted: List<Trip> = emptyList(),
     /** "Record trips automatically" (design.md screen 17): offered while automatic trips are available but off. */
     val offerAutoTrips: Boolean = false,
+    /** For "Change vehicle" on an automatic trip. */
+    val vehicles: List<Vehicle> = emptyList(),
 )
 
 sealed interface TripsEvent {
@@ -82,11 +86,12 @@ sealed interface TripsEvent {
 class TripsViewModel @Inject constructor(
     private val trips: TripRepository,
     private val vehicles: VehicleRepository,
-    entries: EntryRepository,
+    private val entries: EntryRepository,
     private val userData: UserDataRepository,
     private val recorder: TripRecorder,
     autoTrips: AutoTripSettingsRepository,
     private val files: TripFileWriter,
+    private val estimateCost: EstimateTripCost,
     private val clock: Clock,
     private val zoneId: ZoneId,
     savedStateHandle: SavedStateHandle,
@@ -110,6 +115,7 @@ class TripsViewModel @Inject constructor(
             // Unfinished but not in this process's recorder: the process died while it recorded.
             interrupted = unfinished.filter { it.id != active?.tripId },
             offerAutoTrips = auto.available && !auto.enabled,
+            vehicles = vehicleList,
             weeks = groupByWeek(rows, zoneId) { it.trip.startUtcMs }.map { week ->
                 TripWeekUi(
                     week.start,
@@ -137,6 +143,24 @@ class TripsViewModel @Inject constructor(
 
     fun undoDelete(token: DeletedTrip) {
         viewModelScope.launch { trips.undoDelete(token) }
+    }
+
+    /** "Not my drive" on an automatic trip (PRD F-21.3): deleted, with the usual undo. */
+    fun notMyDrive(tripId: String) {
+        viewModelScope.launch { eventChannel.send(TripsEvent.Deleted(trips.delete(tripId))) }
+    }
+
+    /**
+     * "Change vehicle" on an automatic trip (PRD F-21.3). The fuel estimate is redone for the new vehicle; the
+     * corrected trip also teaches the time-of-day habit used to assign the next one.
+     */
+    fun changeVehicle(tripId: String, vehicleId: String) {
+        viewModelScope.launch {
+            val trip = trips.observeTrip(tripId).first() ?: return@launch
+            val vehicle = vehicles.observeVehicles().first().firstOrNull { it.id == vehicleId } ?: return@launch
+            val estimate = estimateCost(vehicle, entries.observeAllRefuels().first(), trip.distanceKm)
+            trips.save(trip.copy(vehicleId = vehicleId, estimatedFuelCost = estimate?.fuelCost))
+        }
     }
 
     /** Starts a GPS trip for the selected vehicle; the screen has already got location permission. */

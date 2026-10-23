@@ -205,6 +205,7 @@ class TripsTest {
             recorder(repo),
             autoTrips,
             files,
+            estimate,
             clock,
             zone,
             SavedStateHandle(),
@@ -257,6 +258,7 @@ class TripsTest {
             recorder,
             autoTrips,
             files,
+            estimate,
             clock,
             zone,
             SavedStateHandle(),
@@ -307,6 +309,20 @@ class TripsTest {
     }
 
     @Test
+    fun automaticTripCanBeReassignedOrDiscarded() = runTest {
+        val auto = mysuru.copy(id = "auto", source = TripSource.Auto, estimatedFuelCost = null)
+        val repo = FakeTripRepository(listOf(auto))
+        val list = listViewModel(repo)
+        list.state.first { !it.loading }
+        list.changeVehicle("auto", SampleVehicles.ertiga.id)
+        val moved = repo.observeTrip("auto").first { it?.vehicleId == SampleVehicles.ertiga.id }!!
+        assertThat(moved.vehicleId).isEqualTo(SampleVehicles.ertiga.id)
+        list.notMyDrive("auto")
+        assertThat(list.events.first()).isInstanceOf(TripsEvent.Deleted::class.java)
+        assertThat(repo.trips).isEmpty()
+    }
+
+    @Test
     fun automaticTripsAreOfferedUntilTurnedOn() = runTest {
         val list = listViewModel(FakeTripRepository())
         assertThat(list.state.first { !it.loading }.offerAutoTrips).isTrue()
@@ -325,6 +341,7 @@ class TripsTest {
         recorder(repo),
         autoTrips,
         files,
+        estimate,
         clock,
         zone,
         SavedStateHandle(),

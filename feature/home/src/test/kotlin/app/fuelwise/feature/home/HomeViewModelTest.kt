@@ -9,9 +9,11 @@ import app.fuelwise.core.domain.insights.ComputeMilestones
 import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.prices.SummarizeCityPrices
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
+import app.fuelwise.core.domain.trip.AutoTripPause
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.Vehicle
+import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeCityRepository
 import app.fuelwise.core.testing.FakeEntryRepository
@@ -47,6 +49,7 @@ class HomeViewModelTest {
     private val zone = ZoneId.of("Asia/Kolkata")
     private val clock = Clock.fixed(Instant.ofEpochMilli(SampleEntries.at(2026, 10, 16, 10)), zone)
     private val userData = FakeUserDataRepository()
+    private val autoTrips = FakeAutoTripSettingsRepository()
 
     private fun viewModel(
         vehicles: List<Vehicle>,
@@ -77,9 +80,22 @@ class HomeViewModelTest {
                 clock,
                 zone,
             ),
+            autoTripSettings = autoTrips,
             zoneId = zone,
             clock = clock,
         )
+    }
+
+    @Test
+    fun automaticTripsPillShowsWhileOnAndPauses() = runTest {
+        val vm = viewModel(listOf(SampleVehicles.safari), FakeEntryRepository())
+        assertThat(vm.autoTrips.first()).isNull()
+        autoTrips.setEnabled(true)
+        assertThat(vm.autoTrips.first { it != null }!!.pausedUntilUtcMs).isNull()
+        vm.pauseAutoTrips(AutoTripPause.UntilTurnedOn)
+        assertThat(vm.autoTrips.first { it?.pausedUntilUtcMs != null }!!.pausedUntilUtcMs).isEqualTo(Long.MAX_VALUE)
+        vm.resumeAutoTrips()
+        assertThat(autoTrips.settings.value.pausedUntilUtcMs).isNull()
     }
 
     @Test

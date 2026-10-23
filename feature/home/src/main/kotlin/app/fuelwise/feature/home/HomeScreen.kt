@@ -93,6 +93,7 @@ data class HomeActions(
 @Composable
 internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val autoTrips by viewModel.autoTrips.collectAsStateWithLifecycle()
     HomeContent(
         state,
         actions,
@@ -100,6 +101,7 @@ internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltVie
         viewModel::setHideAmounts,
         viewModel::dismissMilestone,
         viewModel::confirmAutoEntries,
+        AutoTripControls(autoTrips, viewModel::pauseAutoTrips, viewModel::resumeAutoTrips),
     )
 }
 
@@ -112,8 +114,10 @@ internal fun HomeContent(
     onHideAmounts: (Boolean) -> Unit,
     onDismissMilestone: (String) -> Unit = {},
     onConfirmAuto: () -> Unit = {},
+    autoTrips: AutoTripControls = AutoTripControls(),
 ) {
     var switcherOpen by rememberSaveable { mutableStateOf(false) }
+    var pauseSheet by rememberSaveable { mutableStateOf(false) }
     var heroInfo by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         when (state) {
@@ -137,6 +141,7 @@ internal fun HomeContent(
                 ) {
                     VehicleSwitcherPill(state.vehicle, onClick = { switcherOpen = true })
                     Spacer(Modifier.weight(1f))
+                    autoTrips.pill?.let { AutoTripsStatus(it) { pauseSheet = true } }
                     IconButton(onClick = { onHideAmounts(!state.hideAmounts) }) {
                         Icon(
                             painterResource(if (state.hideAmounts) FwIcons.VisibilityOff else FwIcons.Visibility),
@@ -183,6 +188,9 @@ internal fun HomeContent(
                         paragraphs = listOf(milestoneBody(milestone, state)),
                         onDismiss = { onDismissMilestone(milestone.key) },
                     )
+                }
+                if (pauseSheet && autoTrips.pill != null) {
+                    AutoTripsPauseSheet(autoTrips) { pauseSheet = false }
                 }
                 if (heroInfo) {
                     FwInfoSheet(

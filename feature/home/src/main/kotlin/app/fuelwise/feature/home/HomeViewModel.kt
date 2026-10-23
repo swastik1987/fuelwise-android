@@ -2,6 +2,7 @@ package app.fuelwise.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.LogbookRepository
@@ -14,7 +15,9 @@ import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.insights.VehicleHistory
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.domain.summary.VehicleSummary
+import app.fuelwise.core.domain.trip.AutoTripPause
 import app.fuelwise.core.domain.trip.MonthTrips
+import app.fuelwise.core.domain.trip.autoTripPauseEnd
 import app.fuelwise.core.domain.trip.monthTrips
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
@@ -28,10 +31,12 @@ import java.time.format.TextStyle
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -63,6 +68,9 @@ sealed interface HomeUiState {
     ) : HomeUiState
 }
 
+/** Automatic trips are on; paused until [pausedUntilUtcMs] ([Long.MAX_VALUE] = until turned on), or watching. */
+data class AutoTripPill(val pausedUntilUtcMs: Long?, val oneTap: Boolean)
+
 // Home reads every part of a vehicle's history (fills, costs, trips, reminders), so it lists more collaborators than
 // the detekt limit; a holder object would only hide them.
 @Suppress("LongParameterList")
@@ -80,9 +88,38 @@ class HomeViewModel @Inject constructor(
     milestones: ComputeMilestones,
     private val care: HomeCareSource,
     private val homePrices: HomePricesSource,
-    zoneId: ZoneId,
-    clock: Clock,
+    private val autoTripSettings: AutoTripSettingsRepository,
+    private val zoneId: ZoneId,
+    private val clock: Clock,
 ) : ViewModel() {
+    /**
+     * The tracking status pill (design.md, PRD F-21.3): shown while automatic trips are on. Re-read every minute so a
+     * pause that ends flips the pill back to "on" without waiting for another change.
+     */
+    val autoTrips: StateFlow<AutoTripPill?> = combine(autoTripSettings.settings, minuteTicks()) { s, now ->
+        if (!s.available || !s.enabled) {
+            null
+        } else {
+            AutoTripPill(pausedUntilUtcMs = s.pausedUntilUtcMs?.takeIf { it > now }, oneTap = s.oneTap)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
+    private fun minuteTicks() = flow {
+        while (true) {
+            emit(clock.millis())
+            delay(MINUTE_MS)
+        }
+    }
+
+    /** "Pause automatic trips" from Home: 1 hour, until tomorrow, or until turned back on. */
+    fun pauseAutoTrips(pause: AutoTripPause) {
+        viewModelScope.launch { autoTripSettings.pauseUntil(autoTripPauseEnd(pause, clock.millis(), zoneId)) }
+    }
+
+    fun resumeAutoTrips() {
+        viewModelScope.launch { autoTripSettings.pauseUntil(null) }
+    }
+
     val uiState: StateFlow<HomeUiState> = combine(vehicles.observeVehicles(), userData.userData) { list, data ->
         // A deleted or archived selection falls back to the first vehicle.
         Triple(list, list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull(), data)
@@ -144,6 +181,7 @@ class HomeViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
+        const val MINUTE_MS = 60_000L
         const val RECENT_COUNT = 3
     }
 }

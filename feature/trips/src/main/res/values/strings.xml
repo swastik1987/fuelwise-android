@@ -172,4 +172,6 @@
     <string name="trips_auto_card_title">Record trips automatically</string>
     <string name="trips_auto_card_body">Drives log themselves while you drive. Routes stay on this phone.</string>
     <string name="trips_auto_tag">Auto</string>
+    <string name="trips_not_my_drive">Not my drive</string>
+    <string name="trips_change_vehicle">Change vehicle</string>
 </resources>

@@ -36,6 +36,8 @@
     <string name="detail_category">श्रेणी</string>
     <string name="detail_plaza">टोल प्लाज़ा</string>
     <string name="detail_notes">नोट</string>
+    <string name="detail_photos">फ़ोटो</string>
+    <string name="detail_photo">एंट्री की फ़ोटो</string>
     <string name="detail_this_interval">यह हिस्सा</string>
     <string name="detail_interval_baseline">शुरुआत: माइलेज यहीं से गिना जाएगा</string>
     <string name="detail_interval_partial">थोड़ा: अगली फ़ुल टंकी में जुड़ेगा</string>

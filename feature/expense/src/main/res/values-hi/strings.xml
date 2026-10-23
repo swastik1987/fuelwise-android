@@ -13,6 +13,11 @@
     <string name="expense_odometer_optional">ओडोमीटर (ज़रूरी नहीं)</string>
     <string name="expense_payment">भुगतान</string>
     <string name="expense_notes">नोट</string>
+    <string name="expense_photos">फ़ोटो</string>
+    <string name="expense_photo">रसीद की फ़ोटो</string>
+    <string name="expense_photo_add">फ़ोटो जोड़ें</string>
+    <string name="expense_photo_remove">फ़ोटो हटाएँ</string>
+    <string name="expense_photo_failed">एक फ़ोटो नहीं खुली। कोई और चुनें।</string>
     <string name="expense_trip">यात्रा</string>
     <string name="expense_trip_places">%1$s → %2$s · %3$s</string>
     <string name="expense_trip_distance">%1$s · %2$s km</string>

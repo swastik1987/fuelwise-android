@@ -38,6 +38,12 @@
     <string name="refuel_station">Station</string>
     <string name="refuel_station_placeholder">e.g. HP, Indiranagar</string>
     <string name="refuel_notes">Notes</string>
+    <!-- Entry photos (PRD F-02.1) -->
+    <string name="refuel_photos">Photos</string>
+    <string name="refuel_photo">Fill-up photo</string>
+    <string name="refuel_photo_add">Add photo</string>
+    <string name="refuel_photo_remove">Remove photo</string>
+    <string name="refuel_photo_failed">Couldn\'t open a photo. Try another.</string>
     <string name="refuel_missed">I missed logging the previous fill-up</string>
     <string name="refuel_missed_hint">We\'ll skip mileage for this tank and start fresh from here, so your average stays honest.</string>
     <string name="refuel_battery">Battery</string>

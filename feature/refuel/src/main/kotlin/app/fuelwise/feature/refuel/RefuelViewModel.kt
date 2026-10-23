@@ -1,9 +1,12 @@
 package app.fuelwise.feature.refuel
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import app.fuelwise.core.data.photo.EntryPhotoDraft
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FuelPriceRepository
 import app.fuelwise.core.data.repository.TripRepository
@@ -11,6 +14,8 @@ import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.data.vault.ScanPhotoStash
 import app.fuelwise.core.designsystem.component.KeypadKey
+import app.fuelwise.core.domain.Dispatcher
+import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.ComputeFillReward
@@ -25,6 +30,7 @@ import app.fuelwise.core.domain.prices.PriceDefault
 import app.fuelwise.core.domain.prices.choosePriceDefault
 import app.fuelwise.core.domain.prices.priceFuelFor
 import app.fuelwise.core.domain.trip.FillUpPrefill
+import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -37,12 +43,14 @@ import app.fuelwise.core.model.ScanPrefill
 import app.fuelwise.core.ui.format.KeypadInput
 import app.fuelwise.core.ui.format.MoneyInput
 import app.fuelwise.core.ui.format.NumberInput
+import app.fuelwise.core.ui.photo.ThumbnailCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,6 +58,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Add / edit fill-up and EV charge (PRD F-02, design.md screens 6 and 8). Orchestration only: the triangle, checks
@@ -72,6 +81,9 @@ class RefuelViewModel @Inject constructor(
     private val clock: Clock,
     private val zoneId: ZoneId,
     private val scanPhotos: ScanPhotoStash,
+    private val photos: EntryPhotoDraft,
+    private val picked: PickedPhotoReader,
+    @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<RefuelRoute>()
     private var editing: Refuel? = null
@@ -97,7 +109,15 @@ class RefuelViewModel @Inject constructor(
     )
     val state: StateFlow<RefuelFormState> = _state.asStateFlow()
 
+    private val thumbnails = ThumbnailCache()
+
     init {
+        viewModelScope.launch {
+            photos.items.collect { items ->
+                val strip = withContext(io) { thumbnails.of(items, { it.key }, photos::bytes) }
+                _state.update { it.copy(photos = strip, canAddPhoto = photos.canAdd) }
+            }
+        }
         viewModelScope.launch {
             load()
             // Scan results arrive in the route (opened from the scan screen) or later on this entry's saved state
@@ -143,6 +163,17 @@ class RefuelViewModel @Inject constructor(
         return next
     }
 
+    /** Receipt or pump photos from the system picker (PRD F-02.1); saved with the entry. */
+    fun onPhotosPicked(uris: List<Uri>) {
+        viewModelScope.launch {
+            var failed = false
+            uris.forEach { uri -> picked.read(uri)?.let(photos::add) ?: run { failed = true } }
+            _state.update { it.copy(photoFailed = failed) }
+        }
+    }
+
+    fun onRemovePhoto(key: String) = photos.remove(key)
+
     /** The scan photo stays off this entry. */
     fun onRemoveScanPhoto() {
         _state.value.scanPhotoToken?.let(scanPhotos::take)
@@ -158,6 +189,7 @@ class RefuelViewModel @Inject constructor(
         val all = vehicles.observeVehicles().first()
         val existing = route.refuelId?.let { entries.observeRefuel(it).first() }
         editing = existing
+        existing?.let { photos.load(it.id) }
         val vehicleId = existing?.vehicleId ?: route.vehicleId ?: userData.userData.first().selectedVehicleId
         val vehicle = all.firstOrNull { it.id == vehicleId } ?: all.firstOrNull()
             ?: vehicles.observeVehicle(vehicleId.orEmpty()).first()
@@ -410,6 +442,7 @@ class RefuelViewModel @Inject constructor(
             val id = entries.saveRefuel(refuel)
             // Encrypted in the vault only now that the entry exists (PRD F-15, CLAUDE.md rule 5).
             checked.scanPhotoToken?.let { scanPhotos.attachToRefuel(it, id) }
+            photos.commit(id, Attachment.OwnerType.Refuel)
             _state.update { it.copy(scanPhotoToken = null) }
             val fills = entries.observeRefuels(refuel.vehicleId).first().filter { it.tankId == refuel.tankId }
             val fair = fairPriceFor(refuel)

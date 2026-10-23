@@ -1,8 +1,11 @@
 package app.fuelwise.feature.expense
 
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.designsystem.component.FwPhoto
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
@@ -57,6 +60,14 @@ class ExpenseScreensTest {
         focus = null,
         tripId = "mysuru",
         trips = trips,
+        photos = listOf(
+            FwPhoto(
+                "bill",
+                createBitmap(300, 400).apply {
+                    eraseColor(android.graphics.Color.rgb(233, 228, 216))
+                }.asImageBitmap(),
+            ),
+        ),
     )
 
     @Test fun tollWithTripLight() = capture("expense_toll_trip_light", false)

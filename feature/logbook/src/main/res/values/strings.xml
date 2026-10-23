@@ -36,6 +36,8 @@
     <string name="detail_category">Category</string>
     <string name="detail_plaza">Toll plaza</string>
     <string name="detail_notes">Notes</string>
+    <string name="detail_photos">Photos</string>
+    <string name="detail_photo">Entry photo</string>
     <string name="detail_this_interval">This interval</string>
     <string name="detail_interval_baseline">Baseline: mileage starts from here</string>
     <string name="detail_interval_partial">Partial: counts toward the next full tank</string>

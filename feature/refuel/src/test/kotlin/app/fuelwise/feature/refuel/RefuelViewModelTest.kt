@@ -1,7 +1,13 @@
 package app.fuelwise.feature.refuel
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.core.graphics.createBitmap
 import androidx.lifecycle.SavedStateHandle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.photo.EntryPhotoDraft
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.vault.ScanPhotoStash
 import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.domain.engine.ComputeConsumption
@@ -32,6 +38,7 @@ import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
 import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -43,8 +50,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35])
 class RefuelViewModelTest {
     @get:Rule
@@ -83,6 +92,9 @@ class RefuelViewModelTest {
         clock = clock,
         zoneId = ZoneId.of("Asia/Kolkata"),
         scanPhotos = stash,
+        photos = EntryPhotoDraft(documents),
+        picked = PickedPhotoReader(ApplicationProvider.getApplicationContext(), main.dispatcher),
+        io = main.dispatcher,
     )
 
     private fun RefuelViewModel.type(field: NumericField, text: String) {
@@ -166,6 +178,30 @@ class RefuelViewModelTest {
         val fair = vm.state.first { it.reward != null }.fairPrice!!
         assertThat(fair.city.price).isEqualTo(Money(8_895))
         assertThat(fair.verdict).isEqualTo(FairPrice.Verdict.Same)
+    }
+
+    @Test
+    fun pickedPhotosAreSavedWithTheFillUpAndNothingBefore() = runTest {
+        val receipt = File.createTempFile("receipt", ".jpg").apply {
+            outputStream().use { createBitmap(900, 1600).compress(Bitmap.CompressFormat.JPEG, 90, it) }
+        }
+        val notAPhoto = File.createTempFile("notes", ".jpg").apply { writeText("hello") }
+        val vm = viewModel()
+        vm.onPhotosPicked(listOf(Uri.fromFile(receipt), Uri.fromFile(notAPhoto)))
+        val picked = vm.state.first { it.photos.isNotEmpty() }
+        assertThat(picked.photos).hasSize(1)
+        assertThat(picked.photoFailed).isTrue()
+        // Nothing reaches the vault until the entry is saved.
+        assertThat(documents.allAttachments()).isEmpty()
+
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "40")
+        vm.type(NumericField.Total, "3558")
+        vm.save()
+        vm.state.first { it.reward != null }
+        val saved = documents.allAttachments().single()
+        assertThat(saved.ownerType).isEqualTo(Attachment.OwnerType.Refuel)
+        assertThat(saved.ownerId).isEqualTo(entries.refuels.single().id)
     }
 
     @Test

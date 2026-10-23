@@ -164,7 +164,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-02 Refuel and charge log — FREE · R1
 
-**F-02.1 Fill-up entry fields:** ✅ built (photos and GPS location not yet)
+**F-02.1 Fill-up entry fields:** ✅ built (photos ✅ 23 Oct 2026: up to 4 from the photo picker under More, kept in memory until save, then encrypted with the entry and shown on entry detail; GPS location not yet: the station chip is R2, F-21.1)
 - Vehicle, tank (bi-fuel only), date-time (default now)
 - Odometer
 - Quantity, price/unit and total (the **price triangle**)
@@ -265,7 +265,7 @@ EV vector: usable capacity 30 kWh. Session A ends at 80% at odo 5000. Session B 
 
 ### F-04 Expenses — FREE · R1
 
-**F-04.1 Expense entry fields:** ✅ built (trip link ✅ 23 Oct 2026: the vehicle's trips within 7 days of the entry, the one under way first; attachments not yet) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
+**F-04.1 Expense entry fields:** ✅ built (trip link ✅ 23 Oct 2026: the vehicle's trips within 7 days of the entry, the one under way first; photos ✅ 23 Oct 2026, as F-02.1) vehicle, category, date, amount, odometer (optional), payment method, notes, attachments, link to trip (optional), toll plaza (toll category only).
 
 **F-04.2 Categories.** ✅ built 23 Oct 2026 (presets; custom categories with name and icon, rename, hide, delete when unused; Settings → Expense categories. No per-category colour: design.md keeps categories neutral) System presets (renameable, hideable, not deletable if used):
 - Service, Repair, Tyres, Battery, Insurance, PUC, Parking, Toll (FASTag), Toll (cash), Wash/Detailing, Accessories
@@ -580,7 +580,7 @@ Built with Jetpack Glance.
 
 ---
 
-### F-18 Settings, units and localisation — R1 ✅ built (units: owner decision 20 Oct 2026, R1 shows km and litres everywhere and offers only km/L or L/100 km, with the kg and kWh variants, applied on Home, Logbook, Insights charts and cards, recap, reward, trips and the Status widget; entry fields stay in km and litres. Miles, gallons and mpg are kept in core:domain and the proto for later. Weekly digest ✅ 20 Oct 2026: Monday notification for the selected vehicle from the daily check. Location & trips settings (F-21.3/21.6, now R1) not built yet; crash reports not shown)
+### F-18 Settings, units and localisation — R1 ✅ built (units: owner decision 20 Oct 2026, R1 shows km and litres everywhere and offers only km/L or L/100 km, with the kg and kWh variants, applied on Home, Logbook, Insights charts and cards, recap, reward, trips and the Status widget; entry fields stay in km and litres. Miles, gallons and mpg are kept in core:domain and the proto for later. Weekly digest ✅ 20 Oct 2026: Monday notification for the selected vehicle from the daily check. Location & trips settings (F-21.3/21.6) ✅ built with F-21; crash reports not shown)
 
 - **Units:**
   - Defaults: km, L, kg (CNG), kWh, km/L, km/kg, km/kWh.

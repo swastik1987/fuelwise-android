@@ -1,5 +1,8 @@
 package app.fuelwise.feature.expense
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.fuelwise.core.data.photo.EntryPhotoDraft
 import app.fuelwise.core.designsystem.component.FwCheckboxRow
 import app.fuelwise.core.designsystem.component.FwChoiceChip
 import app.fuelwise.core.designsystem.component.FwEntrySheet
@@ -75,6 +79,11 @@ import kotlin.math.roundToLong
 internal fun ExpenseScreen(onClose: () -> Unit, viewModel: ExpenseViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) { viewModel.saved.collect { onClose() } }
+    // The Android photo picker: no storage permission (PRD §9).
+    val pick = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(EntryPhotoDraft.MAX_PHOTOS),
+        viewModel::onPhotosPicked,
+    )
     ExpenseContent(
         state = state,
         actions = ExpenseActions(
@@ -92,6 +101,8 @@ internal fun ExpenseScreen(onClose: () -> Unit, viewModel: ExpenseViewModel = hi
             onRepeatEvery = viewModel::onRepeatEvery,
             onRepeatUnit = viewModel::onRepeatUnit,
             onTrip = viewModel::onTrip,
+            onAddPhoto = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            onRemovePhoto = viewModel::onRemovePhoto,
         ),
         onClose = onClose,
     )
@@ -112,6 +123,8 @@ internal data class ExpenseActions(
     val onRepeatEvery: (String) -> Unit = {},
     val onRepeatUnit: (RepeatUnit) -> Unit = {},
     val onTrip: (String) -> Unit = {},
+    val onAddPhoto: () -> Unit = {},
+    val onRemovePhoto: (String) -> Unit = {},
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -269,6 +282,7 @@ internal fun ExpenseContent(
                 singleLine = false,
                 modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocus(null) },
             )
+            ExpensePhotos(state, actions)
             if (!state.isEdit && !state.isToll) RepeatSection(state, actions)
         }
     }

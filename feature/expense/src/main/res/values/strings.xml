@@ -13,6 +13,12 @@
     <string name="expense_odometer_optional">Odometer (optional)</string>
     <string name="expense_payment">Payment</string>
     <string name="expense_notes">Notes</string>
+    <!-- Entry photos (PRD F-04.1) -->
+    <string name="expense_photos">Photos</string>
+    <string name="expense_photo">Receipt photo</string>
+    <string name="expense_photo_add">Add photo</string>
+    <string name="expense_photo_remove">Remove photo</string>
+    <string name="expense_photo_failed">Couldn\'t open a photo. Try another.</string>
     <!-- Link to a trip (PRD F-04.1, F-10.2). Places: 1 from, 2 to, 3 date. Distance: 1 date, 2 km. -->
     <string name="expense_trip">Trip</string>
     <string name="expense_trip_places">%1$s → %2$s · %3$s</string>

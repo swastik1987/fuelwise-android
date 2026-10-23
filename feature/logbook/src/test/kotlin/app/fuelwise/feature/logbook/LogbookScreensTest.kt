@@ -2,11 +2,14 @@ package app.fuelwise.feature.logbook
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.core.graphics.createBitmap
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.designsystem.component.FwPhoto
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
@@ -94,11 +97,23 @@ class LogbookScreensTest {
                 SampleEntries.safariService,
                 SampleVehicles.safari,
                 categories[SystemCategory.Service.id],
+                photos = listOf(receipt("bill-1", 0xFFE9E4D8.toInt()), receipt("bill-2", 0xFFD8DEE9.toInt())),
             ),
             {},
             {},
             {},
         )
+    }
+
+    /** A stand-in receipt photo, drawn so the screenshot doesn't depend on a file. */
+    private fun receipt(key: String, paper: Int): FwPhoto {
+        val bitmap = createBitmap(300, 400)
+        android.graphics.Canvas(bitmap).apply {
+            drawColor(paper)
+            val ink = android.graphics.Paint().apply { color = android.graphics.Color.rgb(90, 90, 90) }
+            repeat(8) { i -> drawRect(30f, 40f + i * 40f, 270f - (i % 3) * 50f, 52f + i * 40f, ink) }
+        }
+        return FwPhoto(key, bitmap.asImageBitmap())
     }
 
     @Composable

@@ -1,11 +1,11 @@
 package app.fuelwise.feature.garage.editor
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import app.fuelwise.core.data.photo.PickedPhotoReader
 import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.data.repository.UserDataRepository
@@ -26,7 +26,6 @@ import app.fuelwise.core.ui.format.NumberInput
 import app.fuelwise.core.ui.photo.PhotoImages
 import app.fuelwise.feature.garage.VehicleEditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -54,7 +53,7 @@ class VehicleEditorViewModel @Inject constructor(
     private val autoTripSettings: AutoTripSettingsRepository,
     private val carLinker: CarLinker,
     private val photos: VehiclePhotoRepository,
-    @param:ApplicationContext private val context: Context,
+    private val picked: PickedPhotoReader,
     @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<VehicleEditorRoute>()
@@ -194,11 +193,7 @@ class VehicleEditorViewModel @Inject constructor(
     /** A photo from the system picker (no storage permission), shrunk to a JPEG for the screen. */
     fun onPhotoPicked(uri: Uri) {
         viewModelScope.launch {
-            val shrunk = withContext(io) {
-                runCatching {
-                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }?.let(PhotoImages::shrinkToJpeg)
-                }.getOrNull()
-            }
+            val shrunk = picked.read(uri)
             val preview = shrunk?.let { withContext(io) { PhotoImages.decode(it, PREVIEW_PX) } }
             if (shrunk == null || preview == null) {
                 _state.update { it.copy(photoFailed = true) }

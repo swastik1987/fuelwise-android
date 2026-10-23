@@ -1,5 +1,8 @@
 package app.fuelwise.feature.refuel
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.fuelwise.core.data.photo.EntryPhotoDraft
 import app.fuelwise.core.designsystem.component.FwCheckboxRow
 import app.fuelwise.core.designsystem.component.FwChoiceChip
 import app.fuelwise.core.designsystem.component.FwEntrySheet
@@ -76,7 +80,16 @@ internal fun RefuelScreen(
     viewModel: RefuelViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    RefuelContent(state, viewModel.actions().copy(onScan = { onScan(state.vehicle?.id) }), onClose)
+    // The Android photo picker: no storage permission (PRD §9).
+    val pick = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(EntryPhotoDraft.MAX_PHOTOS),
+        viewModel::onPhotosPicked,
+    )
+    val actions = viewModel.actions().copy(
+        onScan = { onScan(state.vehicle?.id) },
+        onAddPhoto = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+    )
+    RefuelContent(state, actions, onClose)
 }
 
 /** Callbacks for [RefuelContent]; defaults make previews and screenshot tests easy. */
@@ -103,6 +116,8 @@ internal data class RefuelActions(
     val onScan: () -> Unit = {},
     val onRemoveScanPhoto: () -> Unit = {},
     val onTripMeterMode: (Boolean) -> Unit = {},
+    val onAddPhoto: () -> Unit = {},
+    val onRemovePhoto: (String) -> Unit = {},
 )
 
 private fun RefuelViewModel.actions() = RefuelActions(
@@ -111,6 +126,7 @@ private fun RefuelViewModel.actions() = RefuelActions(
     onNext = ::onNextField,
     onUsePrediction = ::onUsePrediction,
     onTripMeterMode = ::onTripMeterMode,
+    onRemovePhoto = ::onRemovePhoto,
     onFull = ::onFullChange,
     onToggleMore = ::onToggleMore,
     onGrade = ::onGrade,
@@ -339,6 +355,7 @@ private fun FuelSection(state: RefuelFormState, actions: RefuelActions) {
             singleLine = false,
             modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocus(null) },
         )
+        EntryPhotos(state, actions)
         FwCheckboxRow(
             title = stringResource(R.string.refuel_missed),
             subtitle = stringResource(R.string.refuel_missed_hint),
@@ -393,6 +410,7 @@ private fun ChargeSection(state: RefuelFormState, actions: RefuelActions) {
             onClick = { actions.onFocus(NumericField.Duration) },
             autoLabel = "",
         )
+        EntryPhotos(state, actions)
     }
 }
 

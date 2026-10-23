@@ -35,6 +35,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwInfoSheet
 import app.fuelwise.core.designsystem.component.FwOverline
+import app.fuelwise.core.designsystem.component.FwPhoto
+import app.fuelwise.core.designsystem.component.FwPhotoStrip
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
@@ -134,6 +136,12 @@ internal fun EntryDetailContent(
                 is EntryDetailUiState.Cost -> CostFacts(state)
                 else -> Unit
             }
+            val photos = when (state) {
+                is EntryDetailUiState.FillUp -> state.photos
+                is EntryDetailUiState.Cost -> state.photos
+                else -> emptyList()
+            }
+            if (photos.isNotEmpty()) Photos(photos)
         }
     }
     if (confirming) {
@@ -305,6 +313,15 @@ private fun Fact(label: String, value: String) {
         Text(value, style = FwTheme.type.label, color = FwTheme.colors.ink)
     }
     HorizontalDivider(color = FwTheme.colors.line)
+}
+
+/** The entry's photos, read-only (design.md screen 13); edit the entry to add or remove them. */
+@Composable
+private fun Photos(photos: List<FwPhoto>) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        FwOverline(stringResource(R.string.detail_photos))
+        FwPhotoStrip(photos, photoDescription = stringResource(R.string.detail_photo))
+    }
 }
 
 @Composable

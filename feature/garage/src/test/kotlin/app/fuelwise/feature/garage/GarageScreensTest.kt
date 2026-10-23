@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -86,6 +87,11 @@ class GarageScreensTest {
     fun detailsEditorDark() = capture("editor_details_dark", dark = true) { HybridEditor() }
 
     @Test
+    fun detailPhotoLight() = capture("detail_photo_light", dark = false) {
+        VehicleDetailContent(SampleVehicles.safari, {}, {}, {}, {}, { false }, photo = samplePhoto())
+    }
+
+    @Test
     fun detailLight() = capture("detail_light", dark = false) { Detail() }
 
     @Test
@@ -162,6 +168,25 @@ class GarageScreensTest {
         onBack = {},
         actions = VehicleEditorActions(),
     )
+
+    /** A stand-in photo: sky over road, drawn so the screenshot doesn't depend on a file. */
+    private fun samplePhoto(): androidx.compose.ui.graphics.ImageBitmap {
+        val bitmap = androidx.core.graphics.createBitmap(1200, 700)
+        android.graphics.Canvas(bitmap).apply {
+            drawColor(android.graphics.Color.rgb(142, 178, 204))
+            drawRect(
+                0f,
+                420f,
+                1200f,
+                700f,
+                android.graphics.Paint().apply {
+                    color =
+                        android.graphics.Color.rgb(70, 72, 74)
+                },
+            )
+        }
+        return bitmap.asImageBitmap()
+    }
 
     private companion object {
         const val TALL = "w412dp-h2400dp-xxhdpi"

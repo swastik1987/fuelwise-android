@@ -1,5 +1,6 @@
 package app.fuelwise.feature.garage.list
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -142,7 +145,7 @@ private fun GarageList(
                 horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
             ) {
                 items(state.active, key = { it.id }) { vehicle ->
-                    VehicleCard(vehicle, onClick = { onOpenVehicle(vehicle.id) })
+                    VehicleCard(vehicle, state.photos[vehicle.id], onClick = { onOpenVehicle(vehicle.id) })
                 }
             }
         }
@@ -172,17 +175,21 @@ private fun GarageList(
 }
 
 @Composable
-private fun VehicleCard(vehicle: Vehicle, onClick: () -> Unit) {
+private fun VehicleCard(vehicle: Vehicle, photo: ImageBitmap?, onClick: () -> Unit) {
     val colors = FwTheme.colors
     FwCard(modifier = Modifier.width(236.dp), onClick = onClick, contentPadding = PaddingValues(0.dp)) {
-        // Photo area until vehicle photos are supported: the type glyph on surface-2.
+        // The vehicle's photo, or its type glyph on surface-2.
         Box(Modifier.fillMaxWidth().height(112.dp).background(colors.surface2), contentAlignment = Alignment.Center) {
-            Icon(
-                painterResource(VehicleLabels.typeIcon(vehicle.type)),
-                null,
-                tint = colors.ink3,
-                modifier = Modifier.size(40.dp),
-            )
+            if (photo != null) {
+                Image(photo, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            } else {
+                Icon(
+                    painterResource(VehicleLabels.typeIcon(vehicle.type)),
+                    null,
+                    tint = colors.ink3,
+                    modifier = Modifier.size(40.dp),
+                )
+            }
         }
         Column(
             Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp),

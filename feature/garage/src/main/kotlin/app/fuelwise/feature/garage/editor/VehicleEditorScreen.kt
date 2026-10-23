@@ -1,6 +1,10 @@
 package app.fuelwise.feature.garage.editor
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +36,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -52,6 +58,7 @@ import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
 import app.fuelwise.core.designsystem.component.FwSettingsRow
 import app.fuelwise.core.designsystem.component.FwSwitchRow
+import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
@@ -81,6 +88,10 @@ internal fun VehicleEditorScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Null where Android can't observe a car (before Android 12): the row is hidden.
     val linkCar = rememberCarBluetoothLinker(viewModel::linkCar)
+    // The Android photo picker: no storage permission (PRD §9).
+    val photo = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let(viewModel::onPhotoPicked)
+    }
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -104,6 +115,8 @@ internal fun VehicleEditorScreen(
             onPurchaseDate = viewModel::onPurchaseDateChange,
             onHybrid = viewModel::onHybridChange,
             onDefaultGrade = viewModel::onDefaultGradeChange,
+            onPickPhoto = { photo.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            onRemovePhoto = viewModel::onPhotoRemoved,
             onToggleMore = viewModel::onToggleMore,
             onSave = viewModel::save,
             onLinkCar = linkCar,
@@ -125,6 +138,8 @@ internal data class VehicleEditorActions(
     val onPurchaseDate: (LocalDate?) -> Unit = {},
     val onHybrid: (Boolean) -> Unit = {},
     val onDefaultGrade: (FuelGrade) -> Unit = {},
+    val onPickPhoto: () -> Unit = {},
+    val onRemovePhoto: () -> Unit = {},
     val onToggleMore: () -> Unit = {},
     val onSave: () -> Unit = {},
     val onLinkCar: (() -> Unit)? = null,
@@ -148,6 +163,7 @@ internal fun VehicleEditorContent(state: VehicleFormState, onBack: () -> Unit, a
                 .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.xs),
             verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
         ) {
+            PhotoRow(state, actions)
             TypePicker(state.type, actions.onType)
             FuelPicker(state, actions.onFuel)
             FwTextField(
@@ -177,6 +193,46 @@ internal fun VehicleEditorContent(state: VehicleFormState, onBack: () -> Unit, a
                 onClick = actions.onSave,
                 enabled = !state.isSaving && !state.isLoading,
             )
+        }
+    }
+}
+
+/** The vehicle's photo (PRD F-01.1): shown on its Garage card and detail header. */
+@Composable
+private fun PhotoRow(state: VehicleFormState, actions: VehicleEditorActions) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
+    ) {
+        Box(
+            Modifier.size(PHOTO_SIZE).clip(FwTheme.radius.input).background(FwTheme.colors.surface2),
+            contentAlignment = Alignment.Center,
+        ) {
+            val photo = state.photo
+            if (photo != null) {
+                Image(
+                    photo,
+                    stringResource(R.string.editor_photo),
+                    Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Icon(painterResource(VehicleLabels.typeIcon(state.type)), null, tint = FwTheme.colors.ink3)
+            }
+        }
+        Column(Modifier.weight(1f)) {
+            FwTextButton(
+                stringResource(if (state.photo == null) R.string.editor_photo_add else R.string.editor_photo_change),
+                actions.onPickPhoto,
+            )
+            if (state.photo != null) FwTextButton(stringResource(R.string.editor_photo_remove), actions.onRemovePhoto)
+            if (state.photoFailed) {
+                Text(
+                    stringResource(R.string.editor_photo_failed),
+                    style = FwTheme.type.caption,
+                    color = FwTheme.colors.negative,
+                )
+            }
         }
     }
 }
@@ -531,3 +587,4 @@ private val PICKER_TYPES = listOf(
 
 private const val EXPANDED_ROTATION = 180f
 private val YEAR_WIDTH = 104.dp
+private val PHOTO_SIZE = 72.dp

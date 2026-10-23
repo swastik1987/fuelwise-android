@@ -132,7 +132,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-01 Vehicles (Garage) — FREE · R1
 
-**F-01.1 Vehicle profile.** ✅ built (make/model/variant/year and purchase details ✅ 23 Oct 2026; photo not yet; accent colour on hold: design.md keeps one accent colour) Fields:
+**F-01.1 Vehicle profile.** ✅ built (make/model/variant/year and purchase details ✅ 23 Oct 2026; photo ✅ 23 Oct 2026: system photo picker, shrunk to a 1280 px JPEG, kept as an encrypted attachment and backed up; shown on the Garage card and detail header; accent colour on hold: design.md keeps one accent colour) Fields:
 - Name (required, e.g., "Safari")
 - Type: car / motorcycle / scooter / auto-rickshaw / van / truck / other
 - Make, model, variant, year (optional, free text in R1)

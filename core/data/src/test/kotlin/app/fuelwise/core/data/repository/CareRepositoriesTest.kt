@@ -157,6 +157,16 @@ class CareRepositoriesTest {
     }
 
     @Test
+    fun anExpenseFromAddCostIsLinkedToTheCompletion() = runTest {
+        val id = reminders.save(Reminder("", "v1", ReminderKind.Puc, null, date(2026, 10, 20), null))
+        val completionId = reminders.complete(id, odometerKm = null)!!
+        assertThat(reminders.completion(completionId)!!.expenseId).isNull()
+        reminders.attachExpense(completionId, "e-puc")
+        assertThat(reminders.completion(completionId)!!.expenseId).isEqualTo("e-puc")
+        assertThat(reminders.complete("gone", odometerKm = null)).isNull()
+    }
+
+    @Test
     fun documentExpiryKeepsAReminderInStep() = runTest {
         val vehicleId = vehicles.add(VehicleDraft(name = "Swift", fuelSetup = FuelSetup.Petrol, odometerKm = 20_000.0))
         val docId = documents.save(

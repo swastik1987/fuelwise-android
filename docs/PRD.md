@@ -421,7 +421,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-11 Reminders — FREE · R1 ✅ built (M6: presets from assets/rules/india.json, date/odometer/both, daily WorkManager check around 09:30, Done/Snooze/Open actions, in-app banner without the notification permission; "Done" from a notification does not create an expense yet)
+### F-11 Reminders — FREE · R1 ✅ built (M6: presets from assets/rules/india.json, date/odometer/both, daily WorkManager check around 09:30, Done/Snooze/Open actions, in-app banner without the notification permission; "Done" then offers "Add cost" ✅ 23 Oct 2026: the expense sheet opens on the matching category and the expense is linked to the completion)
 
 **F-11.1 Trigger types:** by date, by odometer, or both (whichever first). Can recur (every N km and/or N months).
 

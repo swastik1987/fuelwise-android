@@ -7,6 +7,7 @@ import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.RecurrenceRepository
+import app.fuelwise.core.data.repository.ReminderRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.designsystem.component.KeypadKey
@@ -72,6 +73,7 @@ class ExpenseViewModel @Inject constructor(
     private val entries: EntryRepository,
     private val userData: UserDataRepository,
     private val recurrences: RecurrenceRepository,
+    private val reminders: ReminderRepository,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -109,7 +111,7 @@ class ExpenseViewModel @Inject constructor(
                 vehicle = vehicle,
                 categories = cats,
                 isToll = isToll,
-                categoryId = existing?.categoryId,
+                categoryId = existing?.categoryId ?: route.categoryId?.takeIf { id -> cats.any { it.id == id } },
                 amount = existing?.amount?.let(MoneyInput::plain).orEmpty(),
                 odometer = existing?.odometerKm?.let(NumberInput::plain).orEmpty(),
                 dateTimeUtcMs = existing?.dateTimeUtcMs ?: s.dateTimeUtcMs,
@@ -175,7 +177,7 @@ class ExpenseViewModel @Inject constructor(
         if (amount == null || categoryId == null || vehicle == null) return
         _state.update { it.copy(saving = true) }
         viewModelScope.launch {
-            entries.saveExpense(
+            val savedId = entries.saveExpense(
                 Expense(
                     id = editing?.id.orEmpty(),
                     vehicleId = vehicle.id,
@@ -194,6 +196,7 @@ class ExpenseViewModel @Inject constructor(
                 ),
             )
             if (s.repeat && editing == null) saveRecurrence(s, vehicle.id, categoryId, amount)
+            if (editing == null) route.completionId?.let { reminders.attachExpense(it, savedId) }
             savedChannel.send(Unit)
         }
     }

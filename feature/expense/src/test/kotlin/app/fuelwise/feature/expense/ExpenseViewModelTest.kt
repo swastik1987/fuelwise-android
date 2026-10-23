@@ -7,11 +7,14 @@ import app.fuelwise.core.designsystem.component.KeypadKey
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PaymentMethod
+import app.fuelwise.core.model.Reminder
+import app.fuelwise.core.model.ReminderKind
 import app.fuelwise.core.model.RepeatUnit
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeRecurrenceRepository
+import app.fuelwise.core.testing.FakeReminderRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -38,13 +41,16 @@ class ExpenseViewModelTest {
     private val recurrences = FakeRecurrenceRepository()
     private val categories = FakeCategoryRepository()
 
-    private fun viewModel(toll: Boolean = false) = ExpenseViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "safari", "expenseId" to null, "toll" to toll)),
+    private val reminders = FakeReminderRepository()
+
+    private fun viewModel(toll: Boolean = false, extra: Map<String, Any?> = emptyMap()) = ExpenseViewModel(
+        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to "safari", "expenseId" to null, "toll" to toll) + extra),
         vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari)),
         categories = categories,
         entries = entries,
         userData = FakeUserDataRepository(),
         recurrences = recurrences,
+        reminders = reminders,
         clock = Clock.fixed(Instant.parse("2026-10-16T04:30:00Z"), ZoneOffset.UTC),
         zoneId = ZoneId.of("Asia/Kolkata"),
     )
@@ -111,5 +117,19 @@ class ExpenseViewModelTest {
         assertThat(recurrence.unit).isEqualTo(RepeatUnit.Months)
         // Saved on 16 Oct (IST): the first auto entry is 16 Nov, so this one is never created twice.
         assertThat(recurrence.startUtcMs).isEqualTo(Instant.parse("2026-11-15T18:30:00Z").toEpochMilli())
+    }
+
+    @Test
+    fun addCostAfterDoneStartsOnItsCategoryAndLinksTheExpense() = runTest {
+        val reminderId = reminders.save(Reminder("", "safari", ReminderKind.Puc, null, 0L, null))
+        val completionId = reminders.complete(reminderId, odometerKm = null)!!
+        val vm = viewModel(extra = mapOf("categoryId" to SystemCategory.Puc.id, "completionId" to completionId))
+        assertThat(vm.state.first { !it.loading }.categoryId).isEqualTo(SystemCategory.Puc.id)
+        vm.typeAmount("120")
+        vm.save()
+        vm.saved.first()
+        val puc = entries.expenses.single()
+        assertThat(puc.categoryId).isEqualTo(SystemCategory.Puc.id)
+        assertThat(reminders.completion(completionId)!!.expenseId).isEqualTo(puc.id)
     }
 }

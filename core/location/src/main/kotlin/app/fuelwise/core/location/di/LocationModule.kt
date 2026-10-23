@@ -9,8 +9,12 @@ import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.location.CarPresence
 import app.fuelwise.core.location.CompanionCarPresence
 import app.fuelwise.core.location.DriveDetection
+import app.fuelwise.core.location.FillUpCheck
+import app.fuelwise.core.location.FillUpDetector
+import app.fuelwise.core.location.FillUpNotifier
 import app.fuelwise.core.location.FusedSingleFix
 import app.fuelwise.core.location.FusedTripLocationSource
+import app.fuelwise.core.location.NotificationFillUpNotifier
 import app.fuelwise.core.location.NotificationTripPrompts
 import app.fuelwise.core.location.RecorderScope
 import app.fuelwise.core.location.RecordingHost
@@ -55,6 +59,12 @@ internal interface LocationModule {
 
     @Binds
     fun singleFix(impl: FusedSingleFix): SingleFix
+
+    @Binds
+    fun fillUpCheck(impl: FillUpDetector): FillUpCheck
+
+    @Binds
+    fun fillUpNotifier(impl: NotificationFillUpNotifier): FillUpNotifier
 
     companion object {
         @Provides

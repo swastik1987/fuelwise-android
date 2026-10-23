@@ -442,6 +442,11 @@ private fun NotificationsSection(state: SettingsUiState, actions: SettingsAction
             value = stringResource(R.string.settings_channel_system),
             onClick = { actions.onChannel(NotificationChannels.AUTOMATIC_TRIPS) },
         )
+        FwSettingsRow(
+            stringResource(R.string.settings_channel_fill_up_prompts),
+            value = stringResource(R.string.settings_channel_system),
+            onClick = { actions.onChannel(NotificationChannels.FILL_UP_PROMPTS) },
+        )
     }
 }
 

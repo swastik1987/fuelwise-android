@@ -4,6 +4,7 @@ import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
 import app.fuelwise.core.model.TrackPoint
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeEntryRepository
@@ -68,6 +69,9 @@ class AutoTripsTest {
                 override fun startForegroundRecording() = Unit
             },
             prompts,
+            object : FillUpCheck {
+                override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) = Unit
+            },
             clock,
             zone,
             backgroundScope,

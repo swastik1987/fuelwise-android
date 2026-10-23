@@ -60,6 +60,15 @@ message UserPreferences {
   RouteRetentionPref route_retention = 81;
   // Private places (PRD F-21.6), Tink-encrypted with the vault key: home is never stored in the clear.
   bytes private_places = 82;
+  // Fill-up prompts (PRD F-21.4): what the user said and when we last asked. Device-only.
+  FillUpPrompts fill_up_prompts = 83;
+}
+
+message FillUpPrompts {
+  // "Not a fill-up" taps per OSM station id; 3 or more and that station is never prompted again.
+  map<int64, int32> rejections = 1;
+  // Last prompt per vehicle id (UTC ms): at most one per vehicle per 6 hours.
+  map<string, int64> last_prompt_at = 2;
 }
 
 enum RouteRetentionPref {

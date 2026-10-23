@@ -42,6 +42,12 @@ class TripRecorderTest {
         }
     }
     private val prompted = mutableListOf<String>()
+    private val checked = mutableListOf<Pair<String, Int>>()
+    private val fillUps = object : FillUpCheck {
+        override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) {
+            checked += trip.id to points.size
+        }
+    }
     private val prompts = object : TripPrompts {
         override fun odometerAfterTrip(tripId: String, distanceKm: Double) {
             prompted += tripId
@@ -61,6 +67,7 @@ class TripRecorderTest {
             source,
             host,
             prompts,
+            fillUps,
             clock,
             zone,
             backgroundScope,
@@ -209,6 +216,8 @@ class TripRecorderTest {
         assertThat(trip.distanceKm).isWithin(0.001).of(0.667)
         // No odometer notification after every automatic drive.
         assertThat(prompted).isEmpty()
+        // The full track goes to fill-up detection (PRD F-21.4), not just the simplified route.
+        assertThat(checked).containsExactly(id to 3)
     }
 
     @Test

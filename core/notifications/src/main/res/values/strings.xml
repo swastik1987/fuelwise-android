@@ -8,6 +8,8 @@
     <string name="channel_trip_recording_description">Shows distance and time while a GPS trip records.</string>
     <string name="channel_automatic_trips">Automatic trips</string>
     <string name="channel_automatic_trips_description">Shows a drive while it records on its own, and asks to start a trip when you start driving.</string>
+    <string name="channel_fill_up_prompts">Fill-up prompts</string>
+    <string name="channel_fill_up_prompts_description">After a drive with a stop at a fuel station: a tap logs the fill-up.</string>
     <string name="channel_price_alerts">Price alerts</string>
     <string name="channel_price_alerts_description">When a fuel price in your home city moves by ₹1 or more.</string>
     <string name="notif_price_up">%1$s in %2$s up %3$s/%4$s today</string>

@@ -694,7 +694,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - No location request is active when no trip is recording (verified in `dumpsys location`).
 - Battery: record drain per hour of driving and per day of no driving on 3 devices. Daily drain with no driving must be indistinguishable from the app being uninstalled. Log results in `docs/perf.md`.
 
-**F-21.4 Fill-up detection prompt (R1, FREE)**
+**F-21.4 Fill-up detection prompt (R1, FREE)** ✅ built 23 Oct 2026 (stops of 2–15 min, or the trip end, within 40 m of a bundled-list station, CNG and EV fit; one prompt after the trip with "Log it" / "Not a fill-up"; ±2 h already-logged skip, 1 per vehicle per 6 h, 3 rejections silence a station; pre-fills station, time and vehicle, odometer stays the F-21.5 hint. Personal stations aren't learned yet: without the R2 station chip a prompt can only name a station already in the list. The 4-week dogfood AC is open)
 - **Station source (D16):** the bundled F-21.2 OpenStreetMap list, matched on the device. No Google Places, no network lookup. Stations the user logged from a prompt or picked by hand add to it. Until F-21.1 ships in R2, those personal stations come only from fill-ups logged through a prompt.
 - **Detection:** during an automatic trip (or at its end), a stop of 2–15 minutes within 40 m of a station from F-21.1/F-21.2 is a **likely fill-up**.
 - **Prompt:** one notification after the trip ends: "Filled up at HP, Indiranagar? Tap to log." It opens the Add fill-up sheet pre-filled with:

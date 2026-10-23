@@ -43,14 +43,14 @@ data class MonthCostPerKm(val month: YearMonth, val costPerKm: Money?)
 /** [categoryId] null is fuel / charging. */
 data class CategorySpend(val categoryId: String?, val amount: Money)
 
-/** PRD F-06.4 cards. Pro ones are shown locked until entitlements arrive (M11). */
+/** PRD F-06.4 cards. Pro ones show as "Coming soon" in R1 (PRD D15) and unlock with billing, F-19, in R2. */
 sealed interface InsightCard {
     data class MileageDrop(val fraction: Double) : InsightCard
 
     /** [ratio] = your km/L ÷ claimed (0.84 = 84% of claimed). */
     data class RealVsClaimed(val ratio: Double, val claimedKmPerUnit: Double, val actualKmPerUnit: Double) : InsightCard
 
-    data class Locked(val kind: ProInsight) : InsightCard
+    data class ComingSoon(val kind: ProInsight) : InsightCard
 }
 
 enum class ProInsight { FuelGrade, CngSaving, EvVsPetrol, HomeVsPublic, Forecast, CompareVehicles }
@@ -235,17 +235,17 @@ class ComputeInsights @Inject constructor(
         if (vehicle != null) {
             when {
                 vehicle.isElectric -> {
-                    add(InsightCard.Locked(ProInsight.EvVsPetrol))
-                    add(InsightCard.Locked(ProInsight.HomeVsPublic))
+                    add(InsightCard.ComingSoon(ProInsight.EvVsPetrol))
+                    add(InsightCard.ComingSoon(ProInsight.HomeVsPublic))
                 }
 
-                vehicle.isBiFuel -> add(InsightCard.Locked(ProInsight.CngSaving))
+                vehicle.isBiFuel -> add(InsightCard.ComingSoon(ProInsight.CngSaving))
 
-                else -> add(InsightCard.Locked(ProInsight.FuelGrade))
+                else -> add(InsightCard.ComingSoon(ProInsight.FuelGrade))
             }
         }
-        add(InsightCard.Locked(ProInsight.Forecast))
-        if (vehicleCount > 1) add(InsightCard.Locked(ProInsight.CompareVehicles))
+        add(InsightCard.ComingSoon(ProInsight.Forecast))
+        if (vehicleCount > 1) add(InsightCard.ComingSoon(ProInsight.CompareVehicles))
     }
 
     private fun ratio(current: Money?, previous: Money?): Double? = if (current == null || previous == null ||

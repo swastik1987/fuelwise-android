@@ -35,7 +35,7 @@
     <string name="card_mileage_drop_body">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। पहले टायर प्रेशर जाँचें, फिर एयर फ़िल्टर, और देखें कि सर्विस तो नहीं बाकी।</string>
     <string name="card_real_vs_claimed_title">असली बनाम दावा</string>
     <string name="card_real_vs_claimed_body">आपको दावे का %1$d%% माइलेज मिलता है: %2$s, दावा %3$s।</string>
-    <string name="card_unlock">Pro से देखें</string>
+    <string name="card_coming_soon">जल्द आ रहा है</string>
     <string name="card_pro_fuel_grade">फ़्यूल ग्रेड तुलना</string>
     <string name="card_pro_cng">CNG से बचत</string>
     <string name="card_pro_ev_vs_petrol">EV बनाम पेट्रोल</string>

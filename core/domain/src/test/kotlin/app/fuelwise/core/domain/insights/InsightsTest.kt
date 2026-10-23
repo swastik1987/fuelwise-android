@@ -116,9 +116,9 @@ class InsightsTest {
         val report = insights(listOf(history), categories, InsightPeriod.All, zone)
         val real = report.cards.filterIsInstance<InsightCard.RealVsClaimed>().single()
         assertThat(real.ratio).isWithin(1e-9).of((2_130.0 / 120.0) / 22.0)
-        assertThat(report.cards).contains(InsightCard.Locked(ProInsight.FuelGrade))
-        assertThat(report.cards).contains(InsightCard.Locked(ProInsight.Forecast))
-        assertThat(report.cards).doesNotContain(InsightCard.Locked(ProInsight.CompareVehicles))
+        assertThat(report.cards).contains(InsightCard.ComingSoon(ProInsight.FuelGrade))
+        assertThat(report.cards).contains(InsightCard.ComingSoon(ProInsight.Forecast))
+        assertThat(report.cards).doesNotContain(InsightCard.ComingSoon(ProInsight.CompareVehicles))
     }
 
     @Test
@@ -139,7 +139,7 @@ class InsightsTest {
         assertThat(report.prices).isEmpty()
         assertThat(report.energyType).isNull()
         assertThat(report.fillCount).isEqualTo(3)
-        assertThat(report.cards).contains(InsightCard.Locked(ProInsight.CompareVehicles))
+        assertThat(report.cards).contains(InsightCard.ComingSoon(ProInsight.CompareVehicles))
     }
 
     @Test

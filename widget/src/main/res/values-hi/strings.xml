@@ -45,6 +45,10 @@
     <string name="tile_log_fuel">फ़्यूल दर्ज करें</string>
     <string name="tile_start_trip">यात्रा शुरू करें</string>
     <string name="tile_trip_recording">रिकॉर्ड हो रही है · %1$s km</string>
+    <string name="tile_auto_trips">अपने-आप यात्राएँ</string>
+    <string name="tile_auto_trips_on">चालू · रोकने के लिए टैप करें</string>
+    <string name="tile_auto_trips_paused">रुकी हुई · फिर शुरू करने के लिए टैप करें</string>
+    <string name="tile_auto_trips_off">सेट अप करने के लिए टैप करें</string>
 
     <!-- App shortcuts (long-press the icon) -->
     <string name="shortcut_add_fuel">फ़्यूल जोड़ें</string>

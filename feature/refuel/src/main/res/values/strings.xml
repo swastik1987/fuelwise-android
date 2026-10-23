@@ -28,7 +28,8 @@
     <string name="refuel_more">More</string>
     <string name="refuel_grade">Fuel grade</string>
     <string name="refuel_payment">Payment</string>
-    <string name="refuel_discount">Discount ₹</string>
+    <string name="refuel_discount">Discount</string>
+    <string name="refuel_discount_comes_to">= %1$s off</string>
     <string name="refuel_station">Station</string>
     <string name="refuel_station_placeholder">e.g. HP, Indiranagar</string>
     <string name="refuel_notes">Notes</string>

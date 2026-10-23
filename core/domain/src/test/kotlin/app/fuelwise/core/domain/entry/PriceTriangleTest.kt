@@ -53,4 +53,14 @@ class PriceTriangleTest {
         assertThat(solved.total).isEqualTo(Money(199_974))
         assertThat(solved.quantity).isEqualTo(19.43)
     }
+
+    @Test
+    fun `a percentage discount comes off the total in paise`() {
+        // 2% off ₹3,397.89 = ₹67.9578 → ₹67.96.
+        assertThat(PriceTriangle.discountOf(Money(339_789), 2.0)).isEqualTo(Money(6_796))
+        assertThat(PriceTriangle.discountOf(Money(339_789), 0.0)).isEqualTo(Money.ZERO)
+        assertThat(PriceTriangle.discountOf(Money(339_789), 100.0)).isEqualTo(Money(339_789))
+        assertThat(PriceTriangle.discountOf(Money(339_789), 101.0)).isNull()
+        assertThat(PriceTriangle.discountOf(null, 2.0)).isNull()
+    }
 }

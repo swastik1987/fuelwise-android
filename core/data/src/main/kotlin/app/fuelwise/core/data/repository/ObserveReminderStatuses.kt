@@ -1,6 +1,7 @@
 package app.fuelwise.core.data.repository
 
 import app.fuelwise.core.domain.engine.ComputePredictions
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.domain.reminder.EvaluateReminders
 import app.fuelwise.core.domain.reminder.OdometerOutlook
@@ -48,7 +49,8 @@ class ObserveReminderStatuses @Inject constructor(
                 )
             v.id to
                 OdometerOutlook(
-                    predictions.predictedOdometer(readings),
+                    // Recorded trips since the last reading move the estimate on (PRD F-21.5).
+                    predictions.predictedOdometer(readings, gpsDistances(v, tripList)),
                     predictions.avgKmPerDay(readings),
                     ruleSet.odometerWindowKm(v),
                 )

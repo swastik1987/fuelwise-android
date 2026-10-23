@@ -67,6 +67,36 @@ class PredictionsTest {
         assertThat(predictions.rangeLeftKm(null, 13.4, full, 42_360.0)).isNull()
     }
 
+    // PRD F-21.5: GPS odometer estimate between typed readings.
+
+    @Test
+    fun `recorded trips since the last reading move the odometer on`() {
+        val readings = listOf(reading(41_000.0, daysAgo = 30), reading(42_000.0, daysAgo = 10))
+        // Without recordings: 50 km/day × 10 days.
+        assertThat(predictions.predictedOdometer(readings)!!).isWithin(0.001).of(42_500.0)
+        // Two drives recorded since the last fill: 12 + 30 km, no history to calibrate yet.
+        val gps = listOf(gps(12.0, daysAgo = 5), gps(30.0, daysAgo = 1), gps(80.0, daysAgo = 20))
+        assertThat(predictions.predictedOdometer(readings, gps)!!).isWithin(0.001).of(42_042.0)
+    }
+
+    @Test
+    fun `the factor is learned from covered intervals only`() {
+        val readings = listOf(
+            reading(40_000.0, daysAgo = 40),
+            reading(40_210.0, daysAgo = 30), // 210 km by odometer, 200 recorded: 1.05
+            reading(40_630.0, daysAgo = 20), // 420 km by odometer, 400 recorded: 1.05
+            reading(41_630.0, daysAgo = 10), // 1,000 km but only 100 recorded: not covered, ignored
+        )
+        val gps = listOf(gps(200.0, 35), gps(400.0, 25), gps(100.0, 15), gps(50.0, 2))
+        assertThat(predictions.gpsFactor(readings, gps)).isWithin(0.0001).of(1.05)
+        assertThat(predictions.predictedOdometer(readings, gps)!!).isWithin(0.001).of(41_682.5)
+        // Clamped: a wildly off history can't stretch the estimate.
+        val odd = listOf(reading(40_000.0, 20), reading(40_129.0, 10))
+        assertThat(predictions.gpsFactor(odd, listOf(gps(100.0, 15)))).isWithin(0.0001).of(1.2)
+    }
+
+    private fun gps(km: Double, daysAgo: Long) = GpsDistance(now.toEpochMilli() - daysAgo * DAY_MS, km)
+
     private fun reading(odo: Double, daysAgo: Long) = OdometerReading(odo, now.toEpochMilli() - daysAgo * DAY_MS)
 
     private companion object {

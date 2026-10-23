@@ -4,12 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import app.fuelwise.core.data.repository.AutoTripSettingsRepository
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.vehicle.RegistrationNumber
 import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
+import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.Vehicle
@@ -48,7 +51,18 @@ data class VehicleFormState(
     /** Shown only after the first save attempt, so an empty form doesn't open covered in red. */
     val errors: Set<VehicleDraftError> = emptySet(),
     val isSaving: Boolean = false,
-)
+    /**
+     * Car Bluetooth for automatic trips (design.md screen 22, PRD F-21.3): offered when editing a saved vehicle
+     * while automatic trips are available. [carLinkName] is the linked car, or null.
+     */
+    val carBluetoothOffered: Boolean = false,
+    val carLinked: Boolean = false,
+    val carLinkName: String? = null,
+) {
+    /** Two-wheelers have no car kit to link (design.md: "Two-wheelers can skip this"). */
+    val showCarBluetooth: Boolean
+        get() = carBluetoothOffered && type != VehicleType.Scooter && type != VehicleType.Motorcycle
+}
 
 sealed interface VehicleEditorEvent {
     data class Saved(val vehicleId: String, val onboarding: Boolean) : VehicleEditorEvent
@@ -60,6 +74,8 @@ class VehicleEditorViewModel @Inject constructor(
     private val vehicles: VehicleRepository,
     private val userData: UserDataRepository,
     private val validate: ValidateVehicleDraft,
+    private val autoTripSettings: AutoTripSettingsRepository,
+    private val carLinker: CarLinker,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<VehicleEditorRoute>()
     private var editing: Vehicle? = null
@@ -78,7 +94,28 @@ class VehicleEditorViewModel @Inject constructor(
     val events = eventChannel.receiveAsFlow()
 
     init {
-        route.vehicleId?.let { id -> viewModelScope.launch { load(id) } }
+        route.vehicleId?.let { id ->
+            viewModelScope.launch { load(id) }
+            viewModelScope.launch {
+                autoTripSettings.settings.collect { s ->
+                    val link = s.carLinks[id]
+                    _state.update {
+                        it.copy(carBluetoothOffered = s.available, carLinked = link != null, carLinkName = link?.name)
+                    }
+                }
+            }
+        }
+    }
+
+    /** The car picked in the system chooser now starts this vehicle's automatic trips. */
+    fun linkCar(link: CarLink) {
+        val id = route.vehicleId ?: return
+        viewModelScope.launch { carLinker.linkCar(id, link) }
+    }
+
+    fun unlinkCar() {
+        val id = route.vehicleId ?: return
+        viewModelScope.launch { carLinker.unlinkCar(id) }
     }
 
     private suspend fun load(id: String) {

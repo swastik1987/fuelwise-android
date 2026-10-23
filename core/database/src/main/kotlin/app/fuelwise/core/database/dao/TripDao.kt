@@ -44,6 +44,18 @@ interface TripDao {
     @Query("SELECT * FROM trip WHERE status IN ('Recording', 'Paused', 'Interrupted') AND deletedAt IS NULL")
     fun observeUnfinished(): Flow<List<TripEntity>>
 
+    /**
+     * Trips, deleted ones included, that still have a saved route and ended (or started, if never ended) before
+     * [before]; every one with a route when [before] is null. For route retention and "Delete all location history".
+     */
+    @Query(
+        """
+        SELECT * FROM trip WHERE polylineAttachmentId IS NOT NULL
+        AND (:before IS NULL OR COALESCE(endTime, startTime) < :before)
+        """,
+    )
+    suspend fun tripsWithRoute(before: Long?): List<TripEntity>
+
     @Insert
     suspend fun insertBatch(batch: TripPointBatchEntity)
 

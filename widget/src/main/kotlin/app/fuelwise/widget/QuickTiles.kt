@@ -6,12 +6,18 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import app.fuelwise.core.data.repository.AutoTripSettingsRepository
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Clock
 import javax.inject.Inject
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /** Quick Settings tile "Log fuel" (PRD F-16): opens the fill-up sheet. */
 class LogFuelTileService : TileService() {
@@ -59,6 +65,65 @@ class StartTripTileService : TileService() {
     }
 }
 
+/**
+ * Quick Settings tile "Pause automatic trips" (PRD F-16, F-21.3). On while automatic trips are watching for drives;
+ * a tap pauses them until turned back on, another tap resumes. Before setup, a tap opens the setup screen instead.
+ */
+@AndroidEntryPoint
+class AutoTripsTileService : TileService() {
+    @Inject lateinit var settings: AutoTripSettingsRepository
+
+    @Inject lateinit var clock: Clock
+
+    // Reads and writes one preference; the tile service lives only while the shade shows it.
+    private val scope = MainScope()
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
+    }
+
+    override fun onStartListening() {
+        scope.launch {
+            val s = settings.settings.first()
+            val watching = s.isWatching(clock.millis())
+            qsTile?.apply {
+                state = if (s.enabled && watching) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+                label = getString(R.string.tile_auto_trips)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    subtitle = getString(
+                        when {
+                            !s.enabled -> R.string.tile_auto_trips_off
+                            watching -> R.string.tile_auto_trips_on
+                            else -> R.string.tile_auto_trips_paused
+                        },
+                    )
+                }
+                updateTile()
+            }
+        }
+    }
+
+    override fun onClick() {
+        scope.launch {
+            val s = settings.settings.first()
+            when {
+                !s.available -> Unit
+
+                !s.enabled -> openApp(
+                    WidgetLinks.open(this@AutoTripsTileService, NotificationRoutes.OPEN_AUTO_TRIP_SETUP),
+                    REQUEST_AUTO_TRIPS,
+                )
+
+                s.isWatching(clock.millis()) -> settings.pauseUntil(Long.MAX_VALUE)
+
+                else -> settings.pauseUntil(null)
+            }
+            onStartListening()
+        }
+    }
+}
+
 /** Opens the app and closes the shade; on the lock screen, after the user unlocks. */
 private fun TileService.openApp(intent: Intent, requestCode: Int) {
     val open = Runnable {
@@ -85,3 +150,4 @@ private fun TileService.startActivityAndCollapseLegacy(intent: Intent) = startAc
 
 private const val REQUEST_LOG_FUEL = 16_001
 private const val REQUEST_START_TRIP = 16_002
+private const val REQUEST_AUTO_TRIPS = 16_003

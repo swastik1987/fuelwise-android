@@ -55,4 +55,15 @@
     </plurals>
     <string name="home_auto_confirm">Confirm</string>
     <string name="home_auto_review">Review in Logbook</string>
+    <!-- Automatic trips status pill and pause sheet (PRD F-21.3, design.md Home top bar). -->
+    <string name="home_auto_on">Auto trips on</string>
+    <string name="home_auto_one_tap">Auto trips · one tap</string>
+    <string name="home_auto_paused">Auto trips paused</string>
+    <string name="home_auto_blocked">Blocked by battery saver</string>
+    <string name="home_auto_paused_until">Paused until %1$s</string>
+    <string name="home_auto_sheet_title">Automatic trips</string>
+    <string name="home_auto_resume">Resume now</string>
+    <string name="home_auto_pause_hour">Pause for 1 hour</string>
+    <string name="home_auto_pause_tomorrow">Pause until tomorrow</string>
+    <string name="home_auto_pause_until_on">Pause until I turn it back on</string>
 </resources>

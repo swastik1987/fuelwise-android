@@ -10,8 +10,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
@@ -20,6 +22,7 @@ import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
 import app.fuelwise.core.domain.trip.TripSplit
+import app.fuelwise.core.location.FillUpCheck
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripLocationSource
@@ -34,6 +37,7 @@ import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripPurpose
 import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.TripStatus
+import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeTripRepository
@@ -79,6 +83,7 @@ class TripsTest {
     private val estimate = EstimateTripCost(ComputeConsumption())
     private val vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari, SampleVehicles.ertiga))
     private val userData = FakeUserDataRepository(FakeUserDataRepository.DEFAULT.copy(selectedVehicleId = "safari"))
+    private val autoTrips = FakeAutoTripSettingsRepository()
     private val mysuru = Trip(
         id = "mysuru",
         vehicleId = "safari",
@@ -200,7 +205,9 @@ class TripsTest {
             FakeEntryRepository(expenses = listOf(toll)),
             userData,
             recorder(repo),
+            autoTrips,
             files,
+            estimate,
             clock,
             zone,
             SavedStateHandle(),
@@ -251,7 +258,9 @@ class TripsTest {
             FakeEntryRepository(),
             userData,
             recorder,
+            autoTrips,
             files,
+            estimate,
             clock,
             zone,
             SavedStateHandle(),
@@ -301,13 +310,40 @@ class TripsTest {
         assertThat(repo.trips.single().status).isEqualTo(TripStatus.Done)
     }
 
+    @Test
+    fun automaticTripCanBeReassignedOrDiscarded() = runTest {
+        val auto = mysuru.copy(id = "auto", source = TripSource.Auto, estimatedFuelCost = null)
+        val repo = FakeTripRepository(listOf(auto))
+        val list = listViewModel(repo)
+        list.state.first { !it.loading }
+        list.changeVehicle("auto", SampleVehicles.ertiga.id)
+        val moved = repo.observeTrip("auto").first { it?.vehicleId == SampleVehicles.ertiga.id }!!
+        assertThat(moved.vehicleId).isEqualTo(SampleVehicles.ertiga.id)
+        list.notMyDrive("auto")
+        assertThat(list.events.first()).isInstanceOf(TripsEvent.Deleted::class.java)
+        assertThat(repo.trips).isEmpty()
+    }
+
+    @Test
+    fun automaticTripsAreOfferedUntilTurnedOn() = runTest {
+        val list = listViewModel(FakeTripRepository())
+        assertThat(list.state.first { !it.loading }.offerAutoTrips).isTrue()
+        autoTrips.setEnabled(true)
+        assertThat(list.state.first { !it.offerAutoTrips }.offerAutoTrips).isFalse()
+        // Behind the kill switch (CLAUDE.md rule 6): never offered.
+        autoTrips.settings.value = autoTrips.settings.value.copy(available = false, enabled = false)
+        assertThat(list.state.first { !it.loading }.offerAutoTrips).isFalse()
+    }
+
     private fun TestScope.listViewModel(repo: FakeTripRepository) = TripsViewModel(
         repo,
         vehicles,
         FakeEntryRepository(),
         userData,
         recorder(repo),
+        autoTrips,
         files,
+        estimate,
         clock,
         zone,
         SavedStateHandle(),
@@ -421,6 +457,80 @@ class TripsTest {
         )
     }
 
+    @Test
+    fun autoSetupDisclosureComesFirstAndLeadsOn() {
+        var turnedOn = 0
+        var oneTap = 0
+        var step by mutableStateOf(SetupStep.Disclosure)
+        compose.setContent {
+            FuelwiseTheme {
+                AutoTripSetupContent(
+                    step,
+                    activityRefused = false,
+                    previewVehicle = "Safari",
+                    SetupActions(onTurnOn = { turnedOn++ }, onOneTap = { oneTap++ }),
+                )
+            }
+        }
+        // Play's prominent disclosure names location and background (PRD §9), before any prompt.
+        compose.onNodeWithText("location", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("background", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Turn on").performClick()
+        assertThat(turnedOn).isEqualTo(1)
+        step = SetupStep.Denied
+        compose.onNodeWithText("Driving Safari? Tap to record this trip.").assertIsDisplayed()
+        compose.onNodeWithText("Start trips with one tap instead").performClick()
+        assertThat(oneTap).isEqualTo(1)
+    }
+
+    @Test fun autoDisclosureLight() = capture("auto_setup_disclosure_light", false) {
+        AutoTripSetupContent(SetupStep.Disclosure, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoDisclosureDark() = capture("auto_setup_disclosure_dark", true) {
+        AutoTripSetupContent(SetupStep.Disclosure, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoLocationLight() = capture("auto_setup_location_light", false) {
+        AutoTripSetupContent(SetupStep.Location, false, "Safari", SetupActions())
+    }
+
+    @Test fun autoCarStepLight() = capture("auto_setup_car_light", false) {
+        AutoTripSetupContent(
+            SetupStep.Car,
+            false,
+            "Safari",
+            SetupActions(),
+            cars = listOf(
+                SetupCar("safari", "Safari", CarLink("AA:BB:CC:DD:EE:FF", 3, "Safari Audio")),
+                SetupCar("ertiga", "Ertiga", null),
+            ),
+            carStep = true,
+        )
+    }
+
+    @Test fun batteryXiaomiLight() = capture("battery_saver_xiaomi_light", false) {
+        androidx.compose.foundation.layout.Column {
+            BatterySaverBody(app.fuelwise.core.domain.trip.PhoneBrand.Xiaomi, BatteryCheck.Blocked)
+            BatterySaverButtons(BatteryCheck.Blocked, BatteryActions())
+        }
+    }
+
+    @Test fun batteryPassedDark() = capture("battery_saver_passed_dark", true) {
+        androidx.compose.foundation.layout.Column {
+            BatterySaverBody(app.fuelwise.core.domain.trip.PhoneBrand.Samsung, BatteryCheck.Passed)
+            BatterySaverButtons(BatteryCheck.Passed, BatteryActions())
+        }
+    }
+
+    @Test fun autoDeniedDark() = capture("auto_setup_denied_dark", true) {
+        AutoTripSetupContent(SetupStep.Denied, false, "Safari", SetupActions())
+    }
+
+    @Test fun listAutoOfferLight() = capture("trips_list_auto_offer_light", false) {
+        TripsContent(listState().copy(offerAutoTrips = true), TripsLinks(), zone = zone)
+    }
+
     @Test fun listLight() = capture("trips_list_light", false) { TripsContent(listState(), TripsLinks(), zone = zone) }
 
     @Test fun listDark() = capture("trips_list_dark", true) { TripsContent(listState(), TripsLinks(), zone = zone) }
@@ -532,6 +642,11 @@ class TripsTest {
         },
         object : TripPrompts {
             override fun odometerAfterTrip(tripId: String, distanceKm: Double) = Unit
+
+            override fun startTripPrompt() = Unit
+        },
+        object : FillUpCheck {
+            override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) = Unit
         },
         clock,
         zone,

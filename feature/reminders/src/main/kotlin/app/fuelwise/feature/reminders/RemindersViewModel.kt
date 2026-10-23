@@ -12,6 +12,7 @@ import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.engine.ComputePredictions
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.defaultsFor
@@ -163,14 +164,15 @@ class ReminderEditorViewModel @Inject constructor(
     /** The odometer today: predicted from recent driving, else the last reading. */
     private suspend fun currentOdometer(vehicleId: String): Double? {
         val vehicle = vehicles.observeVehicle(vehicleId).first() ?: return null
+        val tripList = trips.observeTrips().first()
         val readings =
             odometerReadings(
                 vehicle,
                 entries.observeRefuels(vehicleId).first(),
                 entries.observeExpenses(vehicleId).first(),
-                trips.observeTrips().first(),
+                tripList,
             )
-        return predictions.predictedOdometer(readings)
+        return predictions.predictedOdometer(readings, gpsDistances(vehicle, tripList))
     }
 
     fun pickKind(kind: ReminderKind) {

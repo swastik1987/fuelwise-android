@@ -16,11 +16,13 @@ import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.entry.PriceTriangle.Field
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.PriceDefault
 import app.fuelwise.core.domain.prices.choosePriceDefault
 import app.fuelwise.core.domain.prices.priceFuelFor
+import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.FuelGrade
@@ -77,11 +79,15 @@ class RefuelViewModel @Inject constructor(
     private var homeTariff: Money? = null
     private var attemptedSave = false
 
+    // From a fill-up prompt (PRD F-21.4): the stop's time and station. The odometer stays a hint (F-21.5).
+    private val prompt = FillUpPrefill.decode(route.prompt)
+
     private val _state = MutableStateFlow(
         RefuelFormState(
-            dateTimeUtcMs = clock.millis(),
-            isEdit =
-                route.refuelId != null,
+            dateTimeUtcMs = prompt?.atUtcMs ?: clock.millis(),
+            isEdit = route.refuelId != null,
+            station = prompt?.station?.take(MAX_TEXT).orEmpty(),
+            moreExpanded = prompt?.station != null,
         ),
     )
     val state: StateFlow<RefuelFormState> = _state.asStateFlow()
@@ -170,9 +176,13 @@ class RefuelViewModel @Inject constructor(
         val expenses = entries.observeExpenses(vehicle.id).first()
         tankFills = refuels.filter { it.tankId == tank.id && it.id != editing?.id }
         homeTariff = userData.userData.first().homeTariff
-        // A finished trip's odometer counts too (PRD F-07.6), so the hint follows recent driving.
+        // A finished trip's odometer counts too (PRD F-07.6), and so does distance recorded since the last reading
+        // (PRD F-21.5), so the hint follows recent driving. A hint only: the typed value always wins.
         val tripList = trips.observeTrips().first()
-        val predicted = predictions.predictedOdometer(odometerReadings(vehicle, refuels, expenses, tripList))
+        val predicted = predictions.predictedOdometer(
+            odometerReadings(vehicle, refuels, expenses, tripList),
+            gpsDistances(vehicle, tripList),
+        )
         val last = tankFills.maxByOrNull { it.dateTimeUtcMs }
         val latestCity = if (applyDefaults) latestCityPrice(tank.energyType, last?.grade) else null
         _state.update { current ->
@@ -283,6 +293,11 @@ class RefuelViewModel @Inject constructor(
     fun onToggleMore() = _state.update { it.copy(moreExpanded = !it.moreExpanded, focus = null) }
 
     fun onGrade(grade: FuelGrade) = _state.update { it.copy(grade = if (it.grade == grade) null else grade) }
+
+    /** ₹ or %: switching clears what was typed, since the same number means something else. */
+    fun onDiscountUnit(percent: Boolean) = _state.update {
+        if (it.discountPercent == percent) it else it.copy(discountPercent = percent, discount = "")
+    }
 
     fun onPayment(method: PaymentMethod) = _state.update {
         it.copy(
@@ -461,7 +476,7 @@ class RefuelViewModel @Inject constructor(
         val qty = NumberInput.parseDecimal(quantity) ?: return null
         val totalMoney = MoneyInput.parse(total) ?: return null
         val price = MoneyInput.parse(unitPrice) ?: PriceTriangle.unitPriceOf(qty, totalMoney) ?: return null
-        val discountMoney = MoneyInput.parse(discount)?.takeIf { it <= totalMoney } ?: Money.ZERO
+        val discountMoney = discountMoney(totalMoney)?.takeIf { it <= totalMoney } ?: Money.ZERO
         return Refuel(
             id = editing?.id.orEmpty(),
             vehicleId = vehicle.id,

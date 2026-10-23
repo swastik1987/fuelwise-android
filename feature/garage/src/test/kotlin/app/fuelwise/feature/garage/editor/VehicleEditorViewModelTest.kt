@@ -2,11 +2,14 @@ package app.fuelwise.feature.garage.editor
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.fuelwise.core.data.repository.CarLink
 import app.fuelwise.core.domain.vehicle.ValidateVehicleDraft
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
+import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.model.EmissionNorm
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.VehicleType
+import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -33,7 +36,31 @@ class VehicleEditorViewModelTest {
         vehicles = vehicles,
         userData = userData,
         validate = ValidateVehicleDraft(),
+        autoTripSettings = autoTrips,
+        carLinker = linker,
     )
+
+    private val autoTrips = FakeAutoTripSettingsRepository()
+    private val linker = object : CarLinker {
+        override suspend fun linkCar(vehicleId: String, link: CarLink) = autoTrips.setCarLink(vehicleId, link)
+
+        override suspend fun unlinkCar(vehicleId: String) = autoTrips.setCarLink(vehicleId, null)
+    }
+
+    @Test
+    fun carBluetoothIsOfferedWhenEditingACarAndLinks() = runTest {
+        assertThat(viewModel().state.value.showCarBluetooth).isFalse()
+        val vm = viewModel("safari")
+        assertThat(vm.state.value.showCarBluetooth).isTrue()
+        vm.linkCar(CarLink("AA:BB:CC:DD:EE:FF", 3, "Safari Audio"))
+        assertThat(vm.state.value.carLinkName).isEqualTo("Safari Audio")
+        assertThat(autoTrips.settings.value.carLinks.keys).containsExactly("safari")
+        vm.unlinkCar()
+        assertThat(vm.state.value.carLinked).isFalse()
+        // A two-wheeler has no car kit to link.
+        vm.onTypeChange(VehicleType.Scooter)
+        assertThat(vm.state.value.showCarBluetooth).isFalse()
+    }
 
     @Test
     fun saveWithEmptyFormShowsRequiredErrorsAndDoesNotSave() = runTest {

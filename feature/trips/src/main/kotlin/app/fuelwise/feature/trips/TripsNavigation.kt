@@ -21,6 +21,14 @@ data class TripDetailRoute(val tripId: String, val editOdometer: Boolean = false
 @Serializable
 data object LiveTripRoute
 
+/** Automatic trips setup with the background-location disclosure (design.md screen 32, PRD F-21.3). */
+@Serializable
+data object AutoTripSetupRoute
+
+/** Phone-maker battery-saver fix (design.md screen 33, PRD F-21.7), from Home's amber pill or Settings. */
+@Serializable
+data object BatterySaverRoute
+
 /**
  * Key on the Trips back-stack entry's SavedStateHandle: the detail screen hands back a trip id to delete, and the
  * list performs the delete so it can offer the 10-second undo.
@@ -40,6 +48,8 @@ data class TripsLinks(
     val onOpenLive: () -> Unit = {},
     /** After Stop: the saved trip to open, or null when it was too short to keep. */
     val onLiveFinished: (tripId: String?) -> Unit = {},
+    /** "Record trips automatically" → setup. */
+    val onAutoSetup: () -> Unit = {},
 )
 
 fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
@@ -47,4 +57,6 @@ fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
     composable<TripEditorRoute> { TripEditorScreen(onClose = onEditorClose) }
     composable<TripDetailRoute> { TripDetailScreen(links) }
     composable<LiveTripRoute> { LiveTripScreen(links) }
+    composable<AutoTripSetupRoute> { AutoTripSetupScreen(onClose = links.onBack) }
+    composable<BatterySaverRoute> { BatterySaverScreen(onClose = links.onBack) }
 }

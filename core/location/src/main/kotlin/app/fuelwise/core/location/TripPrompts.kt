@@ -21,6 +21,12 @@ import javax.inject.Inject
 interface TripPrompts {
     /** "Trip saved · 23.4 km. Update odometer" (PRD F-07.6). */
     fun odometerAfterTrip(tripId: String, distanceKm: Double)
+
+    /**
+     * "Driving? Tap to start a trip" when automatic trips can't record on their own (no "Allow all the time", or
+     * one-tap chosen; design.md screen 32). Tapping opens the app, which starts an ordinary GPS trip.
+     */
+    fun startTripPrompt()
 }
 
 /**
@@ -57,6 +63,41 @@ internal class NotificationTripPrompts @Inject constructor(@param:ApplicationCon
         }
     }
 
+    @SuppressLint("MissingPermission")
+    override fun startTripPrompt() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?.putExtra(NotificationRoutes.EXTRA_OPEN, NotificationRoutes.OPEN_START_TRIP)
+            ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            ?: Intent()
+        val open = PendingIntent.getActivity(
+            context,
+            REQUEST_START_TRIP,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, NotificationChannels.AUTOMATIC_TRIPS)
+            .setSmallIcon(FwIcons.Route)
+            .setContentTitle(context.getString(R.string.auto_notif_start_title))
+            .setContentText(context.getString(R.string.auto_notif_start_body))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            // Gone by itself if ignored: a stale "Start trip?" after the drive is noise.
+            .setTimeoutAfter(START_PROMPT_TIMEOUT_MS)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .build()
+        try {
+            NotificationManagerCompat.from(context).notify(START_PROMPT_ID, notification)
+        } catch (_: SecurityException) {
+            // Revoked between the check and the post.
+        }
+    }
+
     private fun openOdometer(tripId: String, requestCode: Int): PendingIntent {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
             ?.putExtra(NotificationRoutes.EXTRA_OPEN, NotificationRoutes.OPEN_TRIP_ODOMETER)
@@ -69,5 +110,11 @@ internal class NotificationTripPrompts @Inject constructor(@param:ApplicationCon
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
+    }
+
+    private companion object {
+        const val START_PROMPT_ID = 7_002
+        const val REQUEST_START_TRIP = 7_104
+        const val START_PROMPT_TIMEOUT_MS = 30 * 60 * 1_000L
     }
 }

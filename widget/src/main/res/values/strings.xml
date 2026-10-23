@@ -45,6 +45,10 @@
     <string name="tile_log_fuel">Log fuel</string>
     <string name="tile_start_trip">Start trip</string>
     <string name="tile_trip_recording">Recording · %1$s km</string>
+    <string name="tile_auto_trips">Automatic trips</string>
+    <string name="tile_auto_trips_on">On · tap to pause</string>
+    <string name="tile_auto_trips_paused">Paused · tap to resume</string>
+    <string name="tile_auto_trips_off">Tap to set up</string>
 
     <!-- App shortcuts (long-press the icon) -->
     <string name="shortcut_add_fuel">Add fuel</string>

@@ -9,4 +9,16 @@
     <string name="trip_notif_saved">Trip saved · %1$s km</string>
     <string name="trip_notif_odometer_body">Add the odometer reading so predictions and reminders stay right.</string>
     <string name="trip_notif_update_odometer">Update odometer</string>
+    <!-- Automatic trips (PRD F-21.3, design.md screen 31). -->
+    <string name="auto_notif_recording">Recording drive · %1$s</string>
+    <string name="auto_notif_recording_no_vehicle">Recording drive</string>
+    <string name="auto_notif_not_my_drive">Not my drive</string>
+    <string name="auto_notif_start_title">Driving?</string>
+    <string name="auto_notif_start_body">Tap to record this trip.</string>
+    <!-- Fill-up prompt (PRD F-21.4, design.md screen 31). -->
+    <string name="fillup_title">Filled up at %1$s?</string>
+    <string name="fillup_body">Tap to log it for %1$s.</string>
+    <string name="fillup_log">Log it</string>
+    <string name="fillup_not_one">Not a fill-up</string>
+    <string name="fillup_station_unnamed">a fuel station</string>
 </resources>

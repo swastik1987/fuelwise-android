@@ -11,6 +11,7 @@ import app.fuelwise.core.domain.Dispatcher
 import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.domain.id.IdGenerator
 import app.fuelwise.core.domain.trip.TrackCodec
+import app.fuelwise.core.domain.trip.trimPrivateEnds
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.model.Trip
@@ -55,6 +56,12 @@ interface TripRepository {
 
     /** The saved route of a GPS trip, or empty (manual trip, or a restore without encrypted backups). */
     suspend fun route(tripId: String): List<TrackPoint>
+
+    /**
+     * Removes the saved route of every trip that ended before [endedBeforeUtcMs] (all of them when null); trip
+     * summaries stay (PRD F-21.6). Returns how many routes went.
+     */
+    suspend fun dropRoutes(endedBeforeUtcMs: Long?): Int
 }
 
 data class DeletedTrip(val id: String, val deletedAtUtcMs: Long)
@@ -66,6 +73,7 @@ internal class OfflineTripRepository @Inject constructor(
     private val cipher: VaultCipher,
     private val ids: IdGenerator,
     private val sync: SyncStamper,
+    private val privatePlaces: PrivatePlacesStore,
     @param:Dispatcher(FwDispatcher.Default) private val cpu: CoroutineDispatcher,
 ) : TripRepository {
     override fun observeTrips(): Flow<List<Trip>> = dao.observeTrips().map { rows -> rows.map { it.toModel() } }
@@ -108,10 +116,12 @@ internal class OfflineTripRepository @Inject constructor(
 
     override suspend fun finishRecording(trip: Trip, route: List<TrackPoint>) {
         val existing = dao.trip(trip.id)
-        val routeId = if (route.isEmpty()) {
+        // Route ends inside a private place are never stored (PRD F-21.6); the distance was measured on the full track.
+        val kept = trimPrivateEnds(route, privatePlaces.current())
+        val routeId = if (kept.isEmpty()) {
             existing?.polylineAttachmentId
         } else {
-            val bytes = TrackCodec.encode(route)
+            val bytes = TrackCodec.encode(kept)
             val attachmentId = ids.newId()
             val stored = files.write(attachmentId, bytes)
             val digest = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
@@ -138,6 +148,23 @@ internal class OfflineTripRepository @Inject constructor(
             // The file didn't come back with an unencrypted restore: the trip keeps its numbers, without a map.
             emptyList()
         }
+    }
+
+    override suspend fun dropRoutes(endedBeforeUtcMs: Long?): Int {
+        val withRoute = dao.tripsWithRoute(endedBeforeUtcMs)
+        withRoute.forEach { row ->
+            val attachmentId = row.polylineAttachmentId ?: return@forEach
+            attachments.attachment(attachmentId)?.let { files.delete(it.storedName) }
+            attachments.tombstoneAttachment(attachmentId, sync.now(), sync.device())
+            // The summary stays; a deleted trip stays deleted.
+            dao.upsert(
+                row.copy(
+                    polylineAttachmentId = null,
+                    sync = row.sync.copy(updatedAt = sync.now(), deviceId = sync.device()),
+                ),
+            )
+        }
+        return withRoute.size
     }
 
     // Binds a batch to its trip and position, so batches can't be swapped or reordered undetected.

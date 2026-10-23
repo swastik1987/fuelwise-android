@@ -4,7 +4,9 @@ import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.trip.EstimateTripCost
+import app.fuelwise.core.domain.trip.StillDetector
 import app.fuelwise.core.domain.trip.TrackSummary
+import app.fuelwise.core.domain.trip.keepAutoTrip
 import app.fuelwise.core.domain.trip.simplifyTrack
 import app.fuelwise.core.domain.trip.summarizeTrack
 import app.fuelwise.core.model.TrackPoint
@@ -47,6 +49,8 @@ sealed interface RecordingState {
         val activeMsBefore: Long,
         /** When the current stretch began; null while paused. */
         val activeSinceUtcMs: Long?,
+        /** [TripSource.Auto] when driving detection started it (PRD F-21.3); it then also ends on its own. */
+        val source: TripSource = TripSource.Gps,
     ) : RecordingState {
         fun elapsedMs(nowUtcMs: Long): Long =
             activeMsBefore + (activeSinceUtcMs?.let { (nowUtcMs - it).coerceAtLeast(0) } ?: 0)
@@ -68,6 +72,7 @@ annotation class RecorderScope
  * reboot loses at most the fixes Play services hadn't delivered yet. Outside a recording trip there is no location
  * request at all (CLAUDE.md rule 11): pausing or stopping cancels it.
  */
+@Suppress("TooManyFunctions") // One recorder for manual GPS and automatic trips: start, pause, resume, stop, discard.
 @Singleton
 class TripRecorder @Inject constructor(
     private val trips: TripRepository,
@@ -77,6 +82,7 @@ class TripRecorder @Inject constructor(
     private val source: TripLocationSource,
     private val host: RecordingHost,
     private val prompts: TripPrompts,
+    private val fillUps: FillUpCheck,
     private val clock: Clock,
     private val zoneId: ZoneId,
     @param:RecorderScope private val scope: CoroutineScope,
@@ -91,8 +97,16 @@ class TripRecorder @Inject constructor(
     private var segment = 0
     private var job: Job? = null
 
-    /** Starts a new GPS trip for [vehicleId], or returns the one already recording. */
-    suspend fun start(vehicleId: String): String = lock.withLock {
+    // Automatic trips only (PRD F-21.3): "no movement > 50 m for 5 minutes" ends the trip.
+    private var still: StillDetector? = null
+    private var stillJob: Job? = null
+
+    /**
+     * Starts a new trip for [vehicleId], or returns the one already recording. [TripSource.Auto] is a trip driving
+     * detection started (PRD F-21.3): it also ends by itself after standing still, and is kept only past the
+     * automatic-trip minimums.
+     */
+    suspend fun start(vehicleId: String, source: TripSource = TripSource.Gps): String = lock.withLock {
         (state.value as? RecordingState.Active)?.let { return it.tripId }
         val now = clock.millis()
         val id = trips.save(
@@ -103,15 +117,17 @@ class TripRecorder @Inject constructor(
                 zoneId = zoneId.id,
                 distanceKm = 0.0,
                 purpose = TripPurpose.Personal,
-                source = TripSource.Gps,
+                source = source,
                 status = TripStatus.Recording,
             ),
         )
         points = mutableListOf()
         segment = 0
-        _state.value = RecordingState.Active(id, vehicleId, now, false, TrackSummary.EMPTY, emptyList(), 0, now)
+        _state.value =
+            RecordingState.Active(id, vehicleId, now, false, TrackSummary.EMPTY, emptyList(), 0, now, source)
         host.startForegroundRecording()
         listen(id)
+        if (source == TripSource.Auto) watchForStop(id, now)
         id
     }
 
@@ -133,9 +149,11 @@ class TripRecorder @Inject constructor(
             simplifyTrack(points),
             summary.recordedSeconds * MS_PER_S,
             now,
+            trip.source,
         )
         host.startForegroundRecording()
         listen(tripId)
+        if (trip.source == TripSource.Auto) watchForStop(tripId, now)
     }
 
     fun pause() {
@@ -162,8 +180,11 @@ class TripRecorder @Inject constructor(
                 if (!active.paused) return@withLock
                 segment++
                 setStatus(active.tripId, TripStatus.Recording)
-                _state.value = active.copy(paused = false, activeSinceUtcMs = clock.millis())
+                val now = clock.millis()
+                _state.value = active.copy(paused = false, activeSinceUtcMs = now)
                 listen(active.tripId)
+                // Standing still while paused doesn't count towards ending the trip.
+                if (still != null) still = StillDetector(now)
             }
         }
     }
@@ -172,21 +193,75 @@ class TripRecorder @Inject constructor(
      * Stops recording and saves the trip with its simplified route; the raw points are deleted. Returns the trip id,
      * or null when the trip was too short to keep ([MIN_KEEP_KM]) and was discarded.
      */
-    suspend fun stop(): String? {
+    suspend fun stop(onlyAutomatic: Boolean = false): String? {
+        // Driving detection saw the user leave the vehicle (PRD F-21.3): that ends an automatic trip only. A trip
+        // the user started themselves is theirs to stop.
+        if (onlyAutomatic && (state.value as? RecordingState.Active)?.source != TripSource.Auto) return null
         collectHeldFixes()
-        return lock.withLock { stopLocked() }
+        return lock.withLock { stopLocked(clock.millis()) }
     }
 
-    private suspend fun stopLocked(): String? {
-        val active = state.value as? RecordingState.Active ?: return null
-        job?.cancelAndJoin()
-        job = null
-        val id = finish(active.tripId, clock.millis(), trips.points(active.tripId))
+    /** "Not my drive" (PRD F-21.3): the user was a passenger. Throws the recording away; nothing is kept. */
+    suspend fun discardCurrent() = lock.withLock {
+        val active = state.value as? RecordingState.Active ?: return@withLock
+        endJobs()
+        trips.discardRecording(active.tripId)
         points = mutableListOf()
         _state.value = RecordingState.Idle
-        // Ask for the odometer while the drive is fresh (PRD F-07.6).
-        if (id != null) prompts.odometerAfterTrip(id, trips.observeTrip(id).first()?.distanceKm ?: 0.0)
+    }
+
+    private suspend fun stopLocked(endUtcMs: Long): String? {
+        val active = state.value as? RecordingState.Active ?: return null
+        endJobs()
+        val id = finish(active.tripId, endUtcMs, trips.points(active.tripId))
+        points = mutableListOf()
+        _state.value = RecordingState.Idle
+        // Ask for the odometer while the drive is fresh (PRD F-07.6). Not after every automatic drive: that would
+        // be a notification per journey, and the GPS estimate (F-21.5) covers it.
+        if (id != null && active.source != TripSource.Auto) {
+            prompts.odometerAfterTrip(id, trips.observeTrip(id).first()?.distanceKm ?: 0.0)
+        }
         return id
+    }
+
+    private suspend fun endJobs() {
+        job?.cancelAndJoin()
+        job = null
+        // Not joined: the stop may have come from this very job.
+        stillJob?.cancel()
+        stillJob = null
+        still = null
+    }
+
+    /**
+     * Ends an automatic trip once it has stood still for 5 minutes (PRD F-21.3). Fixes are batched, so when the
+     * delivered ones say "still" the held batch is fetched first: the car may have moved since. The trip ends when
+     * the car last moved, not 5 minutes later.
+     */
+    private fun watchForStop(tripId: String, startUtcMs: Long) {
+        still = StillDetector(startUtcMs)
+        stillJob?.cancel()
+        stillJob = scope.launch {
+            while (isActive) {
+                delay(STILL_CHECK_MS)
+                val active = state.value as? RecordingState.Active ?: return@launch
+                if (active.tripId != tripId) return@launch
+                if (active.paused || still?.isStill(clock.millis()) != true) continue
+                collectHeldFixes()
+                val detector = still ?: return@launch
+                if (detector.isStill(clock.millis())) {
+                    // A separate coroutine: stopping cancels this one.
+                    scope.launch {
+                        lock.withLock {
+                            if ((state.value as? RecordingState.Active)?.tripId == tripId) {
+                                stopLocked(detector.lastMovedUtcMs)
+                            }
+                        }
+                    }
+                    return@launch
+                }
+            }
+        }
     }
 
     /** Ends a trip a crash or reboot cut short, at its last fix (PRD F-07.3). Null if it was too short to keep. */
@@ -235,30 +310,36 @@ class TripRecorder @Inject constructor(
         val stamped = batch.map { it.copy(segment = segment) }
         trips.appendPoints(tripId, stamped)
         points += stamped
+        still?.add(stamped)
         _state.value = active.copy(summary = summarizeTrack(points), route = simplifyTrack(points))
     }
 
     private suspend fun finish(tripId: String, endUtcMs: Long, recorded: List<TrackPoint>): String? {
         val trip = trips.observeTrip(tripId).first() ?: return null
         val summary = summarizeTrack(recorded)
-        if (summary.distanceKm < MIN_KEEP_KM) {
+        val keep = if (trip.source == TripSource.Auto) {
+            keepAutoTrip(summary, trip.startUtcMs, endUtcMs)
+        } else {
+            summary.distanceKm >= MIN_KEEP_KM
+        }
+        if (!keep) {
             trips.discardRecording(tripId)
             return null
         }
         val vehicle = vehicles.observeVehicles().first().firstOrNull { it.id == trip.vehicleId }
         val estimate = vehicle?.let { estimateCost(it, entries.observeAllRefuels().first(), summary.distanceKm) }
-        trips.finishRecording(
-            trip.copy(
-                endUtcMs = endUtcMs,
-                distanceKm = summary.distanceKm,
-                recordedSeconds = summary.recordedSeconds,
-                idleSeconds = summary.idleSeconds,
-                maxSpeedKmh = summary.maxSpeedKmh,
-                estimatedFuelCost = estimate?.fuelCost,
-                status = TripStatus.Done,
-            ),
-            simplifyTrack(recorded),
+        val done = trip.copy(
+            endUtcMs = endUtcMs,
+            distanceKm = summary.distanceKm,
+            recordedSeconds = summary.recordedSeconds,
+            idleSeconds = summary.idleSeconds,
+            maxSpeedKmh = summary.maxSpeedKmh,
+            estimatedFuelCost = estimate?.fuelCost,
+            status = TripStatus.Done,
         )
+        trips.finishRecording(done, simplifyTrack(recorded))
+        // "Filled up at …?" (PRD F-21.4) looks at the full track, which is gone from storage now; not waited for.
+        scope.launch { fillUps.afterTrip(done, recorded) }
         return tripId
     }
 
@@ -271,6 +352,9 @@ class TripRecorder @Inject constructor(
         const val MIN_KEEP_KM = 0.05
         const val REQUEST_LIFETIME_MS = 4 * 60 * 60 * 1_000L
         const val FLUSH_WAIT_MS = 2_000L
+
+        /** How often an automatic trip checks whether it has stood still long enough to end. */
+        const val STILL_CHECK_MS = 60_000L
         private const val MS_PER_S = 1_000L
     }
 }

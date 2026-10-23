@@ -103,7 +103,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - Logbook map mode (Maps Compose).
 - Field test: 20 km drive within ±3 % → `docs/perf.md`.
 
-### M9 — Offline station list, F-21.2 (R1, bundled) — needs L6 — ⏳ not started; F-21.1 station chip ➡ R2 (PRD D15, D16, 23 Oct 2026)
+### M9 — Offline station list, F-21.2 (R1, bundled) — ✅ R1 part built 23 Oct 2026 (L6 audit still open: docs/osm-coverage.md); F-21.1 station chip ➡ R2 (PRD D15, D16)
 - R1: build script to turn an India OSM extract into a compact bundled file (< 3 MB target); `station_osm` read-only + `station_user`; offline nearest-station matcher (distance → fuel fit, personal stations boosted) used by F-21.4; ODbL attribution in Settings → About. Refreshed only with app updates. Ask before adding any tool or dependency for the build script.
 - R2: single-fix request (balanced, 10 s, 2 min max age), station chip states, picker sheet with ODbL attribution, learning from corrections (F-21.1), monthly refresh through the feed (needs D3).
 
@@ -114,12 +114,12 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - F-10.4 share-target SMS parser per issuer, amount-only fallback. ➡ moved to R2 (23 Oct 2026, PRD D15).
 - F-09 city prices (feed or manual), "did I pay fair?", Maps intent for nearby pumps, price alerts.
 
-### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ➡ moved to R2 (23 Oct 2026, PRD D15); R1 still needs the Insights Pro cards switched from "locked" to "Coming soon"
+### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ➡ moved to R2 (23 Oct 2026, PRD D15); Insights Pro cards show "Coming soon" ✅ 23 Oct 2026
 - Settings screen (units, theme, Material You opt-in, app lock via BiometricPrompt, hide amounts, delete all data incl. Drive).
 - Glance widgets (Quick add, Status, Trip controls; Pro Dashboard/Consumption), QS tiles, app shortcuts.
 - Play Billing: products, paywall sheet, restore, 7-day offline grace; `EntitlementRepository` goes live.
 
-### M13 — Automatic trips, F-21.3–21.7 (moved into R1, 23 Oct 2026, PRD D15) — ⏳ not started
+### M13 — Automatic trips, F-21.3–21.7 (moved into R1, 23 Oct 2026, PRD D15) — ✅ built 23 Oct 2026 (PRs 17–25); device runs, battery logs and the dogfood ACs still open
 - F-21.4 fill-up prompts: stations from the M9 bundled list (PRD D16), so M9 lands first. F-21.5 GPS odometer estimate: per-vehicle correction factor, feeds the odometer hint, odometer reminders and range.
 - Needs approval first (CLAUDE.md rule 7): `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION`, `BLUETOOTH_CONNECT`, Companion Device Manager, any new Activity Recognition dependency.
 - Setup screen with the prominent disclosure (design.md screens 32–33), activity-transition start/stop, car Bluetooth per vehicle, reuse of the M8 recorder, "Pause automatic trips" QS tile and Home pill, "Not my drive".

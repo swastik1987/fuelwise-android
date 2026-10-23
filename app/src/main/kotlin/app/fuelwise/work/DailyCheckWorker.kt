@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FastagRepository
+import app.fuelwise.core.data.repository.LocationPrivacyRepository
 import app.fuelwise.core.data.repository.ObserveReminderStatuses
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.VehicleRepository
@@ -26,6 +27,9 @@ import kotlinx.coroutines.flow.first
  * recap on the 1st and send the weekly digest on Mondays (if on). Every step is idempotent, so a rerun after reboot,
  * update or restore is safe.
  */
+// The daily check touches every kind of due item (recurring costs, reminders, FASTag, digests, route retention), so it
+// lists more collaborators than the detekt limit; a holder object would only hide them.
+@Suppress("LongParameterList")
 @HiltWorker
 class DailyCheckWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -37,11 +41,14 @@ class DailyCheckWorker @AssistedInject constructor(
     private val entries: EntryRepository,
     private val notifier: Notifier,
     private val insights: InsightNotifications,
+    private val locationPrivacy: LocationPrivacyRepository,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         recurrences.createDueEntries()
+        // Saved routes past the retention setting go; trip summaries stay (PRD F-21.6).
+        locationPrivacy.pruneExpiredRoutes(clock.millis())
         if (!inputData.getBoolean(KEY_NOTIFY, true)) return Result.success()
 
         val names = vehicles.observeVehicles().first().associate { it.id to it.name }

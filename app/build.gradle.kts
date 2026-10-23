@@ -57,6 +57,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.data)
     implementation(projects.core.notifications)
+    implementation(projects.core.location)
     implementation(projects.sync.drive)
     implementation(projects.feature.home)
     implementation(projects.feature.logbook)

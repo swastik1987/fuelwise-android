@@ -172,7 +172,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Missed previous fill-up? (hidden under "More")
 - Fuel grade, station name/brand, payment method (UPI/card/cash/FASTag-wallet/fleet card), discount (₹ or %), location (auto, editable), notes, attachments (receipt/meter photos)
 
-**F-02.2 Price triangle.** ✅ built (discount in ₹; % option not yet) The user enters any two of {quantity, price/unit, total}; the third is computed live.
+**F-02.2 Price triangle.** ✅ built (discount in ₹ or % ✅ 23 Oct 2026; a percentage is stored as rupees) The user enters any two of {quantity, price/unit, total}; the third is computed live.
 - Last-edited two fields are "locked"; the third shows as computed (lighter text, "=" prefix).
 - Rounding: quantity to 2 dp, price to 2 dp, total to 2 dp. Display ₹ with lakh grouping.
 - Discount reduces **amount paid**, not price/unit. Both "pump price" and "paid" are stored.
@@ -293,7 +293,7 @@ Users can add custom categories (name, icon, colour).
 
 ---
 
-### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards locked; custom date range still open. City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
+### F-06 Stats, charts and insights — FREE core · PRO advanced · R1 ✅ built (M5: periods, overview, six charts with data tables and formula sheets, free cards, Pro cards show "Coming soon" (✅ 23 Oct 2026, D15); custom date range still open. City-price overlay ✅ 20 Oct 2026: "Price paid" draws the home-city price in effect on each fill's day (same 7-day rule as F-09.3) as a thin second line and in the data table, from typed or feed prices)
 
 **F-06.1 Period selector:** this month, last month, 3M, 6M, YTD, 12M, all time, custom.
 
@@ -352,7 +352,7 @@ Users can add custom categories (name, icon, colour).
 - Week-by-week list with totals.
 - "Show all trips on map" for any date range (a top Fuelio review request).
 
-**F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Trimming route ends near private places waits for the F-21.6 setting, R1)
+**F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Route ends near private places are trimmed when the route is saved, F-21.6 ✅)
 
 **F-07.9 Business mileage report** (PDF, PRO, R2; CSV free): ✅ built (free text/CSV version, see F-13.3; the ₹/km rate is remembered in preferences)
 - Business trips in a period × reimbursement rate (₹/km, user-set).
@@ -647,7 +647,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - The correct station is pre-selected in ≥80% of cases on a 30-fill test in Bengaluru, and is within the 3 shown options in ≥95%.
 - Works with mobile data off (offline list).
 
-**F-21.2 Offline station list (R1, bundled; D16)**
+**F-21.2 Offline station list (R1, bundled; D16)** ✅ built 23 Oct 2026 (19,956 stations, 297 KB gzip, from `tools:stations` via Overpass; in-memory grid lookup on the phone; ODbL attribution in Settings → About and `assets/licenses/`; D14 audit template in docs/osm-coverage.md, results still to record)
 - **R1 scope:** the list ships inside the APK and is refreshed only with app updates. In R1 its only user is F-21.4 fill-up detection, offline, on the device. The feed refresh below waits for D3 and comes in R2, with the station chip (F-21.1).
 - **Source:**
   - OpenStreetMap features tagged `amenity=fuel` and `amenity=charging_station` within India.
@@ -663,7 +663,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
   - Before build, audit Bengaluru: compare OSM stations against 30 known pumps and record the hit rate in `docs/osm-coverage.md`. Repeat for Delhi and Mumbai before launch.
   - The user can submit nothing back to OSM from the app in R1 or R2. Contributing fixes upstream is a Later item.
 
-**F-21.3 Automatic trips (R1, FREE)**
+**F-21.3 Automatic trips (R1, FREE)** ✅ built 23 Oct 2026 (activity transitions + car Bluetooth via Companion Device Manager, setup with disclosure and one-tap fallback, pause from Home, Settings and a QS tile, "Not my drive" / "Change vehicle"; the battery-saver step arrives with F-21.7. Device runs for the AC still open)
 - **Opt-in:** off by default. Enabled from a dedicated setup screen (design.md screen 32) that shows Play's required prominent disclosure **before** any permission prompt.
 - **Start signals** (any one):
   1. Android activity detection reports the user started travelling in a vehicle.
@@ -694,7 +694,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - No location request is active when no trip is recording (verified in `dumpsys location`).
 - Battery: record drain per hour of driving and per day of no driving on 3 devices. Daily drain with no driving must be indistinguishable from the app being uninstalled. Log results in `docs/perf.md`.
 
-**F-21.4 Fill-up detection prompt (R1, FREE)**
+**F-21.4 Fill-up detection prompt (R1, FREE)** ✅ built 23 Oct 2026 (stops of 2–15 min, or the trip end, within 40 m of a bundled-list station, CNG and EV fit; one prompt after the trip with "Log it" / "Not a fill-up"; ±2 h already-logged skip, 1 per vehicle per 6 h, 3 rejections silence a station; pre-fills station, time and vehicle, odometer stays the F-21.5 hint. Personal stations aren't learned yet: without the R2 station chip a prompt can only name a station already in the list. The 4-week dogfood AC is open)
 - **Station source (D16):** the bundled F-21.2 OpenStreetMap list, matched on the device. No Google Places, no network lookup. Stations the user logged from a prompt or picked by hand add to it. Until F-21.1 ships in R2, those personal stations come only from fill-ups logged through a prompt.
 - **Detection:** during an automatic trip (or at its end), a stop of 2–15 minutes within 40 m of a station from F-21.1/F-21.2 is a **likely fill-up**.
 - **Prompt:** one notification after the trip ends: "Filled up at HP, Indiranagar? Tap to log." It opens the Add fill-up sheet pre-filled with:
@@ -709,13 +709,13 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 **AC (F-21.4)**
 - On a 4-week internal dogfood, ≥70% of actual fill-ups get a prompt, and ≤1 false prompt per user per week.
 
-**F-21.5 GPS odometer estimate (R1)**
+**F-21.5 GPS odometer estimate (R1)** ✅ built 23 Oct 2026 (GPS and automatic trips since the latest reading, scaled by a per-vehicle factor learned from covered intervals between readings, clamped 0.9–1.2; derived each time rather than stored. Feeds the fill-up hint, odometer reminders and range left; falls back to km/day without recordings)
 - Between two typed odometer readings, sum automatic-trip distances to estimate today's odometer.
 - Calibrate against the next typed reading: store a per-vehicle correction factor (GPS km vs odometer km).
 - Used for: the odometer hint in F-02.3, odometer-based reminders (F-11.3), range left.
 - **A typed odometer always wins.** The estimate is never written as an entry.
 
-**F-21.6 Location privacy and retention (R1)**
+**F-21.6 Location privacy and retention (R1)** ✅ built 23 Oct 2026 (raw points were already deleted at finish, so retention applies to the saved encrypted route; private places are stored Tink-encrypted and trim route ends at save; routes saved before a place was added aren't re-trimmed)
 - **Storage:** raw trip points stay on the device and are encrypted at rest (same key scheme as F-12).
 - **Retention:** default "keep raw routes for 90 days, then keep only trip summaries" (distance, duration, start/end area, cost). Options: 30 days / 90 days / 1 year / forever.
 - **Backup:**
@@ -724,7 +724,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - **Places that are never recorded (optional):** the user can mark home or other spots; points within 200 m are trimmed from route ends so the start/end of every trip doesn't reveal exact addresses in shared GPX/maps.
 - **Delete:** "Delete all location history" in Settings, separate from "Delete all data".
 
-**F-21.7 Phone-maker battery-saver guidance (R1)**
+**F-21.7 Phone-maker battery-saver guidance (R1)** ✅ built 23 Oct 2026 (steps for Xiaomi, Samsung, OPPO/realme/OnePlus, vivo/iQOO, Huawei/Honor and others; deep links with fallback to the system battery screen; "Done — test it" checks Unrestricted battery use and no background restriction, a maker's autostart switch can't be read; health check turns the Home pill amber)
 - Many Android phones sold in India stop background apps aggressively, which kills automatic trips.
 - **Guidance:** during automatic-trip setup, detect the manufacturer and show brand-specific steps (with a deep link to the battery-optimisation settings screen where one exists).
   - Use the system settings intent; do **not** declare `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` without first checking Play's acceptable-use policy for it.
@@ -828,6 +828,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added in M8 slices 2 (`core:location`) and 3 (`core:ui`, maps-compose 8.6.0). |
 | Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added in M8 slice 2 (declared in `core:location`). |
 | New libraries and permissions (M10/M11) | ✅ Approved 19 Oct 2026: ML Kit Text Recognition with the **bundled** model (offline) and CameraX for F-15, with `CAMERA` asked on first scan; `androidx.biometric` for the F-18 app lock, with `USE_BIOMETRIC` (install-time); Jetpack Glance for the F-16 widgets. |
+| Permissions (M13, automatic trips) | ✅ Approved 23 Oct 2026 (owner, all options): `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION` (+ `com.google.android.gms.permission.ACTIVITY_RECOGNITION` up to Android 9), `BLUETOOTH_CONNECT` and the Companion Device Manager presence permissions for car-Bluetooth starts. Activity detection comes from `play-services-location`, already approved; no new library. `RECEIVE_BOOT_COMPLETED` (already merged in by WorkManager) re-registers detection after a reboot. Declared in `core:location`; F-21.3 slice 1 adds all but the Bluetooth ones. Car-Bluetooth slice (23 Oct 2026): `REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE` and `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND` (normal permissions); `BLUETOOTH_CONNECT` turned out unnecessary (the system chooser and presence events give the car, the app never reads Bluetooth devices) and is not declared. |
 | ML Kit usage logging (F-15) | ✅ Accepted 20 Oct 2026: `com.google.mlkit:text-recognition` pulls in Google's SDK usage logging (`com.google.android.datatransport` transport-runtime / backend-cct and Firebase encoders, through `mlkit:common`). It sends ML Kit API usage and performance diagnostics to Google. Recognition itself runs on the device: camera images and recognised text are not part of that logging (per Google's ML Kit documentation; recheck when upgrading ML Kit). This is the one exception to "no data leaves the device except the user's Drive" (CLAUDE.md rule 5): disclosed in the Data safety form (see §8 Privacy) and the privacy policy. No other SDK may add logging without a new approval. |
 | Network endpoints (F-09) | None yet. D2/D3 are open: the price-feed client is built but switched off (`FeatureFlags.price_feed`) with no URL. The feed request must carry no location or identifiers; whole file, filtered on device. Approval of the feed host is still needed before any URL is added. |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |

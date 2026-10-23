@@ -27,12 +27,13 @@ class PreferencesDataSourceTest {
     }
 
     @Test
-    fun `first run defaults - monthly recap on, crash reports off`() = runTest {
+    fun `first run defaults - monthly recap on, crash reports off, automatic trips available but not on`() = runTest {
         val prefs = newSource().preferences.first()
         assertThat(prefs.monthlyRecap).isTrue()
         assertThat(prefs.crashReports).isFalse()
         assertThat(prefs.onboardingCompleted).isFalse()
-        assertThat(prefs.featureFlags.automaticTrips).isFalse()
+        assertThat(prefs.featureFlags.automaticTripsOff).isFalse()
+        assertThat(prefs.autoTrips.enabled).isFalse()
     }
 
     @Test

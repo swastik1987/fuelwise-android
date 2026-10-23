@@ -61,4 +61,11 @@ class FakeTripRepository(initial: List<Trip> = emptyList()) : TripRepository {
     }
 
     override suspend fun route(tripId: String): List<TrackPoint> = routes[tripId].orEmpty()
+
+    override suspend fun dropRoutes(endedBeforeUtcMs: Long?): Int {
+        val ends = state.value.associate { it.id to (it.endUtcMs ?: it.startUtcMs) }
+        val gone = routes.keys.filter { id -> endedBeforeUtcMs == null || (ends[id] ?: 0) < endedBeforeUtcMs }
+        gone.forEach(routes::remove)
+        return gone.size
+    }
 }

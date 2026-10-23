@@ -23,6 +23,7 @@ import app.fuelwise.R
 import app.fuelwise.core.designsystem.component.FwBottomBar
 import app.fuelwise.core.designsystem.component.FwNavItem
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.notifications.NotificationRoutes
 import app.fuelwise.feature.backup.BackupRoute
@@ -75,10 +76,13 @@ import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
 import app.fuelwise.feature.scan.ScanRoute
 import app.fuelwise.feature.scan.scanScreen
+import app.fuelwise.feature.settings.PrivatePlacesRoute
 import app.fuelwise.feature.settings.SettingsLinks
 import app.fuelwise.feature.settings.SettingsRoute
 import app.fuelwise.feature.settings.UnitsRoute
 import app.fuelwise.feature.settings.settingsScreens
+import app.fuelwise.feature.trips.AutoTripSetupRoute
+import app.fuelwise.feature.trips.BatterySaverRoute
 import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
@@ -116,11 +120,18 @@ fun FuelwiseApp(
             // Widgets, Quick Settings tiles and app shortcuts (PRD F-16).
             NotificationRoutes.OPEN_ADD_FUEL -> RefuelRoute(vehicleId = openRequest.arg)
 
+            NotificationRoutes.OPEN_ADD_FUEL_PROMPT -> RefuelRoute(
+                vehicleId = FillUpPrefill.decode(openRequest.arg)?.vehicleId,
+                prompt = openRequest.arg,
+            )
+
             NotificationRoutes.OPEN_ADD_EXPENSE -> ExpenseRoute()
 
             NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
 
             NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+
+            NotificationRoutes.OPEN_AUTO_TRIP_SETUP -> AutoTripSetupRoute
 
             NotificationRoutes.OPEN_DOCUMENTS -> DocumentsRoute
 
@@ -192,6 +203,7 @@ fun FuelwiseApp(
                     onOpenTrips = { navController.navigate(TripsRoute()) },
                     onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
                     onOpenPrices = { navController.navigate(PricesRoute()) },
+                    onFixBattery = { navController.navigate(BatterySaverRoute) },
                 ),
             )
             refuelSheet(
@@ -263,10 +275,13 @@ fun FuelwiseApp(
                 SettingsLinks(
                     onBack = navController::popBackStack,
                     onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
+                    onPrivatePlaces = { navController.navigate(PrivatePlacesRoute) },
                     onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) },
                     onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
+                    onAutoTripSetup = { navController.navigate(AutoTripSetupRoute) },
+                    onBatterySaver = { navController.navigate(BatterySaverRoute) },
                     // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
                     onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
                 ),
@@ -287,6 +302,7 @@ fun FuelwiseApp(
                     },
                     onOpenCost = { id -> navController.navigate(ExpenseRoute(expenseId = id)) },
                     onOpenLive = { navController.navigate(LiveTripRoute) { launchSingleTop = true } },
+                    onAutoSetup = { navController.navigate(AutoTripSetupRoute) },
                     onLiveFinished = { id ->
                         if (id == null) {
                             navController.popBackStack()

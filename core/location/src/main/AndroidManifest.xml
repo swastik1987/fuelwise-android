@@ -1,20 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-        GPS trips (PRD F-07.2), approved 19 Oct 2026 and listed in PRD §9. While-in-use only: asked when the user taps
-        Start trip. No ACCESS_BACKGROUND_LOCATION in R1 (CLAUDE.md rule 6); recording continues with the screen off
-        because the foreground service of type "location" was started while the app was visible.
+        GPS trips (PRD F-07.2), approved 19 Oct 2026 and listed in PRD §9. While-in-use: asked when the user taps
+        Start trip; recording continues with the screen off because the foreground service of type "location" was
+        started while the app was visible.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
+    <!--
+        Automatic trips (PRD F-21.3), approved 23 Oct 2026 (PRD D15, §9): the app's single declared background-location
+        feature (D13). Asked only on the setup screen, after the prominent disclosure; off by default; behind the
+        automatic_trips_off kill switch. No other code path reads location in the background (CLAUDE.md rule 6).
+    -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Android 9 and older: activity detection's install-time permission. -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"
+        android:maxSdkVersion="28" />
+    <!-- Activity-transition registrations are lost on reboot; already merged in by WorkManager. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
+        Car Bluetooth start (PRD F-21.3, approved 23 Oct 2026): Companion Device Manager presence for a car the user
+        picked in the system chooser. Both are normal (install-time) permissions. No BLUETOOTH_CONNECT: the app never
+        reads Bluetooth devices itself; the chooser and presence events give it the one car's address.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND" />
+    <uses-feature
+        android:name="android.software.companion_device_setup"
+        android:required="false" />
+
     <application>
         <service
             android:name=".TripRecordingService"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- Activity transitions from Play services, through an explicit mutable PendingIntent. Not exported. -->
+        <receiver
+            android:name=".DriveTransitionReceiver"
+            android:exported="false" />
+
+        <!-- Bound by Android while a linked car is in range (Android 12+). Only the system can bind it. -->
+        <service
+            android:name=".CarPresenceService"
+            android:exported="true"
+            android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE"
+            tools:targetApi="31">
+            <intent-filter>
+                <action android:name="android.companion.CompanionDeviceService" />
+            </intent-filter>
+        </service>
+
+        <!-- "Not a fill-up" from a fill-up prompt (PRD F-21.4). Not exported. -->
+        <receiver
+            android:name=".FillUpActionReceiver"
+            android:exported="false" />
+
+        <!-- Re-registers activity detection after a reboot or an app update, if automatic trips are on. -->
+        <receiver
+            android:name=".DriveDetectionRestoreReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

@@ -1,9 +1,15 @@
 package app.fuelwise.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,6 +69,39 @@ private fun FwChipBase(
         border = border,
     ) {
         Box(Modifier.height(FwTheme.size.chipHeight).padding(horizontal = 14.dp), contentAlignment = Alignment.Center) {
+            Text(label, style = FwTheme.type.label)
+        }
+    }
+}
+
+/** What a [FwStatusPill]'s dot says. */
+enum class FwStatus { Positive, Neutral, Warning }
+
+/**
+ * Small status pill with a coloured dot (design.md "Tracking status pill"): green = on, grey = paused,
+ * amber = needs attention. Tappable; the touch target is padded to 48 dp.
+ */
+@Composable
+fun FwStatusPill(label: String, status: FwStatus, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = FwTheme.colors
+    val dot = when (status) {
+        FwStatus.Positive -> colors.positive
+        FwStatus.Neutral -> colors.ink3
+        FwStatus.Warning -> colors.warning
+    }
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = FwTheme.radius.pill,
+        color = colors.surface2,
+        contentColor = colors.ink,
+    ) {
+        Row(
+            Modifier.height(FwTheme.size.chipHeight).padding(horizontal = FwTheme.spacing.s),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.size(FwTheme.spacing.xs).background(dot, CircleShape))
+            Spacer(Modifier.width(FwTheme.spacing.xs))
             Text(label, style = FwTheme.type.label)
         }
     }

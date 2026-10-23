@@ -63,5 +63,20 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+
+        <!-- "Pause automatic trips" (PRD F-16, F-21.3). -->
+        <service
+            android:name=".AutoTripsTileService"
+            android:exported="true"
+            android:icon="@drawable/fw_ic_directions_car"
+            android:label="@string/tile_auto_trips"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
     </application>
 </manifest>

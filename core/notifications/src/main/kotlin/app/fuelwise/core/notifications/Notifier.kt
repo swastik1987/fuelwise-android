@@ -45,6 +45,9 @@ object NotificationRoutes {
 
     /** The fill-up sheet; [EXTRA_ARG] may name the vehicle (an EV for "Charge"). */
     const val OPEN_ADD_FUEL = "add_fuel"
+
+    /** The fill-up sheet pre-filled from a fill-up prompt (PRD F-21.4); [EXTRA_ARG] is `FillUpPrefill.encode()`. */
+    const val OPEN_ADD_FUEL_PROMPT = "add_fuel_prompt"
     const val OPEN_ADD_EXPENSE = "add_expense"
 
     /** A manual trip, as from the in-app quick-add sheet. */
@@ -52,6 +55,9 @@ object NotificationRoutes {
 
     /** The Trips screen starting a GPS trip, asking for location first if needed. */
     const val OPEN_START_TRIP = "start_trip"
+
+    /** Automatic trips setup (PRD F-21.3), from the Quick Settings tile before it's set up. */
+    const val OPEN_AUTO_TRIP_SETUP = "auto_trip_setup"
     const val OPEN_DOCUMENTS = "documents"
 
     /** Scan pump meter (PRD F-15). */
@@ -64,6 +70,12 @@ object NotificationRoutes {
 /** Channel ids other modules use: the trip recorder in core:location posts, Settings links to the system screens. */
 object NotificationChannels {
     const val TRIP_RECORDING = "trip_recording"
+
+    /** Automatic trips (PRD F-21.3, F-16): the quiet ongoing drive and the one-tap "Start trip?" prompt. */
+    const val AUTOMATIC_TRIPS = "automatic_trips"
+
+    /** "Filled up at …? Tap to log." after a drive (PRD F-21.4, F-16). */
+    const val FILL_UP_PROMPTS = "fill_up_prompts"
     const val REMINDERS = "reminders"
     const val INSIGHTS = "insights"
     const val PRICE_ALERTS = "price_alerts"
@@ -103,6 +115,24 @@ class Notifier @Inject constructor(@param:ApplicationContext private val context
                 NotificationManager.IMPORTANCE_LOW,
             )
                 .apply { description = context.getString(R.string.channel_trip_recording_description) },
+        )
+        // Low importance: no sound while the user is driving (PRD F-21.3).
+        system.createNotificationChannel(
+            NotificationChannel(
+                NotificationChannels.AUTOMATIC_TRIPS,
+                context.getString(R.string.channel_automatic_trips),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+                .apply { description = context.getString(R.string.channel_automatic_trips_description) },
+        )
+        // Default importance: a prompt the user acts on, once per drive at most (PRD F-21.4).
+        system.createNotificationChannel(
+            NotificationChannel(
+                NotificationChannels.FILL_UP_PROMPTS,
+                context.getString(R.string.channel_fill_up_prompts),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            )
+                .apply { description = context.getString(R.string.channel_fill_up_prompts_description) },
         )
         // Opt-in in the app (PRD F-09.5); low importance, a price move is never urgent.
         system.createNotificationChannel(

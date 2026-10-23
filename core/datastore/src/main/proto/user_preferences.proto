@@ -52,6 +52,54 @@ message UserPreferences {
   bool app_lock = 34;
   // Lock again after this long in the background; 0 = as soon as the app leaves the screen.
   int32 app_lock_timeout_minutes = 35;
+
+  // Location & trips (PRD F-21) use field numbers 80–89.
+  // Automatic trips on this phone. Device-specific (it rests on this phone's permissions): never in a backup.
+  AutoTripSettings auto_trips = 80;
+  // How long saved routes are kept (PRD F-21.6); zero = 90 days, the default.
+  RouteRetentionPref route_retention = 81;
+  // Private places (PRD F-21.6), Tink-encrypted with the vault key: home is never stored in the clear.
+  bytes private_places = 82;
+  // Fill-up prompts (PRD F-21.4): what the user said and when we last asked. Device-only.
+  FillUpPrompts fill_up_prompts = 83;
+}
+
+message FillUpPrompts {
+  // "Not a fill-up" taps per OSM station id; 3 or more and that station is never prompted again.
+  map<int64, int32> rejections = 1;
+  // Last prompt per vehicle id (UTC ms): at most one per vehicle per 6 hours.
+  map<string, int64> last_prompt_at = 2;
+}
+
+enum RouteRetentionPref {
+  ROUTE_RETENTION_90_DAYS = 0;
+  ROUTE_RETENTION_30_DAYS = 1;
+  ROUTE_RETENTION_1_YEAR = 2;
+  ROUTE_RETENTION_FOREVER = 3;
+}
+
+message AutoTripSettings {
+  // The user finished setup and turned automatic trips on (PRD F-21.3: off by default, opt-in).
+  bool enabled = 1;
+  // "Pause automatic trips" until this UTC ms; 0 = not paused, max int64 = until turned back on.
+  int64 paused_until = 2;
+  // "Allow all the time" was refused: driving posts "Start trip?" instead of recording (design.md screen 32).
+  bool one_tap = 3;
+  // Last activity-detection event, for the battery-saver health check (PRD F-21.7). 0 = none yet.
+  int64 last_activity_event_at = 4;
+  // Car Bluetooth per vehicle id (PRD F-21.3 start signal 2). A Companion Device Manager association belongs to this
+  // phone, so the car's address stays here and never goes into a backup.
+  map<string, CarLink> car_links = 5;
+  // When automatic trips were last turned on (UTC ms), for the battery-saver health check before any event.
+  int64 enabled_at = 6;
+}
+
+message CarLink {
+  // The car's Bluetooth address, as the association reports it.
+  string address = 1;
+  int32 association_id = 2;
+  // What the system chooser showed, e.g. "Safari Audio"; may be empty on Android 12.
+  string name = 3;
 }
 
 // Zero values are the India defaults: km, L, km/L.
@@ -117,7 +165,10 @@ enum ThemeMode {
 
 // R2/R3 features stay behind these flags until their release (CLAUDE.md).
 message FeatureFlags {
+  // Unused since automatic trips moved to R1 (PRD D15); automatic_trips_off below is the flag now.
   bool automatic_trips = 1;
+  // Kill switch for automatic trips and fill-up detection (CLAUDE.md rule 6). Zero = available, as R1 ships them.
+  bool automatic_trips_off = 4;
   bool multi_device_sync = 2;
   bool trip_planner = 3;
   // The price feed (PRD F-09.2). Off until a source and host are chosen (PRD D2, D3); no URL ships meanwhile.

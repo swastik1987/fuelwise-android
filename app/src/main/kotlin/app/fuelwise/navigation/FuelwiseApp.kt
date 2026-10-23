@@ -75,6 +75,7 @@ import app.fuelwise.feature.reminders.reminderEditorScreen
 import app.fuelwise.feature.reminders.remindersScreen
 import app.fuelwise.feature.scan.ScanRoute
 import app.fuelwise.feature.scan.scanScreen
+import app.fuelwise.feature.settings.PrivatePlacesRoute
 import app.fuelwise.feature.settings.SettingsLinks
 import app.fuelwise.feature.settings.SettingsRoute
 import app.fuelwise.feature.settings.UnitsRoute
@@ -266,6 +267,7 @@ fun FuelwiseApp(
                 SettingsLinks(
                     onBack = navController::popBackStack,
                     onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
+                    onPrivatePlaces = { navController.navigate(PrivatePlacesRoute) },
                     onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) },
                     onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },

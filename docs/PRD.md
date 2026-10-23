@@ -352,7 +352,7 @@ Users can add custom categories (name, icon, colour).
 - Week-by-week list with totals.
 - "Show all trips on map" for any date range (a top Fuelio review request).
 
-**F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Trimming route ends near private places waits for the F-21.6 setting, R1)
+**F-07.8 GPX export** per trip or range. ✅ built (M8 slice 4: GPX 1.1 from `core:domain`, a track per trip and a segment per recorded stretch, from the saved simplified route; per trip from trip detail, by range from Trips (this week, this month, last 3 months, all time); saved through the system file picker, no storage permission. Route ends near private places are trimmed when the route is saved, F-21.6 ✅)
 
 **F-07.9 Business mileage report** (PDF, PRO, R2; CSV free): ✅ built (free text/CSV version, see F-13.3; the ₹/km rate is remembered in preferences)
 - Business trips in a period × reimbursement rate (₹/km, user-set).
@@ -663,7 +663,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
   - Before build, audit Bengaluru: compare OSM stations against 30 known pumps and record the hit rate in `docs/osm-coverage.md`. Repeat for Delhi and Mumbai before launch.
   - The user can submit nothing back to OSM from the app in R1 or R2. Contributing fixes upstream is a Later item.
 
-**F-21.3 Automatic trips (R1, FREE)**
+**F-21.3 Automatic trips (R1, FREE)** ✅ built 23 Oct 2026 (activity transitions + car Bluetooth via Companion Device Manager, setup with disclosure and one-tap fallback, pause from Home, Settings and a QS tile, "Not my drive" / "Change vehicle"; the battery-saver step arrives with F-21.7. Device runs for the AC still open)
 - **Opt-in:** off by default. Enabled from a dedicated setup screen (design.md screen 32) that shows Play's required prominent disclosure **before** any permission prompt.
 - **Start signals** (any one):
   1. Android activity detection reports the user started travelling in a vehicle.
@@ -715,7 +715,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - Used for: the odometer hint in F-02.3, odometer-based reminders (F-11.3), range left.
 - **A typed odometer always wins.** The estimate is never written as an entry.
 
-**F-21.6 Location privacy and retention (R1)**
+**F-21.6 Location privacy and retention (R1)** ✅ built 23 Oct 2026 (raw points were already deleted at finish, so retention applies to the saved encrypted route; private places are stored Tink-encrypted and trim route ends at save; routes saved before a place was added aren't re-trimmed)
 - **Storage:** raw trip points stay on the device and are encrypted at rest (same key scheme as F-12).
 - **Retention:** default "keep raw routes for 90 days, then keep only trip summaries" (distance, duration, start/end area, cost). Options: 30 days / 90 days / 1 year / forever.
 - **Backup:**

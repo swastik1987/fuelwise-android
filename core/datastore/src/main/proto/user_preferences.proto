@@ -56,6 +56,17 @@ message UserPreferences {
   // Location & trips (PRD F-21) use field numbers 80–89.
   // Automatic trips on this phone. Device-specific (it rests on this phone's permissions): never in a backup.
   AutoTripSettings auto_trips = 80;
+  // How long saved routes are kept (PRD F-21.6); zero = 90 days, the default.
+  RouteRetentionPref route_retention = 81;
+  // Private places (PRD F-21.6), Tink-encrypted with the vault key: home is never stored in the clear.
+  bytes private_places = 82;
+}
+
+enum RouteRetentionPref {
+  ROUTE_RETENTION_90_DAYS = 0;
+  ROUTE_RETENTION_30_DAYS = 1;
+  ROUTE_RETENTION_1_YEAR = 2;
+  ROUTE_RETENTION_FOREVER = 3;
 }
 
 message AutoTripSettings {

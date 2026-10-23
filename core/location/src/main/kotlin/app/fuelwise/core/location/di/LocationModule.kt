@@ -9,12 +9,14 @@ import app.fuelwise.core.location.CarLinker
 import app.fuelwise.core.location.CarPresence
 import app.fuelwise.core.location.CompanionCarPresence
 import app.fuelwise.core.location.DriveDetection
+import app.fuelwise.core.location.FusedSingleFix
 import app.fuelwise.core.location.FusedTripLocationSource
 import app.fuelwise.core.location.NotificationTripPrompts
 import app.fuelwise.core.location.RecorderScope
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.ServiceAutoTripStarter
 import app.fuelwise.core.location.ServiceRecordingHost
+import app.fuelwise.core.location.SingleFix
 import app.fuelwise.core.location.TripLocationSource
 import app.fuelwise.core.location.TripPrompts
 import dagger.Binds
@@ -50,6 +52,9 @@ internal interface LocationModule {
 
     @Binds
     fun carLinker(impl: AutoTrips): CarLinker
+
+    @Binds
+    fun singleFix(impl: FusedSingleFix): SingleFix
 
     companion object {
         @Provides

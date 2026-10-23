@@ -287,23 +287,15 @@ private fun InsightCardView(card: InsightCard, quantity: QuantityUnit, units: Di
                 )
             }
 
-            is InsightCard.Locked -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    FwOverline(stringResource(card.kind.title), Modifier.weight(1f))
-                    Icon(
-                        painterResource(FwIcons.Lock),
-                        null,
-                        tint = FwTheme.colors.ink3,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
+            // R1 has no billing (PRD D15): no lock, no price, nothing that leads to a purchase.
+            is InsightCard.ComingSoon -> {
+                FwOverline(stringResource(card.kind.title))
                 Text(
-                    "₹ •••",
-                    style = FwTheme.type.h2,
-                    color = FwTheme.colors.ink3,
+                    stringResource(R.string.card_coming_soon),
+                    style = FwTheme.type.caption,
+                    color = FwTheme.colors.ink2,
                     modifier = Modifier.padding(top = 6.dp),
                 )
-                Text(stringResource(R.string.card_unlock), style = FwTheme.type.caption, color = FwTheme.colors.ink2)
             }
         }
     }

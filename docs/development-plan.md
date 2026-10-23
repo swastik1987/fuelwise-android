@@ -114,7 +114,7 @@ Pure Kotlin, highest-stakes code, built before any UI depends on it.
 - F-10.4 share-target SMS parser per issuer, amount-only fallback. ➡ moved to R2 (23 Oct 2026, PRD D15).
 - F-09 city prices (feed or manual), "did I pay fair?", Maps intent for nearby pumps, price alerts.
 
-### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ➡ moved to R2 (23 Oct 2026, PRD D15); R1 still needs the Insights Pro cards switched from "locked" to "Coming soon"
+### M11 — Settings, widgets, Pro, F-18, F-16, F-19 (≈2 weeks) — needs L4 — 🚧 in progress (19 Oct 2026): F-18 settings and F-16 free widgets, QS tiles, shortcuts in parallel sessions; F-19 Pro, Pro widgets and PDF reports ➡ moved to R2 (23 Oct 2026, PRD D15); Insights Pro cards show "Coming soon" ✅ 23 Oct 2026
 - Settings screen (units, theme, Material You opt-in, app lock via BiometricPrompt, hide amounts, delete all data incl. Drive).
 - Glance widgets (Quick add, Status, Trip controls; Pro Dashboard/Consumption), QS tiles, app shortcuts.
 - Play Billing: products, paywall sheet, restore, 7-day offline grace; `EntitlementRepository` goes live.

@@ -35,7 +35,7 @@
     <string name="card_mileage_drop_body">Your mileage dropped %1$d%% over the last 2 tanks. Check tyre pressure first, then the air filter, and whether a service is due.</string>
     <string name="card_real_vs_claimed_title">Real vs claimed</string>
     <string name="card_real_vs_claimed_body">You get %1$d%% of the claimed mileage: %2$s against %3$s claimed.</string>
-    <string name="card_unlock">Unlock with Pro</string>
+    <string name="card_coming_soon">Coming soon</string>
     <string name="card_pro_fuel_grade">Fuel grade compare</string>
     <string name="card_pro_cng">CNG saving</string>
     <string name="card_pro_ev_vs_petrol">EV vs petrol</string>

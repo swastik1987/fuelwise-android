@@ -58,3 +58,5 @@ include(":feature:settings")
 include(":feature:prices")
 include(":widget")
 include(":feature:scan")
+// Dev tools, not shipped (PRD F-21.2: builds the bundled station list).
+include(":tools:stations")

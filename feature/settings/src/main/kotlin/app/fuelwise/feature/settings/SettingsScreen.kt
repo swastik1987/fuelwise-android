@@ -215,6 +215,8 @@ internal fun SettingsContent(
             DataSection(chrome, actions) { sheet = it }
             Header(R.string.settings_section_about)
             FwSettingsRow(stringResource(R.string.settings_version), value = chrome.versionName)
+            // ODbL attribution for the bundled station list (PRD F-21.2, §9).
+            FwSettingsRow(stringResource(R.string.settings_osm_attribution))
         }
     }
     when (sheet) {

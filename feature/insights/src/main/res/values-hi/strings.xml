@@ -11,6 +11,8 @@
     <string name="period_ytd">इस साल</string>
     <string name="period_12m">12 महीने</string>
     <string name="period_all">सब</string>
+    <string name="period_custom">तारीख़ें चुनें…</string>
+    <string name="period_custom_range">%1$s – %2$s</string>
 
     <string name="insights_hero_overline">प्रति km खर्च · %1$s</string>
     <string name="insights_per_km">/km</string>

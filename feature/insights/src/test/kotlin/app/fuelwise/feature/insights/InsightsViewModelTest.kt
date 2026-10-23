@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.insights.ComputeInsights
+import app.fuelwise.core.domain.insights.CustomRange
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceFuel
@@ -75,6 +76,20 @@ class InsightsViewModelTest {
         val state = vm.state.first { it?.period == InsightPeriod.All && it.cityPrices.any { p -> p != null } }!!
         assertThat(state.cityPrices).hasSize(state.report!!.prices.size)
         assertThat(state.cityPrices.filterNotNull()).containsExactly(Money(8_895))
+    }
+
+    @Test
+    fun aPickedRangeCoversOnlyThoseDays() = runTest {
+        val vm = viewModel()
+        // 1 Aug – 30 Sep, picked backwards: the range is put in order.
+        vm.selectCustom(LocalDate.of(2026, 9, 30), LocalDate.of(2026, 8, 1))
+        val state = vm.state.first { it?.period == InsightPeriod.Custom }!!
+        assertThat(state.custom).isEqualTo(CustomRange(LocalDate.of(2026, 8, 1), LocalDate.of(2026, 9, 30)))
+        val all = viewModel().apply {
+            selectPeriod(InsightPeriod.All)
+        }.state.first { it?.period == InsightPeriod.All }!!
+        assertThat(state.report!!.fillCount).isLessThan(all.report!!.fillCount)
+        assertThat(state.report.fillCount).isGreaterThan(0)
     }
 
     @Test

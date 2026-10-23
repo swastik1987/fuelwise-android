@@ -43,12 +43,14 @@ import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwSectionHeader
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.insights.CustomRange
 import app.fuelwise.core.domain.insights.InsightCard
 import app.fuelwise.core.domain.insights.InsightPeriod
 import app.fuelwise.core.domain.insights.InsightsReport
 import app.fuelwise.core.domain.insights.ProInsight
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.QuantityUnit
+import app.fuelwise.core.ui.entry.EntryDateRangePicker
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.UnitFormat
 import app.fuelwise.core.ui.format.efficiencyText
@@ -57,28 +59,40 @@ import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.vehicle.AllVehiclesPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 internal data class InsightsActions(
     val onAddEntry: () -> Unit = {},
-    val onOpenChart: (ChartKind, InsightPeriod, Boolean) -> Unit = { _, _, _ -> },
+    val onOpenChart: (ChartKind, InsightPeriod, Boolean, CustomRange?) -> Unit = { _, _, _, _ -> },
     val onOpenRecap: () -> Unit = {},
     val onPeriod: (InsightPeriod) -> Unit = {},
     val onSelectVehicle: (String?) -> Unit = {},
+    /** A picked range (PRD F-06 custom period). */
+    val onCustom: (from: LocalDate, to: LocalDate) -> Unit = { _, _ -> },
 )
 
 @Composable
 internal fun InsightsScreen(
     onAddEntry: () -> Unit,
-    onOpenChart: (ChartKind, InsightPeriod, Boolean) -> Unit,
+    onOpenChart: (ChartKind, InsightPeriod, Boolean, CustomRange?) -> Unit,
     onOpenRecap: () -> Unit,
     viewModel: InsightsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     InsightsContent(
         state,
-        InsightsActions(onAddEntry, onOpenChart, onOpenRecap, viewModel::selectPeriod, viewModel::selectVehicle),
+        InsightsActions(
+            onAddEntry,
+            onOpenChart,
+            onOpenRecap,
+            viewModel::selectPeriod,
+            viewModel::selectVehicle,
+            viewModel::selectCustom,
+        ),
     )
 }
 
@@ -87,6 +101,7 @@ internal fun InsightsScreen(
 internal fun InsightsContent(state: InsightsSnapshot?, actions: InsightsActions) {
     var switcherOpen by rememberSaveable { mutableStateOf(false) }
     var info by rememberSaveable { mutableStateOf<String?>(null) }
+    var pickingRange by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         if (state == null) return@Column
         val report = state.report
@@ -110,7 +125,11 @@ internal fun InsightsContent(state: InsightsSnapshot?, actions: InsightsActions)
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             InsightPeriod.entries.forEach { p ->
-                FwFilterChip(stringResource(p.label), p == state.period, { actions.onPeriod(p) })
+                // The custom chip shows its days once picked, and always opens the picker.
+                val label = if (p == state.period) periodLabel(state) else stringResource(p.label)
+                FwFilterChip(label, p == state.period, {
+                    if (p == InsightPeriod.Custom) pickingRange = true else actions.onPeriod(p)
+                })
             }
         }
         if (report == null || report.isEmpty) {
@@ -126,6 +145,17 @@ internal fun InsightsContent(state: InsightsSnapshot?, actions: InsightsActions)
         } else {
             Overview(state, report, actions) { info = it }
         }
+    }
+    if (pickingRange && state != null) {
+        EntryDateRangePicker(
+            initialFrom = state.custom?.from,
+            initialTo = state.custom?.to,
+            onPicked = { from, to ->
+                pickingRange = false
+                actions.onCustom(from, to)
+            },
+            onDismiss = { pickingRange = false },
+        )
     }
     if (switcherOpen && state != null) {
         VehicleSwitcherSheet(
@@ -165,7 +195,7 @@ private fun Overview(
         verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
     ) {
         FwHeroMetric(
-            overline = stringResource(R.string.insights_hero_overline, stringResource(state.period.label)),
+            overline = stringResource(R.string.insights_hero_overline, periodLabel(state)),
             value = m.costPerKm?.let { IndianNumberFormat.rupees(it) } ?: "—",
             unit = stringResource(R.string.insights_per_km),
             delta = report.costPerKmChange?.let { costDelta(it) },
@@ -242,7 +272,7 @@ private fun Overview(
             FwOverline(stringResource(R.string.insights_charts))
             ChartKind.entries.filter { !it.needsOneVehicle || report.energyType != null }.forEach { kind ->
                 FwCard(onClick = {
-                    actions.onOpenChart(kind, state.period, state.allVehicles)
+                    actions.onOpenChart(kind, state.period, state.allVehicles, state.custom)
                 }, contentPadding = PaddingValues(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -336,3 +366,15 @@ private fun percent(fraction: Double): Int = (fraction * PERCENT).roundToInt()
 private const val PERCENT = 100
 private const val INFO_COST_PER_KM = "cpk"
 private const val INFO_TILES = "tiles"
+
+/** The period as shown in headings: "3M", or "1 Aug – 30 Sep" for a picked range. */
+@Composable
+internal fun periodLabel(state: InsightsSnapshot): String =
+    state.custom?.takeIf { state.period == InsightPeriod.Custom }
+        ?.let { stringResource(R.string.period_custom_range, shortDay(it.from), shortDay(it.to)) }
+        ?: stringResource(state.period.label)
+
+/** "5 Oct" for the custom period chip. */
+private fun shortDay(date: LocalDate): String = date.format(SHORT_DAY)
+
+private val SHORT_DAY = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)

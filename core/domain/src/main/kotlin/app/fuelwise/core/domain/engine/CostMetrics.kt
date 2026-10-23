@@ -9,6 +9,12 @@ import javax.inject.Inject
 /** An odometer reading from any entry (fill-up, charge, expense with odometer, trip end). */
 data class OdometerReading(val odometerKm: Double, val atUtcMs: Long)
 
+/**
+ * Distance a GPS or automatic trip recorded, at its start (PRD F-21.5). Not an odometer reading: GPS km aren't
+ * odometer km.
+ */
+data class GpsDistance(val atUtcMs: Long, val km: Double)
+
 /** Money spent on a vehicle. FASTag recharges are transfers, not spends, and never appear here (PRD F-10.3). */
 data class Spend(
     val amount: Money,

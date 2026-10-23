@@ -709,7 +709,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 **AC (F-21.4)**
 - On a 4-week internal dogfood, ≥70% of actual fill-ups get a prompt, and ≤1 false prompt per user per week.
 
-**F-21.5 GPS odometer estimate (R1)**
+**F-21.5 GPS odometer estimate (R1)** ✅ built 23 Oct 2026 (GPS and automatic trips since the latest reading, scaled by a per-vehicle factor learned from covered intervals between readings, clamped 0.9–1.2; derived each time rather than stored. Feeds the fill-up hint, odometer reminders and range left; falls back to km/day without recordings)
 - Between two typed odometer readings, sum automatic-trip distances to estimate today's odometer.
 - Calibrate against the next typed reading: store a per-vehicle correction factor (GPS km vs odometer km).
 - Used for: the odometer hint in F-02.3, odometer-based reminders (F-11.3), range left.

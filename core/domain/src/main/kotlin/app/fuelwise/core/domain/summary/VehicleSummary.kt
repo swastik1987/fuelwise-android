@@ -10,6 +10,7 @@ import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.Spend
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Expense
@@ -101,7 +102,12 @@ class ComputeVehicleSummary @Inject constructor(
             lastRefuelInterval = lastRefuel?.let {
                 (lastReport.resultFor(it.id) as? IntervalResult.Measured)?.interval
             },
-            rangeLeftKm = rangeLeft(vehicle, tankFills, report, predictions.predictedOdometer(readings)),
+            rangeLeftKm = rangeLeft(
+                vehicle,
+                tankFills,
+                report,
+                predictions.predictedOdometer(readings, gpsDistances(vehicle, trips)),
+            ),
             mileageDrop = report.mileageDrop(),
             isEstimate = vehicle.isBiFuel,
         )

@@ -7,11 +7,14 @@ import app.fuelwise.core.database.FuelwiseDatabase
 import app.fuelwise.core.domain.id.UuidV7Generator
 import app.fuelwise.core.domain.vehicle.VehicleDraft
 import app.fuelwise.core.model.EnergyType
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelSetup
+import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.VehicleType
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
@@ -64,6 +67,37 @@ class OfflineVehicleRepositoryTest {
         assertThat(vehicle.primaryTank!!.energyType).isEqualTo(EnergyType.CNG)
         assertThat(vehicle.startOdometerKm).isEqualTo(31_045.0)
         assertThat(vehicle.startOdometerAtUtcMs).isEqualTo(clock.millis())
+    }
+
+    @Test
+    fun detailsHybridAndDefaultGradeAreKept() = runTest {
+        val id = repository.add(
+            VehicleDraft(
+                name = "City",
+                fuelSetup = FuelSetup.Petrol,
+                odometerKm = 8_200.0,
+                make = " Honda ",
+                model = "City",
+                variant = "e:HEV ZX",
+                year = 2025,
+                purchaseDate = LocalDate.of(2025, 2, 14),
+                purchaseOdometerKm = 6.0,
+                purchasePrice = Money(205_000_000),
+                isHybrid = true,
+                defaultGrade = FuelGrade.E20,
+            ),
+        )
+        val city = repository.observeVehicle(id).first()!!
+        assertThat(city.make).isEqualTo("Honda")
+        assertThat(city.variant).isEqualTo("e:HEV ZX")
+        assertThat(city.year).isEqualTo(2025)
+        assertThat(city.purchaseDate).isEqualTo(LocalDate.of(2025, 2, 14))
+        assertThat(city.purchasePrice).isEqualTo(Money(205_000_000))
+        assertThat(city.isHybrid).isTrue()
+        assertThat(city.primaryTank!!.defaultGrade).isEqualTo(FuelGrade.E20)
+        // Edits keep the grade.
+        repository.update(city.copy(tanks = city.tanks.map { it.copy(defaultGrade = FuelGrade.Premium) }))
+        assertThat(repository.observeVehicle(id).first()!!.primaryTank!!.defaultGrade).isEqualTo(FuelGrade.Premium)
     }
 
     @Test

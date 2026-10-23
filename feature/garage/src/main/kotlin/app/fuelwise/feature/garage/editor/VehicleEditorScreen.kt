@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,7 @@ import app.fuelwise.core.designsystem.component.FwFilterChip
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
 import app.fuelwise.core.designsystem.component.FwSettingsRow
+import app.fuelwise.core.designsystem.component.FwSwitchRow
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
@@ -57,11 +59,18 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
 import app.fuelwise.core.location.rememberCarBluetoothLinker
 import app.fuelwise.core.model.EmissionNorm
+import app.fuelwise.core.model.FuelGrade
 import app.fuelwise.core.model.FuelSetup
 import app.fuelwise.core.model.VehicleType
+import app.fuelwise.core.ui.entry.EntryDatePicker
+import app.fuelwise.core.ui.entry.EntryLabels
+import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.NumberInput
 import app.fuelwise.core.ui.vehicle.VehicleLabels
 import app.fuelwise.feature.garage.R
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 internal fun VehicleEditorScreen(
@@ -91,6 +100,10 @@ internal fun VehicleEditorScreen(
             onRegistration = viewModel::onRegistrationChange,
             onEmissionNorm = viewModel::onEmissionNormChange,
             onClaimed = viewModel::onClaimedChange,
+            onDetail = viewModel::onDetailChange,
+            onPurchaseDate = viewModel::onPurchaseDateChange,
+            onHybrid = viewModel::onHybridChange,
+            onDefaultGrade = viewModel::onDefaultGradeChange,
             onToggleMore = viewModel::onToggleMore,
             onSave = viewModel::save,
             onLinkCar = linkCar,
@@ -108,6 +121,10 @@ internal data class VehicleEditorActions(
     val onRegistration: (String) -> Unit = {},
     val onEmissionNorm: (EmissionNorm) -> Unit = {},
     val onClaimed: (String) -> Unit = {},
+    val onDetail: (VehicleDetail, String) -> Unit = { _, _ -> },
+    val onPurchaseDate: (LocalDate?) -> Unit = {},
+    val onHybrid: (Boolean) -> Unit = {},
+    val onDefaultGrade: (FuelGrade) -> Unit = {},
     val onToggleMore: () -> Unit = {},
     val onSave: () -> Unit = {},
     val onLinkCar: (() -> Unit)? = null,
@@ -354,11 +371,124 @@ private fun MoreDetails(state: VehicleFormState, actions: VehicleEditorActions) 
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done,
             )
+            if (state.hasPetrolTank) PetrolDetails(state, actions)
+            ModelDetails(state, actions.onDetail)
+            PurchaseDetails(state, actions)
             actions.onLinkCar?.takeIf {
                 state.showCarBluetooth
             }?.let { link -> CarBluetoothRow(state, link, actions.onUnlinkCar) }
         }
     }
+}
+
+/** Default grade and the hybrid tag (PRD F-01.2). Hybrids are single-fuel petrol. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PetrolDetails(state: VehicleFormState, actions: VehicleEditorActions) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.editor_default_grade), style = FwTheme.type.caption, color = FwTheme.colors.ink2)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FuelGrade.entries.forEach { grade ->
+                FwChoiceChip(stringResource(EntryLabels.grade(grade)), grade == state.defaultGrade, {
+                    actions.onDefaultGrade(grade)
+                })
+            }
+        }
+    }
+    if (state.fuelSetup == FuelSetup.Petrol) {
+        FwSwitchRow(
+            title = stringResource(R.string.editor_hybrid),
+            checked = state.isHybrid,
+            onCheckedChange = actions.onHybrid,
+            subtitle = stringResource(R.string.editor_hybrid_hint),
+        )
+    }
+}
+
+/** Make, model, variant and year: free text in R1 (PRD F-01.1). */
+@Composable
+private fun ModelDetails(state: VehicleFormState, onDetail: (VehicleDetail, String) -> Unit) {
+    FwOverline(stringResource(R.string.editor_model_section))
+    Row(horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
+        DetailField(state, VehicleDetail.Make, R.string.editor_make, onDetail, Modifier.weight(1f))
+        DetailField(state, VehicleDetail.Model, R.string.editor_model, onDetail, Modifier.weight(1f))
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
+        DetailField(state, VehicleDetail.Variant, R.string.editor_variant, onDetail, Modifier.weight(1f))
+        DetailField(
+            state,
+            VehicleDetail.Year,
+            R.string.editor_year,
+            onDetail,
+            Modifier.width(YEAR_WIDTH),
+            error = state.errors.messageFor(VehicleDraftError.YearInvalid),
+        )
+    }
+}
+
+/** Purchase date, reading and price (design.md screen 22 "Purchase details"). */
+@Composable
+private fun PurchaseDetails(state: VehicleFormState, actions: VehicleEditorActions) {
+    var pickingDate by rememberSaveable { mutableStateOf(false) }
+    val zone = remember { ZoneId.systemDefault() }
+    FwOverline(stringResource(R.string.editor_purchase_section))
+    FwSettingsRow(
+        stringResource(R.string.editor_purchase_date),
+        value =
+            state.purchaseDate?.let { IndianNumberFormat.date(it) }
+                ?: stringResource(R.string.editor_purchase_date_none),
+        onClick = { pickingDate = true },
+    )
+    state.errors.messageFor(VehicleDraftError.PurchaseInFuture)?.let {
+        Text(it, style = FwTheme.type.caption, color = FwTheme.colors.negative)
+    }
+    DetailField(
+        state,
+        VehicleDetail.PurchaseOdometer,
+        R.string.editor_purchase_odometer,
+        actions.onDetail,
+        unit = stringResource(app.fuelwise.core.ui.R.string.unit_km),
+        error = state.errors.messageFor(VehicleDraftError.PurchaseOdometerInvalid),
+    )
+    DetailField(
+        state,
+        VehicleDetail.PurchasePrice,
+        R.string.editor_purchase_price,
+        actions.onDetail,
+        unit = "₹",
+        error = state.errors.messageFor(VehicleDraftError.PurchasePriceNotPositive),
+    )
+    if (pickingDate) {
+        val initial = (state.purchaseDate ?: LocalDate.now(zone)).atStartOfDay(zone).toInstant().toEpochMilli()
+        EntryDatePicker(initial, zone, {
+            actions.onPurchaseDate(Instant.ofEpochMilli(it).atZone(zone).toLocalDate())
+            pickingDate = false
+        }, { pickingDate = false })
+    }
+}
+
+@Composable
+private fun DetailField(
+    state: VehicleFormState,
+    field: VehicleDetail,
+    label: Int,
+    onDetail: (VehicleDetail, String) -> Unit,
+    modifier: Modifier = Modifier,
+    unit: String? = null,
+    error: String? = null,
+) {
+    val numeric = field == VehicleDetail.Year || field == VehicleDetail.PurchaseOdometer ||
+        field == VehicleDetail.PurchasePrice
+    FwTextField(
+        value = state.detail(field),
+        onValueChange = { onDetail(field, it) },
+        label = stringResource(label),
+        modifier = modifier,
+        unit = unit,
+        error = error,
+        keyboardType = if (numeric) KeyboardType.Decimal else KeyboardType.Text,
+        capitalization = if (numeric) KeyboardCapitalization.None else KeyboardCapitalization.Words,
+    )
 }
 
 private fun VehicleFormState.capacityInvalid(index: Int): Boolean {
@@ -378,6 +508,10 @@ private fun errorMessage(error: VehicleDraftError): Int = when (error) {
     VehicleDraftError.CapacityNotPositive -> R.string.editor_error_capacity
     VehicleDraftError.RegistrationInvalid -> R.string.editor_error_registration
     VehicleDraftError.ClaimedNotPositive -> R.string.editor_error_claimed
+    VehicleDraftError.YearInvalid -> R.string.editor_error_year
+    VehicleDraftError.PurchaseInFuture -> R.string.editor_error_purchase_date
+    VehicleDraftError.PurchaseOdometerInvalid -> R.string.editor_error_purchase_odometer
+    VehicleDraftError.PurchasePriceNotPositive -> R.string.editor_error_purchase_price
 }
 
 private fun normLabel(norm: EmissionNorm): Int = when (norm) {
@@ -396,3 +530,4 @@ private val PICKER_TYPES = listOf(
 )
 
 private const val EXPANDED_ROTATION = 180f
+private val YEAR_WIDTH = 104.dp

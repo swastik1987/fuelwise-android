@@ -15,6 +15,7 @@ import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.vehicle.VehicleDraftError
 import app.fuelwise.core.testing.SampleVehicles
 import app.fuelwise.feature.garage.detail.VehicleDetailContent
+import app.fuelwise.feature.garage.editor.VehicleDetail
 import app.fuelwise.feature.garage.editor.VehicleEditorActions
 import app.fuelwise.feature.garage.editor.VehicleEditorContent
 import app.fuelwise.feature.garage.editor.VehicleFormState
@@ -75,6 +76,15 @@ class GarageScreensTest {
     @Test
     fun editorDark() = capture("editor_bifuel_dark", dark = true) { BiFuelEditor() }
 
+    // Tall enough to show "More details" below the fold.
+    @Test
+    @Config(qualifiers = TALL)
+    fun detailsEditorLight() = capture("editor_details_light", dark = false) { HybridEditor() }
+
+    @Test
+    @Config(qualifiers = TALL)
+    fun detailsEditorDark() = capture("editor_details_dark", dark = true) { HybridEditor() }
+
     @Test
     fun detailLight() = capture("detail_light", dark = false) { Detail() }
 
@@ -114,5 +124,46 @@ class GarageScreensTest {
     )
 
     @Composable
-    private fun Detail() = VehicleDetailContent(SampleVehicles.safari, {}, {}, {}, {}, { false })
+    private fun Detail() = VehicleDetailContent(
+        SampleVehicles.safari.copy(
+            make = "Tata",
+            model = "Safari",
+            variant = "XZ+",
+            year = 2023,
+            purchaseDate = java.time.LocalDate.of(2023, 3, 9),
+            purchaseOdometerKm = 12.0,
+            purchasePrice = app.fuelwise.core.model.Money(215_000_000),
+        ),
+        {},
+        {},
+        {},
+        {},
+        { false },
+    )
+
+    @Composable
+    private fun HybridEditor() = VehicleEditorContent(
+        state = VehicleFormState(
+            isEditing = true,
+            name = "City",
+            odometer = "8,200",
+            details = mapOf(
+                VehicleDetail.Make to "Honda",
+                VehicleDetail.Model to "City",
+                VehicleDetail.Variant to "e:HEV ZX",
+                VehicleDetail.Year to "2025",
+                VehicleDetail.PurchasePrice to "20,50,000",
+            ),
+            purchaseDate = java.time.LocalDate.of(2025, 2, 14),
+            isHybrid = true,
+            defaultGrade = app.fuelwise.core.model.FuelGrade.E20,
+            moreExpanded = true,
+        ),
+        onBack = {},
+        actions = VehicleEditorActions(),
+    )
+
+    private companion object {
+        const val TALL = "w412dp-h2400dp-xxhdpi"
+    }
 }

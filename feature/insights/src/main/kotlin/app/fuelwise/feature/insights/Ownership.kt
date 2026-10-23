@@ -29,7 +29,7 @@ import app.fuelwise.core.ui.format.IndianNumberFormat
 
 /**
  * Total cost of ownership (PRD F-03.5): per month and per km for the period, with what it's made of. The spread is
- * one setting for every vehicle, changed here.
+ * one setting for every vehicle, changed here; a vehicle on a loan counts its EMI instead.
  */
 @Composable
 internal fun OwnershipCard(tco: OwnershipCost, onYears: (Int) -> Unit) {
@@ -59,18 +59,29 @@ internal fun OwnershipCard(tco: OwnershipCost, onYears: (Int) -> Unit) {
                 }
             }
             Line(stringResource(R.string.insights_tco_running), IndianNumberFormat.rupeesWhole(tco.running))
-            HorizontalDivider(color = FwTheme.colors.line)
-            Line(
-                stringResource(
-                    R.string.insights_tco_purchase,
-                    IndianNumberFormat.rupeesWhole(tco.purchasePrice),
-                    years,
-                ),
-                IndianNumberFormat.rupeesWhole(tco.purchaseShare),
-            )
+            if (tco.purchasePrice.paise > 0) {
+                HorizontalDivider(color = FwTheme.colors.line)
+                Line(
+                    stringResource(
+                        R.string.insights_tco_purchase,
+                        IndianNumberFormat.rupeesWhole(tco.purchasePrice),
+                        years,
+                    ),
+                    IndianNumberFormat.rupeesWhole(tco.purchaseShare),
+                )
+            }
             HorizontalDivider(color = FwTheme.colors.line)
             Line(stringResource(R.string.insights_tco_total), IndianNumberFormat.rupeesWhole(tco.total), bold = true)
-            FwTextButton(stringResource(R.string.insights_tco_spread, years), { choosing = true })
+            if (tco.financedVehicles > 0) {
+                Text(
+                    pluralStringResource(R.plurals.insights_tco_financed, tco.financedVehicles, tco.financedVehicles),
+                    style = FwTheme.type.caption,
+                    color = FwTheme.colors.ink2,
+                )
+            }
+            if (tco.purchasePrice.paise > 0) {
+                FwTextButton(stringResource(R.string.insights_tco_spread, years), { choosing = true })
+            }
         }
     }
     if (choosing) {

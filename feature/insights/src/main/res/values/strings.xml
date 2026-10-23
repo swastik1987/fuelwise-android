@@ -39,6 +39,10 @@
     <string name="insights_tco_spread">Spread over %1$s</string>
     <string name="insights_tco_spread_title">Spread the purchase price over</string>
     <string name="insights_tco_spread_hint">One setting for every vehicle. After that, the price no longer counts.</string>
+    <plurals name="insights_tco_financed">
+        <item quantity="one">On a loan: its EMI counts instead of the purchase price.</item>
+        <item quantity="other">%d vehicles on a loan: their EMI counts instead of the purchase price.</item>
+    </plurals>
     <plurals name="insights_tco_years">
         <item quantity="one">%d year</item>
         <item quantity="other">%d years</item>

@@ -47,20 +47,38 @@ class OwnershipCostTest {
         Expense(id, "safari", category.id, day, zone.id, Money(amount))
 
     @Test
-    fun `running costs include EMI and insurance, plus a year of the purchase price`() {
+    fun `running costs and insurance, plus a year of the purchase price`() {
+        val history = VehicleHistory(
+            safari,
+            listOf(diesel),
+            listOf(expense("ins", SystemCategory.Insurance, 32_000_00, at(2025, 6, 1))),
+        )
+        val tco = ownershipCost(listOf(history), year2025, km = 12_000.0, years = 5, zone = zone)!!
+        assertThat(tco.running).isEqualTo(Money(3_60_000 + 32_000_00))
+        assertThat(tco.financedVehicles).isEqualTo(0)
+        // 365 of the 1,827 days in the 5 years from 1 Jan 2024 (2024 and 2028 are leap years).
+        assertThat(tco.purchaseShare).isEqualTo(Money(36_485_016))
+        assertThat(tco.perKm).isEqualTo(Money((tco.total.paise + 6_000) / 12_000))
+    }
+
+    @Test
+    fun `a vehicle on a loan counts its EMI instead of the spread price`() {
         val history = VehicleHistory(
             safari,
             listOf(diesel),
             listOf(
-                expense("emi", SystemCategory.LoanEmi, 25_000_00, at(2025, 2, 5)),
+                expense("emi-feb", SystemCategory.LoanEmi, 25_000_00, at(2025, 2, 5)),
+                expense("emi-mar", SystemCategory.LoanEmi, 25_000_00, at(2025, 3, 5)),
                 expense("ins", SystemCategory.Insurance, 32_000_00, at(2025, 6, 1)),
             ),
         )
         val tco = ownershipCost(listOf(history), year2025, km = 12_000.0, years = 5, zone = zone)!!
-        assertThat(tco.running).isEqualTo(Money(3_60_000 + 25_000_00 + 32_000_00))
-        // 365 of the 1,827 days in the 5 years from 1 Jan 2024 (2024 and 2028 are leap years).
-        assertThat(tco.purchaseShare).isEqualTo(Money(36_485_016))
-        assertThat(tco.perKm).isEqualTo(Money((tco.total.paise + 6_000) / 12_000))
+        assertThat(tco.running).isEqualTo(Money(3_60_000 + 2 * 25_000_00 + 32_000_00))
+        assertThat(tco.purchaseShare).isEqualTo(Money.ZERO)
+        assertThat(tco.financedVehicles).isEqualTo(1)
+        // A loan with no price entered still gets the card.
+        val unpriced = history.copy(vehicle = safari.copy(purchasePrice = null))
+        assertThat(ownershipCost(listOf(unpriced), year2025, null, 5, zone)!!.total).isEqualTo(tco.total)
     }
 
     @Test

@@ -35,6 +35,10 @@
     <string name="insights_tco_spread">%1$s में बाँटें</string>
     <string name="insights_tco_spread_title">ख़रीद की क़ीमत इतने में बाँटें</string>
     <string name="insights_tco_spread_hint">सभी गाड़ियों के लिए एक ही सेटिंग। उसके बाद क़ीमत नहीं गिनी जाती।</string>
+    <plurals name="insights_tco_financed">
+        <item quantity="one">%d गाड़ी लोन पर: ख़रीद की क़ीमत की जगह उसकी EMI गिनी जाती है।</item>
+        <item quantity="other">%d गाड़ियाँ लोन पर: ख़रीद की क़ीमत की जगह उनकी EMI गिनी जाती है।</item>
+    </plurals>
     <plurals name="insights_tco_years">
         <item quantity="one">%d साल</item>
         <item quantity="other">%d साल</item>

@@ -235,7 +235,7 @@ A pure Kotlin module (`core:domain`), with no Android dependencies, 100% unit-te
 - **Fallback (full-charge method):** treat a session with endSoC ≥ 99% (or a "charged to full" toggle) as "full" and apply F-03.1 to kWh.
 - Show "battery-to-wheel" efficiency (SoC method) and "wall-to-wheel" efficiency (billed kWh), labelled clearly.
 
-**F-03.5 Cost metrics:** ✅ built (TCO ✅ 23 Oct 2026, owner decision: purchase price spread over 5 years by default, one setting for every vehicle (3, 5, 7 or 10), changed on the Insights "Cost of ownership" card. Running costs count every expense, EMI and insurance included; "Purchase" expenses stand in for a missing purchase price and are never counted twice. Hidden when no vehicle has a price)
+**F-03.5 Cost metrics:** ✅ built (TCO ✅ 23 Oct 2026, owner decision: purchase price spread over 5 years by default, one setting for every vehicle (3, 5, 7 or 10), changed on the Insights "Cost of ownership" card. Running costs count every expense, EMI and insurance included; "Purchase" expenses stand in for a missing purchase price and are never counted twice. Owner decision 24 Oct 2026: a vehicle with any Loan EMI expense counts its EMI instead of the spread price, so the loan isn't paid for twice. Hidden when no vehicle has a price or a loan)
 - **Cost/km (period)** = (fuel paid + included expenses) / distance driven in the period.
   - Distance = max odo − min odo of entries in the period. When there is too little data, extrapolate using the closest entries outside the period, and label it.
   - The user can configure which expense categories are included. Default: all except "Purchase" and "Loan EMI".

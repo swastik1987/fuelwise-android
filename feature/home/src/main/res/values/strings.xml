@@ -16,12 +16,13 @@
     <string name="home_per_km">/km</string>
     <string name="home_delta_vs">%1$d%% vs %2$s</string>
     <string name="home_cost_per_km_title">What cost per km includes</string>
-    <string name="home_cost_per_km_body1">Everything you spent on this vehicle this month (fuel, charging, service, tolls, parking and other running costs), divided by the kilometres driven this month.</string>
+    <string name="home_cost_per_km_body1">The fuel or charge your kilometres used this month, plus everything else spent on this vehicle this month (service, tolls, parking and other running costs), divided by the kilometres driven. Fuel used is an estimate: kilometres (from your odometer readings and recorded trips) times this vehicle\'s own cost per km, from its mileage and the price you last paid. So a month without a fill-up still has a cost per km.</string>
     <string name="home_cost_per_km_body2">Loan EMIs and the purchase price are left out, so the number shows what it costs to run the vehicle. You can change which categories count in Settings.</string>
     <string name="home_mileage">Mileage</string>
     <string name="home_mileage_est">Mileage (est.)</string>
     <string name="home_mileage_avg">avg %1$s</string>
     <string name="home_spent">Spent</string>
+    <string name="home_spent_est">Spent (est.)</string>
     <string name="home_spent_km">%1$s km this month</string>
     <string name="home_prices_today">Fuel prices today</string>
     <string name="home_prices_empty">%1$s · add today\'s prices</string>

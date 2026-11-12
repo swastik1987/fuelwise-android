@@ -3,6 +3,8 @@ package app.fuelwise.core.domain.insights
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.Spend
+import app.fuelwise.core.domain.engine.fuelUse
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.Money
@@ -49,8 +51,10 @@ class ComputeWeeklyDigest @Inject constructor(private val costMetrics: ComputeCo
             Spend(it.amount, it.dateTimeUtcMs, Spend.Kind.Expense, included[it.categoryId] ?: true)
         }
         val readings = odometerReadings(vehicle, refuels, expenses, trips)
-        val week = costMetrics(spends, readings, period(lastWeek, thisWeek, zone))
-        val before = costMetrics(spends, readings, period(lastWeek.minusWeeks(1), lastWeek, zone))
+        // Fuel used, as on Home (PRD F-03.5).
+        val use = fuelUse(vehicle, refuels, readings, gpsDistances(vehicle, trips))
+        val week = costMetrics.fuelUsed(spends, use, period(lastWeek, thisWeek, zone))
+        val before = costMetrics.fuelUsed(spends, use, period(lastWeek.minusWeeks(1), lastWeek, zone))
         val costPerKm = week.costPerKm ?: return null
         val distance = week.distance ?: return null
         return WeeklyDigest(

@@ -236,8 +236,10 @@ A pure Kotlin module (`core:domain`), with no Android dependencies, 100% unit-te
 - Show "battery-to-wheel" efficiency (SoC method) and "wall-to-wheel" efficiency (billed kWh), labelled clearly.
 
 **F-03.5 Cost metrics:** ✅ built (TCO ✅ 23 Oct 2026, owner decision: purchase price spread over 5 years by default, one setting for every vehicle (3, 5, 7 or 10), changed on the Insights "Cost of ownership" card. Running costs count every expense, EMI and insurance included; "Purchase" expenses stand in for a missing purchase price and are never counted twice. Owner decision 24 Oct 2026: a vehicle with any Loan EMI expense counts its EMI instead of the spread price, so the loan isn't paid for twice. Hidden when no vehicle has a price or a loan)
-- **Cost/km (period)** = (fuel paid + included expenses) / distance driven in the period.
-  - Distance = max odo − min odo of entries in the period. When there is too little data, extrapolate using the closest entries outside the period, and label it.
+- **Cost/km (period)** = (fuel used + included expenses) / distance driven in the period. **Owner decision 12 Nov 2026 (user feedback): fuel used, not fuel paid** ✅ built, on Home, the Status widget, Insights (overview, monthly spend, cost/km trend, spend by category), the monthly recap and the weekly digest, so a month without a fill-up still has a cost per km.
+  - Fuel used = km in the period × the vehicle's fuel cost per km at the time: for one liquid or gas fuel, the price of the latest fill-up ÷ km per unit (the user's own figure F-01.4, else the measured full-tank average, else the claimed figure), stepping at each fill-up; for bi-fuel and EV, everything paid across the odometer span ÷ that span. Labelled estimated. With no basis yet (a first fill-up), money paid.
+  - Distance = odometer at the period's end − at its start, interpolated between readings (clamped to known data), with GPS and automatic trips after the last typed reading added at their own start and end, scaled by the F-21.5 factor.
+  - Money paid stays for: the Insights "Paid at the pump" line, price paid, fill-up count and average fill, "Did I pay fair?", the Logbook, reports and export, and the cost of ownership. The golden vectors (F-03.7) test the paid basis, unchanged.
   - The user can configure which expense categories are included. Default: all except "Purchase" and "Loan EMI".
 - **Fuel-only cost/km**, **cost/day**, **monthly burn**.
 - **Total cost of ownership:** optional. Includes purchase price amortised over N years plus EMI and insurance.

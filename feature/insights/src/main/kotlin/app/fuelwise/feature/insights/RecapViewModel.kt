@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.Dispatcher
@@ -63,6 +64,7 @@ class RecapViewModel @Inject constructor(
     entries: EntryRepository,
     categories: CategoryRepository,
     userData: UserDataRepository,
+    trips: TripRepository,
     computeRecap: ComputeRecap,
     zoneId: ZoneId,
     clock: Clock,
@@ -76,21 +78,19 @@ class RecapViewModel @Inject constructor(
     private val showVehicleName = MutableStateFlow(false)
 
     val state: StateFlow<RecapUiState?> = combine(
-        vehicles.observeVehicles(),
+        combine(vehicles.observeVehicles(), trips.observeTrips(), ::Pair),
         userData.userData,
         entries.observeAllRefuels(),
         entries.observeAllExpenses(),
         categories.observeCategories(),
-    ) { list, data, refuels, expenses, cats ->
+    ) { (list, tripList), data, refuels, expenses, cats ->
         val vehicle = list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull()
         vehicle?.let { v ->
             val history = VehicleHistory(
                 v,
                 refuels.filter { it.vehicleId == v.id },
-                expenses.filter {
-                    it.vehicleId ==
-                        v.id
-                },
+                expenses.filter { it.vehicleId == v.id },
+                tripList.filter { it.vehicleId == v.id },
             )
             Triple(v, computeRecap(history, cats, month, zoneId), data.units.forVehicle(v.id))
         }

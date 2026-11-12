@@ -13,7 +13,7 @@ data class OdometerReading(val odometerKm: Double, val atUtcMs: Long)
  * Distance a GPS or automatic trip recorded, at its start (PRD F-21.5). Not an odometer reading: GPS km aren't
  * odometer km.
  */
-data class GpsDistance(val atUtcMs: Long, val km: Double)
+data class GpsDistance(val atUtcMs: Long, val km: Double, val endUtcMs: Long = atUtcMs)
 
 /** Money spent on a vehicle. FASTag recharges are transfers, not spends, and never appear here (PRD F-10.3). */
 data class Spend(
@@ -54,6 +54,10 @@ data class CostMetrics(
     val costPerDay: Money,
     /** Cost per day scaled to an average month (30.4375 days). */
     val monthlyBurn: Money,
+    /** Fuel or charging actually paid in the period ("Paid at the pump"); [energySpend] itself on the paid basis. */
+    val paidEnergy: Money = energySpend,
+    /** [energySpend] is fuel used (km × the vehicle's rate), an estimate, not money paid. */
+    val energyEstimated: Boolean = false,
 ) {
     val totalSpend: Money get() = energySpend + includedExpenses + excludedExpenses
     val costBasis: Money get() = energySpend + includedExpenses
@@ -79,6 +83,38 @@ class ComputeCostMetrics @Inject constructor() {
             energyCostPerKm = distance?.takeIf { it.km > 0.0 }?.let { energy.divideBy(it.km) },
             costPerDay = perDay,
             monthlyBurn = basis.divideBy(period.days / DAYS_PER_MONTH),
+        )
+    }
+
+    /**
+     * The fuel-used basis (owner decision 12 Nov 2026; PRD F-03.5): energy is km driven in [period] × the vehicle's
+     * fuel cost per km ([FuelUse]), so a period without a fill-up still costs what its km burnt. Distance runs from the
+     * odometer at the period's start to its end, GPS trips included, so it adds up across months. Without a rate yet
+     * it falls back to money paid.
+     */
+    fun fuelUsed(spends: List<Spend>, use: FuelUse, period: Period): CostMetrics {
+        val paid = invoke(spends, use.readings, period)
+        val sorted = use.readings.sortedWith(compareBy({ it.atUtcMs }, { it.odometerKm }))
+        val at = { t: Long -> odometerAt(sorted, t) }
+        val energy = use.cost(period, at) ?: return paid
+        val start = at(period.startUtcMs)
+        val end = at(period.endUtcMs)
+        val distance = if (start == null || end == null) {
+            null
+        } else {
+            PeriodDistance((end - start).coerceAtLeast(0.0), isEstimated = sorted.count { it.atUtcMs in period } < 2)
+        }
+        val basis = energy + paid.includedExpenses
+        val km = distance?.km?.takeIf { it > 0.0 }
+        return paid.copy(
+            energySpend = energy,
+            distance = distance,
+            costPerKm = km?.let { basis.divideBy(it) },
+            energyCostPerKm = km?.let { energy.divideBy(it) },
+            costPerDay = basis.divideBy(period.days),
+            monthlyBurn = basis.divideBy(period.days / DAYS_PER_MONTH),
+            paidEnergy = paid.energySpend,
+            energyEstimated = true,
         )
     }
 

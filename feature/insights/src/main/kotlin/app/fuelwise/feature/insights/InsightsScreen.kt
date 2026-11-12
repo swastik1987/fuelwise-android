@@ -211,8 +211,15 @@ private fun Overview(
                 FwMetricTile(
                     overline = stringResource(R.string.insights_total_spent),
                     value = IndianNumberFormat.rupeesWhole(m.totalSpend),
-                    caption = m.excludedExpenses.takeIf { it.paise > 0 }
-                        ?.let { stringResource(R.string.insights_excluded, IndianNumberFormat.rupeesWhole(it)) },
+                    // Total spent counts fuel used (PRD F-03.5); what the fill-ups actually cost shows under it.
+                    caption = listOfNotNull(
+                        m.paidEnergy.takeIf { m.energyEstimated }
+                            ?.let {
+                                stringResource(R.string.insights_paid_at_pump, IndianNumberFormat.rupeesWhole(it))
+                            },
+                        m.excludedExpenses.takeIf { it.paise > 0 }
+                            ?.let { stringResource(R.string.insights_excluded, IndianNumberFormat.rupeesWhole(it)) },
+                    ).joinToString(" · ").ifEmpty { null },
                     modifier = Modifier.weight(1f),
                 )
                 FwMetricTile(

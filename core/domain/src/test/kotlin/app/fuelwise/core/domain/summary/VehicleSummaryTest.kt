@@ -10,6 +10,9 @@ import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.model.Tank
+import app.fuelwise.core.model.Trip
+import app.fuelwise.core.model.TripPurpose
+import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.VehicleType
 import com.google.common.truth.Truth.assertThat
@@ -44,28 +47,45 @@ class VehicleSummaryTest {
         assertThat(result.lastRefuel).isNull()
     }
 
+    // Fuel used (PRD F-03.5, 12 Nov 2026): ₹90.00/L at 15 km/L is exactly 600 paise per km.
+    private val fills = listOf(
+        fill("a", day(2026, 8, 20), 40_100.0, qty = 40.0, price = 9_000, paid = 360_000),
+        fill("b", day(2026, 9, 10), 40_700.0, qty = 40.0, price = 9_000, paid = 360_000), // 600 km on 40 L
+    )
+
+    // No fill-up in October, but two automatic trips: 120 km and 80 km.
+    private val october = listOf(auto("t1", day(2026, 10, 5), 120.0), auto("t2", day(2026, 10, 12), 80.0))
+
     @Test
-    fun `month cost per km against last month`() {
-        val refuels = listOf(
-            fill("s1", day(2026, 9, 1), 40_100.0, paid = 400_000),
-            fill("s2", day(2026, 9, 30), 41_100.0, paid = 600_000), // Sept: ₹6,000 over 1,000 km (fill-to-fill)
-            fill("o1", day(2026, 10, 2), 41_200.0, paid = 500_000),
-            fill("o2", day(2026, 10, 15), 42_200.0, paid = 300_000), // Oct: ₹8,000 over 1,000 km
-        )
-        val result = summary(safari, refuels, emptyList(), categories, zone)
-        assertThat(result.month.costPerKm).isEqualTo(Money(800))
-        assertThat(result.previousMonth.costPerKm).isEqualTo(Money(1_000))
-        assertThat(result.costPerKmChange!!).isWithin(1e-9).of(-0.2)
+    fun `a month without a fill-up costs the fuel its km used`() {
+        val result = summary(safari, fills, emptyList(), categories, zone, october)
+        assertThat(result.month.distance!!.km).isWithin(1e-6).of(200.0)
+        assertThat(result.month.energySpend).isEqualTo(Money(120_000)) // 200 km × ₹6
+        assertThat(result.month.totalSpend).isEqualTo(Money(120_000))
+        assertThat(result.month.costPerKm).isEqualTo(Money(600))
+        assertThat(result.month.paidEnergy).isEqualTo(Money.ZERO)
+        assertThat(result.month.energyEstimated).isTrue()
+        // September: the km between the fills that fall in it, at the same rate, so no change.
+        assertThat(result.previousMonth.costPerKm).isEqualTo(Money(600))
+        assertThat(result.costPerKmChange!!).isWithin(1e-9).of(0.0)
     }
 
     @Test
     fun `loan EMI stays out of cost per km`() {
-        val refuels =
-            listOf(fill("a", day(2026, 10, 2), 41_000.0), fill("b", day(2026, 10, 15), 41_500.0, paid = 500_000))
         val emi = Expense("e", "safari", SystemCategory.LoanEmi.id, day(2026, 10, 5), "Asia/Kolkata", Money(2_000_000))
-        val result = summary(safari, refuels, listOf(emi), categories, zone)
-        assertThat(result.month.costPerKm).isEqualTo(Money(1_600)) // ₹8,000 / 500 km, EMI excluded
+        val service =
+            Expense("s", "safari", SystemCategory.Service.id, day(2026, 10, 6), "Asia/Kolkata", Money(200_000))
+        val result = summary(safari, fills, listOf(emi, service), categories, zone, october)
+        assertThat(result.month.costPerKm).isEqualTo(Money(1_600)) // (₹1,200 fuel + ₹2,000 service) / 200 km
         assertThat(result.month.excludedExpenses).isEqualTo(Money(2_000_000))
+    }
+
+    @Test
+    fun `without a rate yet the month is what was paid`() {
+        val first = listOf(fill("only", day(2026, 10, 2), 41_000.0, qty = 40.0, price = 9_000, paid = 360_000))
+        val result = summary(safari, first, emptyList(), categories, zone)
+        assertThat(result.month.energySpend).isEqualTo(Money(360_000))
+        assertThat(result.month.energyEstimated).isFalse()
     }
 
     @Test
@@ -99,7 +119,25 @@ class VehicleSummaryTest {
 
     private fun day(y: Int, m: Int, d: Int) = LocalDate.of(y, m, d).atTime(9, 0).atZone(zone).toInstant().toEpochMilli()
 
-    private fun fill(id: String, time: Long, odo: Double, qty: Double = 30.0, paid: Long = 300_000) = Refuel(
+    private fun auto(id: String, start: Long, km: Double) = Trip(
+        id = id,
+        vehicleId = "safari",
+        startUtcMs = start,
+        zoneId = "Asia/Kolkata",
+        distanceKm = km,
+        purpose = TripPurpose.Commute,
+        endUtcMs = start + 3_600_000,
+        source = TripSource.Auto,
+    )
+
+    private fun fill(
+        id: String,
+        time: Long,
+        odo: Double,
+        qty: Double = 30.0,
+        paid: Long = 300_000,
+        price: Long = 8_895,
+    ) = Refuel(
         id = id,
         vehicleId = "safari",
         tankId = "diesel",
@@ -107,7 +145,7 @@ class VehicleSummaryTest {
         zoneId = "Asia/Kolkata",
         odometerKm = odo,
         quantity = qty,
-        unitPrice = Money(8_895),
+        unitPrice = Money(price),
         total = Money(paid),
         isFull = true,
     )

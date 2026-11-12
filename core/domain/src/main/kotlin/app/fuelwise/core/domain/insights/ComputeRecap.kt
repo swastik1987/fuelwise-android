@@ -7,6 +7,8 @@ import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.Spend
+import app.fuelwise.core.domain.engine.fuelUse
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
@@ -43,9 +45,12 @@ class ComputeRecap @Inject constructor(
                     included[it.categoryId] ?: true,
                 )
             }
-        val readings = odometerReadings(history.vehicle, history.refuels, history.expenses)
-        val current = costMetrics(spends, readings, month.period(zone))
-        val previous = costMetrics(spends, readings, month.minusMonths(1).period(zone))
+        val readings = odometerReadings(history.vehicle, history.refuels, history.expenses, history.trips)
+        // Fuel used, as on Home (PRD F-03.5): a month without a fill-up still has a cost per km.
+        val gps = gpsDistances(history.vehicle, history.trips)
+        val use = fuelUse(history.vehicle, history.refuels, readings, gps, consumption)
+        val current = costMetrics.fuelUsed(spends, use, month.period(zone))
+        val previous = costMetrics.fuelUsed(spends, use, month.minusMonths(1).period(zone))
 
         val primary = history.vehicle.primaryTank
         val fills = history.refuels.filter { it.tankId == primary?.id }

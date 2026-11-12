@@ -10,6 +10,7 @@ import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.Spend
+import app.fuelwise.core.domain.engine.fuelUse
 import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.model.Category
@@ -73,9 +74,11 @@ class ComputeVehicleSummary @Inject constructor(
         val spends = refuels.map { Spend(it.paid, it.dateTimeUtcMs, Spend.Kind.Energy) } +
             expenses.map { Spend(it.amount, it.dateTimeUtcMs, Spend.Kind.Expense, included[it.categoryId] ?: true) }
         val readings = odometerReadings(vehicle, refuels, expenses, trips)
+        // Fuel used, not fuel paid (PRD F-03.5, 12 Nov 2026): a month without a fill-up still costs its km.
+        val use = fuelUse(vehicle, refuels, readings, gpsDistances(vehicle, trips), consumption)
         // The current month runs to now, so cost per day reflects days elapsed, not the whole month.
-        val month = costMetrics(spends, readings, Period(monthStart, maxOf(now, monthStart + 1)))
-        val previous = costMetrics(spends, readings, Period(previousStart, monthStart))
+        val month = costMetrics.fuelUsed(spends, use, Period(monthStart, maxOf(now, monthStart + 1)))
+        val previous = costMetrics.fuelUsed(spends, use, Period(previousStart, monthStart))
 
         val primary = vehicle.primaryTank
         val tankFills = refuels.filter { it.tankId == primary?.id }

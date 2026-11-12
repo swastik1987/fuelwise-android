@@ -12,6 +12,8 @@ import app.fuelwise.core.domain.engine.Period
 import app.fuelwise.core.domain.engine.PeriodDistance
 import app.fuelwise.core.domain.engine.Spend
 import app.fuelwise.core.domain.engine.divideBy
+import app.fuelwise.core.domain.engine.fuelUse
+import app.fuelwise.core.domain.entry.gpsDistances
 import app.fuelwise.core.domain.entry.odometerReadings
 import app.fuelwise.core.domain.summary.mileageDrop
 import app.fuelwise.core.model.Category
@@ -19,6 +21,7 @@ import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Expense
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.Refuel
+import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.model.sum
 import java.time.Clock
@@ -27,7 +30,13 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 /** One vehicle's entries, as the Insights screen loads them. */
-data class VehicleHistory(val vehicle: Vehicle, val refuels: List<Refuel>, val expenses: List<Expense>)
+data class VehicleHistory(
+    val vehicle: Vehicle,
+    val refuels: List<Refuel>,
+    val expenses: List<Expense>,
+    // GPS and automatic trips put km into months without a typed reading (fuel used, PRD F-03.5).
+    val trips: List<Trip> = emptyList(),
+)
 
 /** A measured interval, dated by the full fill that closed it. */
 data class MileagePoint(val atUtcMs: Long, val interval: Interval, val rollingKmPerUnit: Double)
@@ -141,7 +150,8 @@ class ComputeInsights @Inject constructor(
                 val inMonth = { at: Long -> at in period.clip(month, zone) }
                 MonthSpend(
                     month,
-                    allRefuels.filter { inMonth(it.dateTimeUtcMs) }.map { it.paid }.sum(),
+                    // Fuel used that month, as on Home (PRD F-03.5); expenses as entered.
+                    combinedMetrics(prepared, period.clip(month, zone)).energySpend,
                     allExpenses.filter { inMonth(it.dateTimeUtcMs) }.map { it.amount }.sum(),
                 )
             },
@@ -156,7 +166,7 @@ class ComputeInsights @Inject constructor(
                 MonthCostPerKm(month, combinedMetrics(prepared, period.clip(month, zone)).costPerKm)
             },
             odometer = single?.readings?.filter { it.atUtcMs in period }?.sortedBy { it.atUtcMs }.orEmpty(),
-            spendByCategory = spendByCategory(allRefuels, allExpenses),
+            spendByCategory = spendByCategory(metrics.energySpend, allExpenses),
             cards = cards(vehicle, report, average, vehicleCount),
             ownership = ownershipCost(histories, period, metrics.distance?.km, ownershipYears, zone),
         )
@@ -172,12 +182,19 @@ class ComputeInsights @Inject constructor(
                     included[it.categoryId] ?: true,
                 )
             }
-        val readings = odometerReadings(history.vehicle, history.refuels, history.expenses)
+        val readings = odometerReadings(history.vehicle, history.refuels, history.expenses, history.trips)
+        val use = fuelUse(
+            history.vehicle,
+            history.refuels,
+            readings,
+            gpsDistances(history.vehicle, history.trips),
+            consumption,
+        )
     }
 
     /** Per-vehicle metrics summed, so odometers of different vehicles never mix. */
     private fun combinedMetrics(prepared: List<Prepared>, period: Period): CostMetrics {
-        val parts = prepared.map { costMetrics(it.spends, it.readings, period) }
+        val parts = prepared.map { costMetrics.fuelUsed(it.spends, it.use, period) }
         parts.singleOrNull()?.let { return it }
         val energy = parts.map { it.energySpend }.sum()
         val included = parts.map { it.includedExpenses }.sum()
@@ -196,6 +213,8 @@ class ComputeInsights @Inject constructor(
             energyCostPerKm = km?.let { energy.divideBy(it) },
             costPerDay = basis.divideBy(period.days),
             monthlyBurn = basis.divideBy(period.days / DAYS_PER_MONTH),
+            paidEnergy = parts.map { it.paidEnergy }.sum(),
+            energyEstimated = parts.any { it.energyEstimated },
         )
     }
 
@@ -213,8 +232,8 @@ class ComputeInsights @Inject constructor(
         }
     }
 
-    private fun spendByCategory(refuels: List<Refuel>, expenses: List<Expense>): List<CategorySpend> {
-        val energy = refuels.map { it.paid }.sum()
+    // The fuel slice is fuel used in the period, like the overview (PRD F-03.5).
+    private fun spendByCategory(energy: Money, expenses: List<Expense>): List<CategorySpend> {
         val byCategory = expenses.groupBy {
             it.categoryId
         }.map { (id, list) -> CategorySpend(id, list.map { it.amount }.sum()) }

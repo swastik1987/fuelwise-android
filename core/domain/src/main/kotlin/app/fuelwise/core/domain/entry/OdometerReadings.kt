@@ -37,7 +37,7 @@ fun gpsDistances(vehicle: Vehicle, trips: List<Trip>): List<GpsDistance> = trips
         it.vehicleId == vehicle.id && it.status == TripStatus.Done && it.endOdometerKm == null &&
             (it.source == TripSource.Gps || it.source == TripSource.Auto)
     }
-    .map { GpsDistance(it.startUtcMs, it.distanceKm) }
+    .map { GpsDistance(it.startUtcMs, it.distanceKm, it.endUtcMs ?: it.startUtcMs) }
 
 /**
  * The hint for a GPS trip's end odometer (PRD F-07.6): its start reading, or the last reading before it began, plus

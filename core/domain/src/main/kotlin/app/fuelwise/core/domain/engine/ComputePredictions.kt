@@ -69,19 +69,7 @@ class ComputePredictions @Inject constructor(private val clock: Clock) {
      * (ratio [MIN_COVERED]–[MAX_COVERED]) count, so a week of unrecorded drives doesn't skew it. 1.0 until there are
      * some, and never outside [MIN_FACTOR]–[MAX_FACTOR].
      */
-    fun gpsFactor(readings: List<OdometerReading>, gps: List<GpsDistance>): Double {
-        var odometerKm = 0.0
-        var gpsKm = 0.0
-        readings.sortedWith(BY_TIME).zipWithNext { a, b ->
-            val driven = b.odometerKm - a.odometerKm
-            val recorded = gps.filter { it.atUtcMs > a.atUtcMs && it.atUtcMs <= b.atUtcMs }.sumOf { it.km }
-            if (driven > 0.0 && recorded > 0.0 && driven / recorded in MIN_COVERED..MAX_COVERED) {
-                odometerKm += driven
-                gpsKm += recorded
-            }
-        }
-        return if (gpsKm > 0.0) (odometerKm / gpsKm).coerceIn(MIN_FACTOR, MAX_FACTOR) else 1.0
-    }
+    fun gpsFactor(readings: List<OdometerReading>, gps: List<GpsDistance>): Double = gpsOdometerFactor(readings, gps)
 
     private fun rate(readings: List<OdometerReading>): Double? {
         if (readings.size < 2) return null
@@ -98,10 +86,29 @@ class ComputePredictions @Inject constructor(private val clock: Clock) {
     private companion object {
         const val RECENT_WINDOW_DAYS = 90L
         const val MIN_SPAN_DAYS = 7.0
-        const val MIN_COVERED = 0.9
-        const val MAX_COVERED = 1.3
-        const val MIN_FACTOR = 0.9
-        const val MAX_FACTOR = 1.2
         val BY_TIME = compareBy<OdometerReading>({ it.atUtcMs }, { it.odometerKm })
     }
 }
+
+/**
+ * This vehicle's odometer km per GPS km (PRD F-21.5): from stretches between readings where GPS covered 90–130% of
+ * the odometer distance, clamped to 0.9–1.2; 1 without such a stretch.
+ */
+fun gpsOdometerFactor(readings: List<OdometerReading>, gps: List<GpsDistance>): Double {
+    var odometerKm = 0.0
+    var gpsKm = 0.0
+    readings.sortedWith(compareBy({ it.atUtcMs }, { it.odometerKm })).zipWithNext { a, b ->
+        val driven = b.odometerKm - a.odometerKm
+        val recorded = gps.filter { it.atUtcMs > a.atUtcMs && it.atUtcMs <= b.atUtcMs }.sumOf { it.km }
+        if (driven > 0.0 && recorded > 0.0 && driven / recorded in MIN_COVERED..MAX_COVERED) {
+            odometerKm += driven
+            gpsKm += recorded
+        }
+    }
+    return if (gpsKm > 0.0) (odometerKm / gpsKm).coerceIn(MIN_FACTOR, MAX_FACTOR) else 1.0
+}
+
+private const val MIN_COVERED = 0.9
+private const val MAX_COVERED = 1.3
+private const val MIN_FACTOR = 0.9
+private const val MAX_FACTOR = 1.2

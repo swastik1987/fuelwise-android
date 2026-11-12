@@ -21,6 +21,7 @@ import app.fuelwise.core.domain.trip.ExportRange
 import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
+import app.fuelwise.core.domain.trip.TripRange
 import app.fuelwise.core.domain.trip.TripSplit
 import app.fuelwise.core.location.FillUpCheck
 import app.fuelwise.core.location.RecordingHost
@@ -53,6 +54,7 @@ import com.google.common.truth.Truth.assertThat
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -188,7 +190,7 @@ class TripsTest {
     }
 
     @Test
-    fun listGroupsByWeekAndAddsLinkedTolls() = runTest {
+    fun listGroupsByMonthFiltersByDateAndAddsLinkedTolls() = runTest {
         val commute = mysuru.copy(
             id = "c1",
             startUtcMs = SampleEntries.at(2026, 10, 15, hour = 18),
@@ -213,11 +215,23 @@ class TripsTest {
             zone,
             SavedStateHandle(),
         )
-        val weeks = vm.state.first { !it.loading }.weeks
-        assertThat(weeks.map { it.start }).containsExactly(LocalDate.of(2026, 10, 12)).inOrder()
-        assertThat(weeks.single().km).isWithin(1e-9).of(169.1)
+        val months = vm.state.first { !it.loading }.months
+        assertThat(months.map { it.month }).containsExactly(YearMonth.of(2026, 10)).inOrder()
+        assertThat(months.single().km).isWithin(1e-9).of(169.1)
         // ₹896 + ₹230 toll + ₹153
-        assertThat(weeks.single().cost).isEqualTo(Money(127_900))
+        assertThat(months.single().cost).isEqualTo(Money(127_900))
+
+        // The date filter (today is 16 Oct): nothing last month, so it says so and offers everything.
+        vm.selectRange(TripRange.LastMonth)
+        val none = vm.state.first { it.filter.range == TripRange.LastMonth }
+        assertThat(none.months).isEmpty()
+        assertThat(none.filteredOut).isTrue()
+        // Only the commute on the 15th.
+        vm.selectDays(LocalDate.of(2026, 10, 15), LocalDate.of(2026, 10, 15))
+        val picked = vm.state.first { it.filter.range == TripRange.Custom }
+        assertThat(picked.months.single().rows.map { it.trip.id }).containsExactly(commute.id)
+        vm.selectRange(TripRange.ThisMonth)
+        assertThat(vm.state.first { it.filter.range == TripRange.ThisMonth }.months.single().rows).hasSize(2)
     }
 
     @Test
@@ -286,7 +300,7 @@ class TripsTest {
         assertThat(trip.status).isEqualTo(TripStatus.Done)
         assertThat(trip.distanceKm).isWithin(0.01).of(1.11)
         val after = list.state.first { it.recording == null }
-        assertThat(after.weeks.single().rows.single().trip.id).isEqualTo(trip.id)
+        assertThat(after.months.single().rows.single().trip.id).isEqualTo(trip.id)
         assertThat(after.interrupted).isEmpty()
     }
 
@@ -305,7 +319,7 @@ class TripsTest {
         val state = list.state.first { !it.loading }
         assertThat(state.interrupted.map { it.id }).containsExactly("cut")
         // Unfinished trips stay out of the weekly list until finished.
-        assertThat(state.weeks).isEmpty()
+        assertThat(state.months).isEmpty()
         list.finishInterrupted("cut")
         assertThat(list.events.first()).isEqualTo(TripsEvent.OpenTrip("cut"))
         assertThat(repo.trips.single().status).isEqualTo(TripStatus.Done)
@@ -571,10 +585,9 @@ class TripsTest {
     private fun listState() = TripsUiState(
         loading = false,
         hasVehicles = true,
-        weeks = listOf(
-            TripWeekUi(
-                LocalDate.of(2026, 10, 12),
-                LocalDate.of(2026, 10, 18),
+        months = listOf(
+            TripMonthUi(
+                YearMonth.of(2026, 10),
                 169.1,
                 Money(127_900),
                 listOf(

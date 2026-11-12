@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -58,6 +61,7 @@ import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwChoiceSheet
 import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwEntryRow
+import app.fuelwise.core.designsystem.component.FwFilterChip
 import app.fuelwise.core.designsystem.component.FwInkButton
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
@@ -67,14 +71,17 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.ExportRange
+import app.fuelwise.core.domain.trip.TripRange
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripSource
+import app.fuelwise.core.ui.entry.EntryDateRangePicker
 import app.fuelwise.core.ui.entry.shortDate
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Locale
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -87,6 +94,9 @@ internal data class TripsActions(
     /** Automatic trips only (PRD F-21.3, design.md screen 17 swipe actions). */
     val onNotMyDrive: (tripId: String) -> Unit = {},
     val onChangeVehicle: (tripId: String) -> Unit = {},
+    /** The date filter: a preset, or the picked days for Custom. */
+    val onRange: (TripRange) -> Unit = {},
+    val onDays: (from: LocalDate, to: LocalDate) -> Unit = { _, _ -> },
 )
 
 @Composable
@@ -179,6 +189,8 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
                 onExport = { choosingRange = true },
                 onNotMyDrive = viewModel::notMyDrive,
                 onChangeVehicle = { changingVehicle = it },
+                onRange = viewModel::selectRange,
+                onDays = viewModel::selectDays,
             ),
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
@@ -191,7 +203,7 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
         }
     }
     changingVehicle?.let { tripId ->
-        val current = state.weeks.flatMap { it.rows }.firstOrNull { it.trip.id == tripId }?.trip?.vehicleId
+        val current = state.months.flatMap { it.rows }.firstOrNull { it.trip.id == tripId }?.trip?.vehicleId
         FwChoiceSheet(
             title = stringResource(R.string.trips_change_vehicle),
             options = state.vehicles.map { it.name },
@@ -271,7 +283,7 @@ internal fun TripsContent(
                         tint = FwTheme.colors.ink,
                     )
                 }
-                if (state.weeks.isNotEmpty()) {
+                if (state.months.isNotEmpty()) {
                     IconButton(onClick = actions.onExport) {
                         Icon(
                             painterResource(FwIcons.Download),
@@ -300,11 +312,23 @@ internal fun TripsContent(
             }
             return@Column
         }
+        DateFilter(state.filter, actions)
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FwTheme.spacing.xl)) {
             item { StartButtons(state.recording, links, actions) }
             if (state.offerAutoTrips) item(key = "auto-offer") { AutoTripsCard(links.onAutoSetup) }
             items(state.interrupted, key = { "cut-${it.id}" }) { trip -> InterruptedCard(trip, zone, actions) }
-            if (state.weeks.isEmpty()) {
+            if (state.filteredOut) {
+                item(key = "filtered-out") {
+                    FwEmptyState(
+                        icon = FwIcons.Route,
+                        headline = stringResource(R.string.trips_none_in_range),
+                        body = stringResource(R.string.trips_none_in_range_body),
+                        actionLabel = stringResource(R.string.trips_show_all),
+                        onAction = { actions.onRange(TripRange.All) },
+                        modifier = Modifier.padding(top = FwTheme.spacing.xl),
+                    )
+                }
+            } else if (state.months.isEmpty()) {
                 item {
                     FwEmptyState(
                         icon = FwIcons.Route,
@@ -314,9 +338,9 @@ internal fun TripsContent(
                     )
                 }
             }
-            state.weeks.forEach { week ->
-                item(key = "week-${week.start}") { WeekHeader(week) }
-                items(week.rows, key = { it.trip.id }) { row ->
+            state.months.forEach { month ->
+                item(key = "month-${month.month}") { MonthHeader(month) }
+                items(month.rows, key = { it.trip.id }) { row ->
                     if (row.trip.source == TripSource.Auto) {
                         AutoTripRow(row, zone, links.onOpenTrip, actions)
                     } else {
@@ -416,7 +440,11 @@ private const val START = "start"
 private const val GPX_MIME = "application/gpx+xml"
 
 @Composable
-private fun WeekHeader(week: TripWeekUi) {
+private fun MonthHeader(month: TripMonthUi) {
+    val locale = LocalConfiguration.current.locales[0]
+    val name = month.month.month.getDisplayName(TextStyle.FULL, locale)
+    // The year only when it isn't this one, as in the Logbook.
+    val title = if (month.month.year == LocalDate.now().year) name else "$name ${month.month.year}"
     Row(
         Modifier
             .fillMaxWidth()
@@ -424,12 +452,12 @@ private fun WeekHeader(week: TripWeekUi) {
             .semantics(mergeDescendants = true) { heading() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FwOverline(stringResource(R.string.trips_week, weekRange(week)), Modifier.weight(1f))
+        FwOverline(title, Modifier.weight(1f))
         Text(
             stringResource(
-                R.string.trips_week_totals,
-                formatKm(week.km),
-                IndianNumberFormat.rupeesWhole(week.cost),
+                R.string.trips_month_totals,
+                formatKm(month.km),
+                IndianNumberFormat.rupeesWhole(month.cost),
             ),
             style = FwTheme.type.caption,
             color = FwTheme.colors.ink2,
@@ -517,13 +545,60 @@ private fun TripRowItem(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit) {
     )
 }
 
-/** "13–19 Oct", or "29 Sept – 5 Oct" across months. */
-private fun weekRange(week: TripWeekUi): String = if (week.start.month == week.end.month) {
-    "${week.start.dayOfMonth}–${week.end.format(DAY_MONTH)}"
-} else {
-    "${week.start.format(DAY_MONTH)} – ${week.end.format(DAY_MONTH)}"
-}
-
 private val DAY_MONTH = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
 private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 private const val UNDO_WINDOW_MS = 10_000L
+
+/**
+ * The date filter (user feedback, 12 Nov 2026): this month, last month, 3 months, this year, all, or a picked range.
+ * The custom chip shows its days once picked, and always opens the picker.
+ */
+@Composable
+private fun DateFilter(filter: TripFilter, actions: TripsActions) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    Row(
+        Modifier.horizontalScroll(rememberScrollState())
+            .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.xxs),
+        horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs),
+    ) {
+        TripRange.entries.forEach { range ->
+            val selected = range == filter.range
+            val picked = if (range == TripRange.Custom && selected) {
+                filter.from?.let { from -> filter.to?.let { to -> customLabel(from, to) } }
+            } else {
+                null
+            }
+            val label = picked ?: stringResource(rangeLabel(range))
+            FwFilterChip(label, selected, {
+                if (range == TripRange.Custom) picking = true else actions.onRange(range)
+            })
+        }
+    }
+    if (picking) {
+        EntryDateRangePicker(
+            initialFrom = filter.from,
+            initialTo = filter.to,
+            onPicked = { from, to ->
+                picking = false
+                actions.onDays(from, to)
+            },
+            onDismiss = { picking = false },
+        )
+    }
+}
+
+private fun rangeLabel(range: TripRange): Int = when (range) {
+    TripRange.ThisMonth -> R.string.trips_filter_this_month
+    TripRange.LastMonth -> R.string.trips_filter_last_month
+    TripRange.ThreeMonths -> R.string.trips_filter_3_months
+    TripRange.ThisYear -> R.string.trips_filter_this_year
+    TripRange.All -> R.string.trips_filter_all
+    TripRange.Custom -> R.string.trips_filter_custom
+}
+
+/** "5–20 Oct", or "28 Sept – 3 Nov" across months. */
+private fun customLabel(from: LocalDate, to: LocalDate): String = if (from.month == to.month && from.year == to.year) {
+    "${from.dayOfMonth}–${to.format(DAY_MONTH)}"
+} else {
+    "${from.format(DAY_MONTH)} – ${to.format(DAY_MONTH)}"
+}

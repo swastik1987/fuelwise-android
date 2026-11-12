@@ -275,7 +275,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-04.3 Recurring expenses.** ✅ built (M6) Repeats every N days/weeks/months/years (e.g., EMI, parking pass). Auto-creates entries on the due date, marked "auto" until the user confirms (one tap).
 
-**F-04.4 Service line items.** An optional itemised breakdown for service/repair (part/labour, qty, amount), so "what did the last service include?" is answerable.
+**F-04.4 Service line items.** ❌ dropped (owner decision, 12 Nov 2026: a service or repair expense doesn't need an itemised breakup). Was: an optional itemised breakdown for service/repair (part/labour, qty, amount), so "what did the last service include?" is answerable.
 
 **AC:** Adding an expense from the "+" menu takes ≤3 taps plus typing the amount. A recurring entry never double-creates after a backup restore (idempotent by `recurrenceId + dueDate`).
 

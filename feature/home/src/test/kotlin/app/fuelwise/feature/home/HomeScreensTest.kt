@@ -1,8 +1,12 @@
 package app.fuelwise.feature.home
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -70,6 +74,22 @@ class HomeScreensTest {
         compose.onNodeWithText("Start trip").performScrollTo().performClick()
         compose.onNodeWithText("6").performScrollTo().performClick()
         assertThat(taps).containsExactly("start", "trips").inOrder()
+    }
+
+    @Test
+    fun garageOpensFromTheTopBarWithAndWithoutVehicles() {
+        var opened = 0
+        val withGarage = actions.copy(onOpenGarage = { opened++ })
+        var state: HomeUiState by mutableStateOf(ready(SampleEntries.safariRefuels))
+        compose.setContent { FuelwiseTheme { HomeContent(state, withGarage, {}, {}) } }
+        compose.onNodeWithContentDescription("Garage").performClick()
+        state = HomeUiState.NoVehicles
+        compose.onNodeWithContentDescription("Garage").performClick()
+        assertThat(opened).isEqualTo(2)
+    }
+
+    @Test fun noVehiclesLight() = capture("home_no_vehicles_light", false) {
+        HomeContent(HomeUiState.NoVehicles, actions, {}, {})
     }
 
     @Test fun dashboardLight() = capture("home_light", false) {

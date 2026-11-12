@@ -261,9 +261,8 @@ internal fun TripsContent(
 ) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         FwTopBar(
+            // A bottom-nav tab (design.md §6), so no back arrow.
             title = stringResource(R.string.trips_title),
-            onBack = links.onBack,
-            backContentDescription = stringResource(R.string.trips_back),
             actions = {
                 if (state.weeks.isNotEmpty()) {
                     IconButton(onClick = actions.onExport) {

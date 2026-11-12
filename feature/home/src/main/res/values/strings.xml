@@ -10,6 +10,7 @@
     <string name="home_log_fuel">Log fuel</string>
     <string name="home_unlock_explainer">Mileage is measured tank-to-tank: fill to full, drive, fill to full again. Partial fills in between are counted.</string>
     <string name="home_hide_amounts">Hide amounts</string>
+    <string name="home_open_garage">Garage</string>
     <string name="home_show_amounts">Show amounts</string>
     <string name="home_hero_overline">This month · cost per km</string>
     <string name="home_per_km">/km</string>

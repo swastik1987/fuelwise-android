@@ -173,7 +173,7 @@ Design each component in light and dark, with its states.
 | **Secondary button** | `surface-2` fill, `ink` text. |
 | **Text button** | `ink` with underline on press only. |
 | **FAB** | 64 dp rounded square, accent, "+" glyph, sitting in a notch in the centre of the bottom nav. Long-press opens a radial/arc quick menu: Fuel · Charge · Expense · Toll · Trip · Scan. |
-| **Bottom navigation** | 5 slots: Home · Logbook · [FAB] · Insights · Garage. Labels always visible, `caption`. Active = filled icon + `ink` label; inactive = outline icon + `ink-3`. |
+| **Bottom navigation** | 5 slots: Home · Logbook · [FAB] · Insights · Trips (Trips replaced Garage, 12 Nov 2026; Garage opens from the Home top bar). Labels always visible, `caption`. Active = filled icon + `ink` label; inactive = outline icon + `ink-3`. |
 | **Chips (filters)** | 36 dp, fully rounded, `surface-2`; selected = `accent-soft` bg + accent text. |
 | **Reminder pill** | Status dot (warning/negative/positive) + title + "in 12 days" / "overdue 3 days" / "in ~420 km". |
 | **Document card** | Credit-card proportion (1.586:1), document type overline, number in Geist Mono, expiry with status colour, small vehicle tag. Light paper texture at 3% (optional). |
@@ -197,12 +197,13 @@ Bottom nav
 ├── Logbook               (timeline: fuel, charges, expenses, trips; list ⇄ map)
 ├── [+]                   (Add fill-up by default; long-press → quick menu)
 ├── Insights              (stats, charts, insight cards, monthly recap)
-└── Garage                (vehicles, reminders, documents, FASTag, trips, prices, settings)
+└── Trips                 (trips list, recording, automatic trips)
 
-Global: vehicle switcher (top-left on Home, Logbook, Insights) · Settings (Garage → gear)
+Global: vehicle switcher (top-left on Home, Logbook, Insights) · Garage (Home top bar, right) · Settings (Garage → gear)
+Garage                    (vehicles, reminders, documents, FASTag, prices, backup, import/export, settings)
 ```
 
-Trips (including automatic-trip settings), Fuel prices, Reminders, Documents and FASTag are reachable from Home cards **and** Garage, so no one hunts for them.
+Trips has its own tab (owner decision, 12 Nov 2026: user feedback). Fuel prices, Reminders, Documents and FASTag are reachable from Home cards **and** Garage, so no one hunts for them. Garage is an icon in the Home top bar, shown also before the first vehicle so Settings, restore and import stay reachable.
 
 ---
 

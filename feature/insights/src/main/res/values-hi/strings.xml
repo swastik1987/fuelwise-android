@@ -19,6 +19,7 @@
     <string name="insights_delta_previous">पिछली अवधि से %1$d%%</string>
     <string name="insights_total_spent">कुल खर्च</string>
     <string name="insights_excluded">%1$s ₹/km में नहीं</string>
+    <string name="insights_paid_at_pump">पंप पर दिया %1$s</string>
     <string name="insights_distance">दूरी</string>
     <string name="insights_estimated">अनुमान</string>
     <string name="insights_avg_mileage">औसत माइलेज</string>
@@ -46,9 +47,9 @@
     <string name="insights_charts">चार्ट</string>
     <string name="insights_how_calculated">यह कैसे निकलता है</string>
     <string name="insights_info_cpk_title">इस अवधि में प्रति km खर्च</string>
-    <string name="insights_info_cpk_body">अवधि में फ़्यूल या चार्जिंग और गाड़ी चलाने के खर्च (सर्विस, टोल, पार्किंग वगैरह), उस अवधि में चली दूरी से भाग। लोन EMI और गाड़ी की कीमत नहीं जुड़ती। बदलाव ठीक पहले की उतनी ही लंबी अवधि से तुलना है।</string>
+    <string name="insights_info_cpk_body">अवधि में लगा फ़्यूल या चार्जिंग और गाड़ी चलाने के खर्च (सर्विस, टोल, पार्किंग वगैरह), उस अवधि में चली दूरी से भाग। लगा फ़्यूल दूरी गुणा इस गाड़ी का अपना प्रति km खर्च है (उसका माइलेज और उस समय दी गई कीमत), इसलिए बिना फ़्यूल भरे अवधि में भी चली दूरी का फ़्यूल गिना जाता है। लोन EMI और गाड़ी की कीमत नहीं जुड़ती। बदलाव ठीक पहले की उतनी ही लंबी अवधि से तुलना है।</string>
     <string name="insights_info_tiles_title">ये आँकड़े कैसे निकलते हैं</string>
-    <string name="insights_info_tiles_body">कुल खर्च में अवधि की हर फ़्यूल एंट्री और खर्च जुड़ता है। दूरी ओडोमीटर का अंतर है; दो से कम रीडिंग हों तो आसपास की रीडिंग से अनुमान लगाया जाता है। औसत माइलेज अवधि में पूरी हुई फ़ुल टंकियों की कुल दूरी को कुल फ़्यूल से भाग है। रोज़ का खर्च ₹/km वाले खर्च को अवधि के दिनों से भाग है।</string>
+    <string name="insights_info_tiles_body">कुल खर्च अवधि में लगा फ़्यूल और हर खर्च है; \"पंप पर दिया\" वह है जो अवधि की फ़्यूल एंट्री में असल में दिया गया। दूरी ओडोमीटर का अंतर है; दो से कम रीडिंग हों तो आसपास की रीडिंग से अनुमान लगाया जाता है। औसत माइलेज अवधि में पूरी हुई फ़ुल टंकियों की कुल दूरी को कुल फ़्यूल से भाग है। रोज़ का खर्च ₹/km वाले खर्च को अवधि के दिनों से भाग है।</string>
 
     <string name="card_mileage_drop_title">माइलेज घटा</string>
     <string name="card_mileage_drop_body">पिछली 2 टंकियों में माइलेज %1$d%% घटा है। पहले टायर प्रेशर जाँचें, फिर एयर फ़िल्टर, और देखें कि सर्विस तो नहीं बाकी।</string>

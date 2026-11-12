@@ -12,6 +12,7 @@ import app.fuelwise.core.model.Vehicle
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFuelPriceRepository
+import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -47,6 +48,7 @@ class InsightsViewModelTest {
             vehicles = FakeVehicleRepository(vehicles),
             entries = FakeEntryRepository(SampleEntries.safariRefuels, listOf(SampleEntries.safariService)),
             categories = FakeCategoryRepository(),
+            trips = FakeTripRepository(),
             userData = userData,
             cityPrices = prices,
             compute = ComputeInsights(ComputeConsumption(), ComputeCostMetrics(), clock),

@@ -313,7 +313,8 @@ private fun MetricTiles(s: VehicleSummary, hide: Boolean, quantity: QuantityUnit
             },
         )
         FwMetricTile(
-            overline = stringResource(R.string.home_spent),
+            // Fuel used this month plus expenses (PRD F-03.5), so it isn't ₹0 in a month without a fill-up.
+            overline = stringResource(if (s.month.energyEstimated) R.string.home_spent_est else R.string.home_spent),
             value = money(s.month.totalSpend, hide, whole = true),
             caption = s.month.distance?.let {
                 stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(it.km, 0))

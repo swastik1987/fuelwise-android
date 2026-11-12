@@ -147,7 +147,9 @@ class InsightsTest {
         val recap =
             ComputeRecap(ComputeConsumption(), ComputeCostMetrics())(history, categories, YearMonth.of(2026, 9), zone)
         assertThat(recap.bestTank!!.kmPerUnit).isWithin(1e-9).of(20.0)
-        assertThat(recap.spend).isEqualTo(Money(309_000))
+        // Fuel used (PRD F-03.5): 485.34 km driven in September (interpolated between the fills either side) at
+        // ₹103.00 / 17.75 km/L, the vehicle's average, = ₹2,816.32. The September fill paid ₹3,090.
+        assertThat(recap.spend).isEqualTo(Money(281_632))
         assertThat(recap.energyType).isEqualTo(EnergyType.PETROL)
     }
 

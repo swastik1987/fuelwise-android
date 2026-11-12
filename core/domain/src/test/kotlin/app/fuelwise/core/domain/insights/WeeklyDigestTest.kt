@@ -27,51 +27,50 @@ class WeeklyDigestTest {
     // Monday 19 Oct 2026: the digest covers Monday 12 to Sunday 18 October.
     private val monday = LocalDate.of(2026, 10, 19)
 
+    // ₹96.00/L at 12 km/L: fuel used costs 800 paise a km (PRD F-03.5, 12 Nov 2026).
+    private val fills = listOf(
+        fill("a", LocalDate.of(2026, 10, 5), 40_300.0, 30.0),
+        fill("b", LocalDate.of(2026, 10, 12), 40_700.0, 400.0 / 12),
+        fill("c", LocalDate.of(2026, 10, 18), 41_100.0, 400.0 / 12),
+        // This week's fill isn't part of last week.
+        fill("d", LocalDate.of(2026, 10, 19), 41_200.0, 100.0 / 12),
+    )
+
     @Test
     fun `last week's cost per km, distance and spend`() {
-        val fills = listOf(
-            fill("a", LocalDate.of(2026, 10, 5), 40_300.0, 2_000_00),
-            fill("b", LocalDate.of(2026, 10, 12), 40_700.0, 3_000_00),
-            fill("c", LocalDate.of(2026, 10, 18), 41_100.0, 2_800_00),
-            // This week's fill isn't part of last week.
-            fill("d", LocalDate.of(2026, 10, 19), 41_200.0, 9_999_00),
-        )
         val result = digest(VehicleHistory(nexon, fills, emptyList()), emptyList(), emptyList(), monday, zone)!!
         assertThat(result.weekStart).isEqualTo(LocalDate.of(2026, 10, 12))
-        assertThat(result.spend).isEqualTo(Money(5_800_00))
-        assertThat(result.distanceKm).isGreaterThan(0.0)
-        assertThat(result.costPerKm.paise).isGreaterThan(0)
+        // Monday 00:00 to Monday 00:00, interpolated between the fills either side: about 484 km.
+        assertThat(result.distanceKm).isWithin(0.01).of(41_162.5 - 40_678.57)
+        assertThat(result.spend.paise.toDouble()).isWithin(1.0).of(result.distanceKm * 800)
+        assertThat(result.costPerKm).isEqualTo(Money(800))
         assertThat(result.changeVsPreviousWeek).isNotNull()
     }
 
     @Test
     fun `a week with no distance sends nothing`() {
-        val fills = listOf(fill("a", LocalDate.of(2026, 9, 30), 40_300.0, 2_000_00))
-        assertThat(digest(VehicleHistory(nexon, fills, emptyList()), emptyList(), emptyList(), monday, zone)).isNull()
+        val one = listOf(fill("a", LocalDate.of(2026, 9, 30), 40_300.0, 30.0))
+        assertThat(digest(VehicleHistory(nexon, one, emptyList()), emptyList(), emptyList(), monday, zone)).isNull()
     }
 
     @Test
     fun `other vehicles' fills don't count`() {
-        val other = fill("x", LocalDate.of(2026, 10, 14), 90_000.0, 5_000_00).copy(vehicleId = "safari")
-        val fills = listOf(
-            fill("b", LocalDate.of(2026, 10, 12), 40_700.0, 3_000_00),
-            fill("c", LocalDate.of(2026, 10, 18), 41_100.0, 2_800_00),
-            other,
-        )
-        val result = digest(VehicleHistory(nexon, fills, emptyList()), emptyList(), emptyList(), monday, zone)!!
-        assertThat(result.spend).isEqualTo(Money(5_800_00))
+        val other = fill("x", LocalDate.of(2026, 10, 14), 90_000.0, 50.0).copy(vehicleId = "safari")
+        val alone = digest(VehicleHistory(nexon, fills, emptyList()), emptyList(), emptyList(), monday, zone)!!
+        val mixed = digest(VehicleHistory(nexon, fills + other, emptyList()), emptyList(), emptyList(), monday, zone)!!
+        assertThat(mixed).isEqualTo(alone)
     }
 
-    private fun fill(id: String, date: LocalDate, odo: Double, totalPaise: Long) = Refuel(
+    private fun fill(id: String, date: LocalDate, odo: Double, litres: Double) = Refuel(
         id = id,
         vehicleId = "nexon",
         tankId = "diesel",
         dateTimeUtcMs = at(date),
         zoneId = zone.id,
         odometerKm = odo,
-        quantity = totalPaise / 8_895.0,
-        unitPrice = Money(8_895),
-        total = Money(totalPaise),
+        quantity = litres,
+        unitPrice = Money(9_600),
+        total = Money((litres * 9_600).toLong()),
         isFull = true,
     )
 

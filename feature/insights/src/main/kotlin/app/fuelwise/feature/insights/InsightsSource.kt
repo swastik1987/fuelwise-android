@@ -3,6 +3,7 @@ package app.fuelwise.feature.insights
 import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FuelPriceRepository
+import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.insights.ComputeInsights
@@ -53,6 +54,7 @@ class InsightsSource @Inject constructor(
     private val vehicles: VehicleRepository,
     private val entries: EntryRepository,
     private val categories: CategoryRepository,
+    private val trips: TripRepository,
     private val userData: UserDataRepository,
     private val cityPrices: FuelPriceRepository,
     private val compute: ComputeInsights,
@@ -60,16 +62,21 @@ class InsightsSource @Inject constructor(
 ) {
     fun observe(allVehicles: Boolean, period: InsightPeriod, custom: CustomRange? = null): Flow<InsightsSnapshot> =
         combine(
-            combine(vehicles.observeVehicles(), userData.userData, ::Pair),
+            combine(vehicles.observeVehicles(), userData.userData, trips.observeTrips(), ::Triple),
             entries.observeAllRefuels(),
             entries.observeAllExpenses(),
             categories.observeCategories(),
             homeCityPrices(),
-        ) { (list, data), refuels, expenses, cats, cityHistory ->
+        ) { (list, data, tripList), refuels, expenses, cats, cityHistory ->
             val selected = list.firstOrNull { it.id == data.selectedVehicleId } ?: list.firstOrNull()
             val scope = if (allVehicles) list else listOfNotNull(selected)
             val histories = scope.map { v ->
-                VehicleHistory(v, refuels.filter { it.vehicleId == v.id }, expenses.filter { it.vehicleId == v.id })
+                VehicleHistory(
+                    v,
+                    refuels.filter { it.vehicleId == v.id },
+                    expenses.filter { it.vehicleId == v.id },
+                    tripList.filter { it.vehicleId == v.id },
+                )
             }
             val report = if (histories.isEmpty()) {
                 null

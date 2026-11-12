@@ -44,6 +44,7 @@ import app.fuelwise.feature.expense.ExpenseRoute
 import app.fuelwise.feature.expense.expenseSheet
 import app.fuelwise.feature.fastag.FastagRoute
 import app.fuelwise.feature.fastag.fastagScreen
+import app.fuelwise.feature.garage.GarageRoute
 import app.fuelwise.feature.garage.PENDING_DELETE_VEHICLE_ID
 import app.fuelwise.feature.garage.VehicleDetailRoute
 import app.fuelwise.feature.garage.VehicleEditorRoute
@@ -136,7 +137,11 @@ fun FuelwiseApp(
 
             NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
 
-            NotificationRoutes.OPEN_START_TRIP -> TripsRoute(startTrip = true)
+            NotificationRoutes.OPEN_START_TRIP -> {
+                if (!startWithOnboarding) navController.navigateToTrips(startTrip = true)
+                onOpenHandled()
+                return@LaunchedEffect
+            }
 
             NotificationRoutes.OPEN_AUTO_TRIP_SETUP -> AutoTripSetupRoute
 
@@ -207,9 +212,10 @@ fun FuelwiseApp(
                     onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
                     onOpenReminders = { navController.navigate(RemindersRoute) },
                     onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
-                    onOpenTrips = { navController.navigate(TripsRoute()) },
-                    onStartTrip = { navController.navigate(TripsRoute(startTrip = true)) },
+                    onOpenTrips = { navController.navigateToTopLevel(TopLevelDestination.Trips) },
+                    onStartTrip = { navController.navigateToTrips(startTrip = true) },
                     onOpenPrices = { navController.navigate(PricesRoute()) },
+                    onOpenGarage = { navController.navigate(GarageRoute) },
                     onFixBattery = { navController.navigate(BatterySaverRoute) },
                 ),
             )
@@ -243,10 +249,10 @@ fun FuelwiseApp(
                 onOpenVehicle = { id -> navController.navigate(VehicleDetailRoute(id)) },
                 onAddVehicle = openVehicleEditor,
                 links = GarageLinks(
+                    onBack = navController::popBackStack,
                     onReminders = { navController.navigate(RemindersRoute) },
                     onDocuments = { navController.navigate(DocumentsRoute) },
                     onFastag = { navController.navigate(FastagRoute) },
-                    onTrips = { navController.navigate(TripsRoute()) },
                     onPrices = { navController.navigate(PricesRoute()) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
@@ -368,6 +374,16 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+/**
+ * The Trips tab with a GPS trip starting on arrival. A fresh entry (no state restore) so the screen sees
+ * `startTrip`; the tab's earlier state is saved as with any tab switch.
+ */
+private fun NavHostController.navigateToTrips(startTrip: Boolean) {
+    navigate(TripsRoute(startTrip = startTrip)) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
     }
 }
 

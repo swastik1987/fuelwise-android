@@ -45,9 +45,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwEmptyState
-import app.fuelwise.core.designsystem.component.FwLargeTitle
 import app.fuelwise.core.designsystem.component.FwSectionHeader
 import app.fuelwise.core.designsystem.component.FwSnackbarHost
+import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.Vehicle
@@ -101,16 +101,22 @@ internal fun GarageContent(
     links: GarageLinks = GarageLinks(),
 ) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
-        FwLargeTitle(stringResource(R.string.garage_title)) {
-            // Settings lives behind the gear (design.md: Garage → gear).
-            IconButton(onClick = links.onSettings) {
-                Icon(
-                    painterResource(FwIcons.Settings),
-                    contentDescription = stringResource(R.string.garage_settings),
-                    tint = FwTheme.colors.ink,
-                )
-            }
-        }
+        // Opened from Home's top bar since Trips took the bottom-nav slot, so it has a back arrow.
+        FwTopBar(
+            title = stringResource(R.string.garage_title),
+            onBack = links.onBack,
+            backContentDescription = stringResource(R.string.garage_back),
+            actions = {
+                // Settings lives behind the gear (design.md: Garage → gear).
+                IconButton(onClick = links.onSettings) {
+                    Icon(
+                        painterResource(FwIcons.Settings),
+                        contentDescription = stringResource(R.string.garage_settings),
+                        tint = FwTheme.colors.ink,
+                    )
+                }
+            },
+        )
         when (state) {
             GarageUiState.Loading -> Unit
 
@@ -274,10 +280,10 @@ private const val UNDO_WINDOW_MS = 10_000L
 
 /** Where the Garage utility rows lead; the app shell wires them to their feature screens. */
 data class GarageLinks(
+    val onBack: () -> Unit = {},
     val onReminders: () -> Unit = {},
     val onDocuments: () -> Unit = {},
     val onFastag: () -> Unit = {},
-    val onTrips: () -> Unit = {},
     val onPrices: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onImport: () -> Unit = {},
@@ -286,8 +292,8 @@ data class GarageLinks(
 )
 
 /**
- * Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Fuel prices · Trips (design.md
- * screen 21).
+ * Reminders (count due) · Documents (count expiring) · FASTag (est. balance) · Fuel prices (design.md screen 21;
+ * Trips moved to the bottom nav).
  */
 @Composable
 private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
@@ -327,7 +333,6 @@ private fun UtilityRows(state: GarageUiState.Ready, links: GarageLinks) {
             links.onFastag,
         )
         UtilityRow(FwIcons.Fuel, stringResource(R.string.garage_prices), null, links.onPrices)
-        UtilityRow(FwIcons.Route, stringResource(R.string.garage_trips), null, links.onTrips)
         UtilityRow(
             FwIcons.CloudDone,
             stringResource(R.string.garage_backup),

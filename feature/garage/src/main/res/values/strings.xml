@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="garage_title">Garage</string>
+    <string name="garage_back">Back</string>
     <string name="garage_empty_title">No vehicles yet</string>
     <string name="garage_empty_body">Add your car, scooter or bike to start tracking what it costs.</string>
     <string name="garage_empty_action">Add vehicle</string>
@@ -97,7 +98,6 @@
     <string name="garage_documents">Documents</string>
     <string name="garage_fastag">FASTag</string>
     <string name="garage_prices">Fuel prices</string>
-    <string name="garage_trips">Trips</string>
     <string name="garage_fastag_est">%1$s est.</string>
     <plurals name="garage_reminders_due">
         <item quantity="one">%1$d due</item>

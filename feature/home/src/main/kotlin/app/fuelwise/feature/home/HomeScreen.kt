@@ -88,6 +88,8 @@ data class HomeActions(
     /** Starts a GPS trip, asking for location first if needed; opens the live trip if one is already recording. */
     val onStartTrip: () -> Unit = {},
     val onOpenPrices: () -> Unit = {},
+    /** Garage: vehicles, reminders, documents, backup and Settings (Trips took its bottom-nav tab). */
+    val onOpenGarage: () -> Unit = {},
     /** The battery-saver fix (PRD F-21.7), from the amber pill. */
     val onFixBattery: () -> Unit = {},
 )
@@ -125,14 +127,23 @@ internal fun HomeContent(
         when (state) {
             HomeUiState.Loading -> Unit
 
-            HomeUiState.NoVehicles -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                FwEmptyState(
-                    icon = FwIcons.Car,
-                    headline = stringResource(R.string.home_no_vehicle_title),
-                    body = stringResource(R.string.home_no_vehicle_body),
-                    actionLabel = stringResource(R.string.home_no_vehicle_action),
-                    onAction = actions.onAddVehicle,
-                )
+            HomeUiState.NoVehicles -> Column {
+                // Garage stays reachable before the first vehicle: Settings, restore and import live there.
+                Row(
+                    Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).height(64.dp)
+                        .padding(end = 8.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) { GarageButton(actions.onOpenGarage) }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    FwEmptyState(
+                        icon = FwIcons.Car,
+                        headline = stringResource(R.string.home_no_vehicle_title),
+                        body = stringResource(R.string.home_no_vehicle_body),
+                        actionLabel = stringResource(R.string.home_no_vehicle_action),
+                        onAction = actions.onAddVehicle,
+                    )
+                }
             }
 
             is HomeUiState.Ready -> {
@@ -163,6 +174,7 @@ internal fun HomeContent(
                             tint = FwTheme.colors.ink,
                         )
                     }
+                    GarageButton(actions.onOpenGarage)
                 }
                 Column(
                     Modifier.verticalScroll(rememberScrollState())
@@ -350,6 +362,14 @@ private fun TripTiles(trips: MonthTrips, actions: HomeActions) {
                 color = FwTheme.colors.ink2,
             )
         }
+    }
+}
+
+/** Opens Garage from the top bar (design.md §6: Trips has the bottom-nav slot). */
+@Composable
+private fun GarageButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(painterResource(FwIcons.Garage), stringResource(R.string.home_open_garage), tint = FwTheme.colors.ink)
     }
 }
 

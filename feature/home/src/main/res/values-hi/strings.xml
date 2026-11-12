@@ -10,6 +10,7 @@
     <string name="home_log_fuel">फ़्यूल दर्ज करें</string>
     <string name="home_unlock_explainer">माइलेज एक फ़ुल टंकी से अगली फ़ुल टंकी तक मापा जाता है। बीच में कम भरवाया फ़्यूल भी जोड़ा जाता है।</string>
     <string name="home_hide_amounts">रकम छिपाएँ</string>
+    <string name="home_open_garage">गैराज</string>
     <string name="home_show_amounts">रकम दिखाएँ</string>
     <string name="home_hero_overline">इस महीने · प्रति km खर्च</string>
     <string name="home_per_km">/km</string>

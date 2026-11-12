@@ -580,7 +580,7 @@ Built with Jetpack Glance.
 
 ---
 
-### F-18 Settings, units and localisation — R1 ✅ built (units: owner decision 20 Oct 2026, R1 shows km and litres everywhere and offers only km/L or L/100 km, with the kg and kWh variants, applied on Home, Logbook, Insights charts and cards, recap, reward, trips and the Status widget; entry fields stay in km and litres. Miles, gallons and mpg are kept in core:domain and the proto for later. Weekly digest ✅ 20 Oct 2026: Monday notification for the selected vehicle from the daily check. Location & trips settings (F-21.3/21.6) ✅ built with F-21; crash reports not shown)
+### F-18 Settings, units and localisation — R1 ✅ built (units: owner decision 20 Oct 2026, R1 shows km and litres everywhere and offers only km/L or L/100 km, with the kg and kWh variants, applied on Home, Logbook, Insights charts and cards, recap, reward, trips and the Status widget; entry fields stay in km and litres. Miles, gallons and mpg are kept in core:domain and the proto for later. Weekly digest ✅ 20 Oct 2026: Monday notification for the selected vehicle from the daily check. Location & trips settings (F-21.3/21.6) ✅ built with F-21, moved to Trips → gear on 12 Nov 2026 (user feedback; Settings keeps a "Trip settings" row); crash reports not shown)
 
 - **Units:**
   - Defaults: km, L, kg (CNG), kWh, km/L, km/kg, km/kWh.

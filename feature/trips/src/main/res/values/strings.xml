@@ -213,4 +213,47 @@
     <string name="battery_huawei_2">Manage manually, and turn on all three switches</string>
     <string name="battery_other_1">Settings → Apps → %1$s → Battery</string>
     <string name="battery_other_2">Choose Unrestricted (or Not optimised)</string>
+    <!-- Trip settings (moved from Settings, 12 Nov 2026; PRD F-21.3, F-21.6, design.md screen 29). -->
+    <string name="trip_settings_title">Trip settings</string>
+    <string name="trip_settings_section_auto">Recording</string>
+    <string name="trip_settings_location_access">Location access</string>
+    <string name="trip_settings_location_all_the_time">Allowed all the time</string>
+    <string name="trip_settings_location_while_using">While using the app</string>
+    <string name="trip_settings_location_off">Not allowed</string>
+    <string name="trip_settings_section_car">Car Bluetooth</string>
+    <string name="trip_settings_car_none">Not linked</string>
+    <string name="trip_settings_car_linked">Linked</string>
+    <string name="trip_settings_car_change">Link a different car</string>
+    <string name="trip_settings_car_unlink">Unlink</string>
+    <string name="trip_settings_car_hint">When this car\'s Bluetooth connects, a trip starts for this vehicle.</string>
+    <string name="trip_settings_section_privacy">Location privacy</string>
+    <plurals name="trip_settings_private_places_count">
+        <item quantity="one">%d place</item>
+        <item quantity="other">%d places</item>
+    </plurals>
+    <string name="trip_settings_auto_trips">Automatic trips</string>
+    <string name="trip_settings_auto_trips_off">Off</string>
+    <string name="trip_settings_auto_trips_on">On</string>
+    <string name="trip_settings_auto_trips_one_tap">One tap to start</string>
+    <string name="trip_settings_auto_trips_paused">Paused</string>
+    <string name="trip_settings_auto_trips_paused_until">Paused until %1$s</string>
+    <string name="trip_settings_auto_trips_resume">Resume now</string>
+    <string name="trip_settings_auto_trips_pause_hour">Pause for 1 hour</string>
+    <string name="trip_settings_auto_trips_pause_tomorrow">Pause until tomorrow</string>
+    <string name="trip_settings_auto_trips_pause_until_on">Pause until I turn it back on</string>
+    <string name="trip_settings_auto_trips_turn_off">Turn off</string>
+    <string name="trip_settings_battery_saver">Battery saver</string>
+    <string name="trip_settings_battery_saver_value">Check this phone</string>
+    <string name="trip_settings_route_retention">Keep routes for</string>
+    <string name="trip_settings_route_retention_body">After this, a trip keeps its distance, time and cost, but not its map.</string>
+    <string name="trip_settings_route_retention_30">30 days</string>
+    <string name="trip_settings_route_retention_90">90 days</string>
+    <string name="trip_settings_route_retention_year">1 year</string>
+    <string name="trip_settings_route_retention_forever">Forever</string>
+    <string name="trip_settings_private_places">Private places</string>
+    <string name="trip_settings_private_places_none">None</string>
+    <string name="trip_settings_delete_location">Delete all location history</string>
+    <string name="trip_settings_delete_location_title">Delete all location history?</string>
+    <string name="trip_settings_delete_location_body">Every saved route and your private places are removed from this phone. Trips keep their distance, time and cost. This can\'t be undone.</string>
+    <string name="trip_settings_delete_location_confirm">Delete routes and private places</string>
 </resources>

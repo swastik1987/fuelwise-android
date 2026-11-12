@@ -74,17 +74,8 @@
     <string name="settings_channel_fill_up_prompts">Fill-up prompts</string>
     <!-- Location &amp; trips (PRD F-21.3). -->
     <string name="settings_section_location">Location &amp; trips</string>
-    <string name="settings_auto_trips">Automatic trips</string>
-    <string name="settings_auto_trips_off">Off</string>
-    <string name="settings_auto_trips_on">On</string>
-    <string name="settings_auto_trips_one_tap">One tap to start</string>
-    <string name="settings_auto_trips_paused">Paused</string>
-    <string name="settings_auto_trips_paused_until">Paused until %1$s</string>
-    <string name="settings_auto_trips_resume">Resume now</string>
-    <string name="settings_auto_trips_pause_hour">Pause for 1 hour</string>
-    <string name="settings_auto_trips_pause_tomorrow">Pause until tomorrow</string>
-    <string name="settings_auto_trips_pause_until_on">Pause until I turn it back on</string>
-    <string name="settings_auto_trips_turn_off">Turn off</string>
+    <string name="settings_trip_settings">Trip settings</string>
+    <string name="settings_trip_settings_value">Automatic trips, routes, private places</string>
     <string name="settings_channel_system">Sound and style in phone settings</string>
 
     <!-- Data -->
@@ -127,24 +118,6 @@
     <!-- Location privacy and retention (PRD F-21.6). -->
     <string name="settings_osm_attribution">Station data © OpenStreetMap contributors (ODbL)</string>
     <string name="settings_categories">Expense categories</string>
-    <string name="settings_battery_saver">Battery saver</string>
-    <string name="settings_battery_saver_value">Check this phone</string>
-    <string name="settings_route_retention">Keep routes for</string>
-    <string name="settings_route_retention_body">After this, a trip keeps its distance, time and cost, but not its map.</string>
-    <string name="settings_route_retention_30">30 days</string>
-    <string name="settings_route_retention_90">90 days</string>
-    <string name="settings_route_retention_year">1 year</string>
-    <string name="settings_route_retention_forever">Forever</string>
-    <string name="settings_private_places">Private places</string>
-    <string name="settings_private_places_none">None</string>
-    <plurals name="settings_private_places_count">
-        <item quantity="one">%d place</item>
-        <item quantity="other">%d places</item>
-    </plurals>
-    <string name="settings_delete_location">Delete all location history</string>
-    <string name="settings_delete_location_title">Delete all location history?</string>
-    <string name="settings_delete_location_body">Every saved route and your private places are removed from this phone. Trips keep their distance, time and cost. This can\'t be undone.</string>
-    <string name="settings_delete_location_confirm">Delete routes and private places</string>
     <string name="private_places_title">Private places</string>
     <string name="private_places_body">Route ends within 200 m of these spots are never saved, so a shared map or GPX doesn\'t show where you live or work. Places stay on this phone, encrypted.</string>
     <string name="private_places_empty">No private places yet. Stand at home and add it here.</string>

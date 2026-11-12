@@ -273,6 +273,13 @@ internal fun TripsContent(
                         )
                     }
                 }
+                IconButton(onClick = links.onSettings) {
+                    Icon(
+                        painterResource(FwIcons.Settings),
+                        stringResource(R.string.trip_settings_title),
+                        tint = FwTheme.colors.ink,
+                    )
+                }
             },
         )
         if (state.loading) return@Column

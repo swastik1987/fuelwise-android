@@ -433,7 +433,7 @@ For each screen: purpose → layout (top to bottom) → states → notes. Frame 
   - Hide amounts
   - Notifications (per channel)
   - Import / Export
-  - Location & trips: automatic trips on/off, keep routes for (30 days / 90 days / 1 year / forever), private places (trimmed from route ends), delete all location history
+  - Location & trips: one row, "Trip settings", that opens Trips → gear (moved 12 Nov 2026, user feedback). Trip settings has: automatic trips on/pause/off, location access (opens system settings), battery saver, car Bluetooth per vehicle (cars only), keep routes for (30 days / 90 days / 1 year / forever), private places (trimmed from route ends), delete all location history
   - Privacy (crash reports)
   - Delete all data
   - About / Licences

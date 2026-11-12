@@ -90,6 +90,7 @@ import app.fuelwise.feature.trips.LiveTripRoute
 import app.fuelwise.feature.trips.PENDING_DELETE_TRIP_ID
 import app.fuelwise.feature.trips.TripDetailRoute
 import app.fuelwise.feature.trips.TripEditorRoute
+import app.fuelwise.feature.trips.TripSettingsRoute
 import app.fuelwise.feature.trips.TripsLinks
 import app.fuelwise.feature.trips.TripsRoute
 import app.fuelwise.feature.trips.tripsScreens
@@ -288,14 +289,12 @@ fun FuelwiseApp(
                 SettingsLinks(
                     onBack = navController::popBackStack,
                     onUnits = { vehicleId -> navController.navigate(UnitsRoute(vehicleId)) },
-                    onPrivatePlaces = { navController.navigate(PrivatePlacesRoute) },
                     onHomeCity = { navController.navigate(PricesRoute(pickCity = true)) },
                     onExport = { navController.navigate(ExportRoute) },
                     onBackup = { navController.navigate(BackupRoute) },
                     onImport = { navController.navigate(ImportRoute) },
-                    onAutoTripSetup = { navController.navigate(AutoTripSetupRoute) },
-                    onBatterySaver = { navController.navigate(BatterySaverRoute) },
                     onCategories = { navController.navigate(CategoriesRoute) },
+                    onTripSettings = { navController.navigate(TripSettingsRoute) },
                     // Everything is gone, onboarding included: start over at Welcome with an empty back stack.
                     onDataDeleted = { navController.navigate(WelcomeRoute) { popUpTo(0) { inclusive = true } } },
                 ),
@@ -317,6 +316,9 @@ fun FuelwiseApp(
                     onOpenCost = { id -> navController.navigate(ExpenseRoute(expenseId = id)) },
                     onOpenLive = { navController.navigate(LiveTripRoute) { launchSingleTop = true } },
                     onAutoSetup = { navController.navigate(AutoTripSetupRoute) },
+                    onSettings = { navController.navigate(TripSettingsRoute) },
+                    onPrivatePlaces = { navController.navigate(PrivatePlacesRoute) },
+                    onBatterySaver = { navController.navigate(BatterySaverRoute) },
                     onLiveFinished = { id ->
                         if (id == null) {
                             navController.popBackStack()

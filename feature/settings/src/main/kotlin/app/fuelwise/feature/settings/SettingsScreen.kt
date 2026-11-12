@@ -35,8 +35,6 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.designsystem.theme.supportsDynamicColor
 import app.fuelwise.core.domain.privacy.AppLockPolicy
-import app.fuelwise.core.domain.trip.AutoTripPause
-import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.notifications.NotificationChannels
 import app.fuelwise.core.ui.format.IndianNumberFormat
@@ -59,7 +57,6 @@ internal data class SettingsChrome(
     val versionName: String = "",
     val showHomeCity: Boolean = false,
     val showExport: Boolean = false,
-    val showAutoTrips: Boolean = false,
 )
 
 /** Everything the screen can ask for; the route wires these to the view model, the system and navigation. */
@@ -82,14 +79,7 @@ internal data class SettingsActions(
     val onExport: () -> Unit = {},
     val onBackup: () -> Unit = {},
     val onDeleteAll: (alsoDrive: Boolean) -> Unit = {},
-    val onAutoTripSetup: () -> Unit = {},
-    val onPauseAutoTrips: (AutoTripPause) -> Unit = {},
-    val onResumeAutoTrips: () -> Unit = {},
-    val onTurnOffAutoTrips: () -> Unit = {},
-    val onRouteRetention: (RouteRetention) -> Unit = {},
-    val onPrivatePlaces: () -> Unit = {},
-    val onDeleteLocationHistory: () -> Unit = {},
-    val onBatterySaver: () -> Unit = {},
+    val onTripSettings: () -> Unit = {},
     val onCategories: () -> Unit = {},
 )
 
@@ -106,7 +96,6 @@ internal fun SettingsScreen(links: SettingsLinks, viewModel: SettingsViewModel =
         versionName = remember { context.versionName() },
         showHomeCity = links.onHomeCity != null,
         showExport = links.onExport != null,
-        showAutoTrips = links.onAutoTripSetup != null,
     )
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -162,14 +151,7 @@ internal fun SettingsScreen(links: SettingsLinks, viewModel: SettingsViewModel =
             onExport = { links.onExport?.invoke() },
             onBackup = links.onBackup,
             onDeleteAll = viewModel::deleteAllData,
-            onAutoTripSetup = { links.onAutoTripSetup?.invoke() },
-            onPauseAutoTrips = viewModel::pauseAutoTrips,
-            onResumeAutoTrips = viewModel::resumeAutoTrips,
-            onTurnOffAutoTrips = viewModel::turnOffAutoTrips,
-            onRouteRetention = viewModel::setRouteRetention,
-            onPrivatePlaces = links.onPrivatePlaces,
-            onDeleteLocationHistory = viewModel::deleteLocationHistory,
-            onBatterySaver = links.onBatterySaver,
+            onTripSettings = links.onTripSettings,
             onCategories = links.onCategories,
         ),
     )
@@ -183,9 +165,6 @@ internal enum class SettingsSheet {
     Theme,
     LockTimeout,
     Delete,
-    AutoTrips,
-    Retention,
-    DeleteLocation,
 }
 
 @Composable
@@ -213,7 +192,7 @@ internal fun SettingsContent(
             AppearanceSection(state, chrome, actions) { sheet = it }
             PrivacySection(state, chrome, actions) { sheet = it }
             NotificationsSection(state, actions)
-            LocationSection(state, chrome, actions) { sheet = it }
+            LocationSection(actions)
             DataSection(chrome, actions) { sheet = it }
             Header(R.string.settings_section_about)
             FwSettingsRow(stringResource(R.string.settings_version), value = chrome.versionName)
@@ -257,32 +236,6 @@ internal fun SettingsContent(
                 actions.onAppLockTimeout(AppLockPolicy.TIMEOUT_CHOICES[it])
             },
             onDismiss = { sheet = null },
-        )
-
-        SettingsSheet.AutoTrips -> AutoTripsSheet(state.autoTrips, actions) { sheet = null }
-
-        SettingsSheet.Retention -> FwChoiceSheet(
-            title = stringResource(R.string.settings_route_retention),
-            options = RouteRetention.entries.map { stringResource(retentionLabel(it)) },
-            selectedIndex = state.routeRetention.ordinal,
-            onSelect = {
-                sheet = null
-                actions.onRouteRetention(RouteRetention.entries[it])
-            },
-            onDismiss = { sheet = null },
-            subtitle = stringResource(R.string.settings_route_retention_body),
-        )
-
-        SettingsSheet.DeleteLocation -> FwChoiceSheet(
-            title = stringResource(R.string.settings_delete_location_title),
-            options = listOf(stringResource(R.string.settings_delete_location_confirm)),
-            selectedIndex = -1,
-            onSelect = {
-                sheet = null
-                actions.onDeleteLocationHistory()
-            },
-            onDismiss = { sheet = null },
-            subtitle = stringResource(R.string.settings_delete_location_body),
         )
 
         SettingsSheet.Delete -> DeleteAllDialog(
@@ -438,7 +391,7 @@ private fun NotificationsSection(state: SettingsUiState, actions: SettingsAction
         value = stringResource(R.string.settings_channel_system),
         onClick = { actions.onChannel(NotificationChannels.TRIP_RECORDING) },
     )
-    if (state.autoTrips != null) {
+    if (state.autoTripsAvailable) {
         FwSettingsRow(
             stringResource(R.string.settings_channel_auto_trips),
             value = stringResource(R.string.settings_channel_system),
@@ -473,6 +426,20 @@ private fun DataSection(chrome: SettingsChrome, actions: SettingsActions, open: 
         value = stringResource(R.string.settings_delete_all_value),
         titleColor = FwTheme.colors.negative,
         onClick = { open(SettingsSheet.Delete) },
+    )
+}
+
+/**
+ * Location & trips: automatic trips, location access, car Bluetooth and location privacy live in Trips → gear
+ * (owner decision 12 Nov 2026, user feedback); this row leads there.
+ */
+@Composable
+private fun LocationSection(actions: SettingsActions) {
+    Header(R.string.settings_section_location)
+    FwSettingsRow(
+        stringResource(R.string.settings_trip_settings),
+        value = stringResource(R.string.settings_trip_settings_value),
+        onClick = actions.onTripSettings,
     )
 }
 

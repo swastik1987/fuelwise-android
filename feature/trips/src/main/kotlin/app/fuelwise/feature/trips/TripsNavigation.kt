@@ -25,6 +25,10 @@ data object LiveTripRoute
 @Serializable
 data object AutoTripSetupRoute
 
+/** Trip settings: automatic trips, location access, car Bluetooth, location privacy (moved from Settings). */
+@Serializable
+data object TripSettingsRoute
+
 /** Phone-maker battery-saver fix (design.md screen 33, PRD F-21.7), from Home's amber pill or Settings. */
 @Serializable
 data object BatterySaverRoute
@@ -50,6 +54,12 @@ data class TripsLinks(
     val onLiveFinished: (tripId: String?) -> Unit = {},
     /** "Record trips automatically" → setup. */
     val onAutoSetup: () -> Unit = {},
+    /** The gear on Trips. */
+    val onSettings: () -> Unit = {},
+    /** Private places (PRD F-21.6), a screen in feature:settings. */
+    val onPrivatePlaces: () -> Unit = {},
+    /** The battery-saver fix (PRD F-21.7). */
+    val onBatterySaver: () -> Unit = {},
 )
 
 fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
@@ -59,4 +69,5 @@ fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
     composable<LiveTripRoute> { LiveTripScreen(links) }
     composable<AutoTripSetupRoute> { AutoTripSetupScreen(onClose = links.onBack) }
     composable<BatterySaverRoute> { BatterySaverScreen(onClose = links.onBack) }
+    composable<TripSettingsRoute> { TripSettingsScreen(links) }
 }

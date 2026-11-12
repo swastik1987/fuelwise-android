@@ -68,17 +68,8 @@
     <string name="settings_channel_auto_trips">अपने-आप यात्राएँ</string>
     <string name="settings_channel_fill_up_prompts">फ़िल-अप की याद</string>
     <string name="settings_section_location">लोकेशन और यात्राएँ</string>
-    <string name="settings_auto_trips">अपने-आप यात्राएँ</string>
-    <string name="settings_auto_trips_off">बंद</string>
-    <string name="settings_auto_trips_on">चालू</string>
-    <string name="settings_auto_trips_one_tap">एक टैप से शुरू</string>
-    <string name="settings_auto_trips_paused">रुका हुआ</string>
-    <string name="settings_auto_trips_paused_until">%1$s तक रुका हुआ</string>
-    <string name="settings_auto_trips_resume">अभी फिर शुरू करें</string>
-    <string name="settings_auto_trips_pause_hour">1 घंटे के लिए रोकें</string>
-    <string name="settings_auto_trips_pause_tomorrow">कल तक रोकें</string>
-    <string name="settings_auto_trips_pause_until_on">जब तक मैं फिर चालू न करूँ, रोकें</string>
-    <string name="settings_auto_trips_turn_off">बंद करें</string>
+    <string name="settings_trip_settings">यात्रा सेटिंग्स</string>
+    <string name="settings_trip_settings_value">अपने-आप यात्राएँ, रूट, निजी जगहें</string>
     <string name="settings_channel_system">आवाज़ और स्टाइल फ़ोन की सेटिंग्स में</string>
 
     <string name="settings_import">इम्पोर्ट</string>
@@ -115,24 +106,6 @@
     <string name="units_own_body">बंद रखने पर डिफ़ॉल्ट यूनिट लागू होंगी।</string>
     <string name="settings_osm_attribution">स्टेशन डेटा © OpenStreetMap योगदानकर्ता (ODbL)</string>
     <string name="settings_categories">खर्च की श्रेणियाँ</string>
-    <string name="settings_battery_saver">बैटरी सेवर</string>
-    <string name="settings_battery_saver_value">यह फ़ोन जाँचें</string>
-    <string name="settings_route_retention">रूट कितने समय रखें</string>
-    <string name="settings_route_retention_body">इसके बाद यात्रा की दूरी, समय और खर्च रहते हैं, पर नक्शा नहीं।</string>
-    <string name="settings_route_retention_30">30 दिन</string>
-    <string name="settings_route_retention_90">90 दिन</string>
-    <string name="settings_route_retention_year">1 साल</string>
-    <string name="settings_route_retention_forever">हमेशा</string>
-    <string name="settings_private_places">निजी जगहें</string>
-    <string name="settings_private_places_none">कोई नहीं</string>
-    <plurals name="settings_private_places_count">
-        <item quantity="one">%d जगह</item>
-        <item quantity="other">%d जगहें</item>
-    </plurals>
-    <string name="settings_delete_location">सारा लोकेशन इतिहास मिटाएँ</string>
-    <string name="settings_delete_location_title">सारा लोकेशन इतिहास मिटाएँ?</string>
-    <string name="settings_delete_location_body">इस फ़ोन से सभी सेव रूट और आपकी निजी जगहें हटा दी जाएँगी। यात्राओं की दूरी, समय और खर्च बने रहेंगे। इसे वापस नहीं लाया जा सकता।</string>
-    <string name="settings_delete_location_confirm">रूट और निजी जगहें मिटाएँ</string>
     <string name="private_places_title">निजी जगहें</string>
     <string name="private_places_body">इन जगहों के 200 मीटर के अंदर रूट के शुरू और अंत कभी सेव नहीं होते, ताकि शेयर किए गए नक्शे या GPX से पता न चले कि आप कहाँ रहते या काम करते हैं। जगहें इसी फ़ोन पर एन्क्रिप्ट होकर रहती हैं।</string>
     <string name="private_places_empty">अभी कोई निजी जगह नहीं। घर पर रहते हुए उसे यहाँ जोड़ें।</string>

@@ -204,4 +204,47 @@
     <string name="battery_huawei_2">मैन्युअल रूप से प्रबंधित करें, और तीनों स्विच चालू करें</string>
     <string name="battery_other_1">सेटिंग → ऐप → %1$s → बैटरी</string>
     <string name="battery_other_2">अप्रतिबंधित (या ऑप्टिमाइज़ नहीं) चुनें</string>
+    <!-- Trip settings (moved from Settings, 12 Nov 2026; PRD F-21.3, F-21.6, design.md screen 29). -->
+    <string name="trip_settings_title">यात्रा सेटिंग्स</string>
+    <string name="trip_settings_section_auto">रिकॉर्डिंग</string>
+    <string name="trip_settings_location_access">लोकेशन की अनुमति</string>
+    <string name="trip_settings_location_all_the_time">हर समय की अनुमति</string>
+    <string name="trip_settings_location_while_using">ऐप इस्तेमाल करते समय</string>
+    <string name="trip_settings_location_off">अनुमति नहीं</string>
+    <string name="trip_settings_section_car">कार ब्लूटूथ</string>
+    <string name="trip_settings_car_none">लिंक नहीं</string>
+    <string name="trip_settings_car_linked">लिंक है</string>
+    <string name="trip_settings_car_change">दूसरी कार लिंक करें</string>
+    <string name="trip_settings_car_unlink">अनलिंक करें</string>
+    <string name="trip_settings_car_hint">इस कार का ब्लूटूथ जुड़ते ही इस वाहन की यात्रा शुरू होती है।</string>
+    <string name="trip_settings_section_privacy">लोकेशन प्राइवेसी</string>
+    <plurals name="trip_settings_private_places_count">
+        <item quantity="one">%d जगह</item>
+        <item quantity="other">%d जगहें</item>
+    </plurals>
+    <string name="trip_settings_auto_trips">अपने-आप यात्राएँ</string>
+    <string name="trip_settings_auto_trips_off">बंद</string>
+    <string name="trip_settings_auto_trips_on">चालू</string>
+    <string name="trip_settings_auto_trips_one_tap">एक टैप से शुरू</string>
+    <string name="trip_settings_auto_trips_paused">रुका हुआ</string>
+    <string name="trip_settings_auto_trips_paused_until">%1$s तक रुका हुआ</string>
+    <string name="trip_settings_auto_trips_resume">अभी फिर शुरू करें</string>
+    <string name="trip_settings_auto_trips_pause_hour">1 घंटे के लिए रोकें</string>
+    <string name="trip_settings_auto_trips_pause_tomorrow">कल तक रोकें</string>
+    <string name="trip_settings_auto_trips_pause_until_on">जब तक मैं फिर चालू न करूँ, रोकें</string>
+    <string name="trip_settings_auto_trips_turn_off">बंद करें</string>
+    <string name="trip_settings_battery_saver">बैटरी सेवर</string>
+    <string name="trip_settings_battery_saver_value">यह फ़ोन जाँचें</string>
+    <string name="trip_settings_route_retention">रूट कितने समय रखें</string>
+    <string name="trip_settings_route_retention_body">इसके बाद यात्रा की दूरी, समय और खर्च रहते हैं, पर नक्शा नहीं।</string>
+    <string name="trip_settings_route_retention_30">30 दिन</string>
+    <string name="trip_settings_route_retention_90">90 दिन</string>
+    <string name="trip_settings_route_retention_year">1 साल</string>
+    <string name="trip_settings_route_retention_forever">हमेशा</string>
+    <string name="trip_settings_private_places">निजी जगहें</string>
+    <string name="trip_settings_private_places_none">कोई नहीं</string>
+    <string name="trip_settings_delete_location">सारा लोकेशन इतिहास मिटाएँ</string>
+    <string name="trip_settings_delete_location_title">सारा लोकेशन इतिहास मिटाएँ?</string>
+    <string name="trip_settings_delete_location_body">इस फ़ोन से सभी सेव रूट और आपकी निजी जगहें हटा दी जाएँगी। यात्राओं की दूरी, समय और खर्च बने रहेंगे। इसे वापस नहीं लाया जा सकता।</string>
+    <string name="trip_settings_delete_location_confirm">रूट और निजी जगहें मिटाएँ</string>
 </resources>

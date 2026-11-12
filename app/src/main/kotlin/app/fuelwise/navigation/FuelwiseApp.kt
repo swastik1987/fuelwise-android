@@ -92,6 +92,7 @@ import app.fuelwise.feature.trips.TripDetailRoute
 import app.fuelwise.feature.trips.TripEditorRoute
 import app.fuelwise.feature.trips.TripSettingsRoute
 import app.fuelwise.feature.trips.TripsLinks
+import app.fuelwise.feature.trips.TripsMapRoute
 import app.fuelwise.feature.trips.TripsRoute
 import app.fuelwise.feature.trips.tripsScreens
 
@@ -317,6 +318,7 @@ fun FuelwiseApp(
                     onOpenLive = { navController.navigate(LiveTripRoute) { launchSingleTop = true } },
                     onAutoSetup = { navController.navigate(AutoTripSetupRoute) },
                     onSettings = { navController.navigate(TripSettingsRoute) },
+                    onMap = { navController.navigate(TripsMapRoute) },
                     onPrivatePlaces = { navController.navigate(PrivatePlacesRoute) },
                     onBatterySaver = { navController.navigate(BatterySaverRoute) },
                     onLiveFinished = { id ->

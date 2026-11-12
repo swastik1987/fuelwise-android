@@ -72,6 +72,9 @@ class AutoTripsTest {
             object : FillUpCheck {
                 override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) = Unit
             },
+            object : TripPlaceNames {
+                override fun request(all: Boolean) = Unit
+            },
             clock,
             zone,
             backgroundScope,

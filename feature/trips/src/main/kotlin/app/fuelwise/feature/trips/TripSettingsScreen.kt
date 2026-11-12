@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.fuelwise.core.designsystem.component.FwChoiceSheet
 import app.fuelwise.core.designsystem.component.FwSectionHeader
 import app.fuelwise.core.designsystem.component.FwSettingsRow
+import app.fuelwise.core.designsystem.component.FwSwitchRow
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.AutoTripPause
@@ -52,6 +53,7 @@ internal data class TripSettingsActions(
     /** Null when this phone can't link a car (before Android 12). */
     val onLinkCar: ((vehicleId: String) -> Unit)? = null,
     val onUnlinkCar: (vehicleId: String) -> Unit = {},
+    val onPlaceNames: (Boolean) -> Unit = {},
     val onRouteRetention: (RouteRetention) -> Unit = {},
     val onPrivatePlaces: () -> Unit = {},
     val onDeleteLocationHistory: () -> Unit = {},
@@ -88,6 +90,7 @@ internal fun TripSettingsScreen(links: TripsLinks, viewModel: TripSettingsViewMo
                 }
             },
             onUnlinkCar = viewModel::unlinkCar,
+            onPlaceNames = viewModel::setPlaceNames,
             onRouteRetention = viewModel::setRouteRetention,
             onPrivatePlaces = links.onPrivatePlaces,
             onDeleteLocationHistory = viewModel::deleteLocationHistory,
@@ -195,6 +198,13 @@ private fun PrivacySection(
     open: (TripSettingsSheet) -> Unit,
 ) {
     Header(R.string.trip_settings_section_privacy)
+    // Android Geocoder: the one exception to "no coordinates to a lookup service" (CLAUDE.md rule 5, 12 Nov 2026).
+    FwSwitchRow(
+        title = stringResource(R.string.trip_settings_place_names),
+        subtitle = stringResource(R.string.trip_settings_place_names_body),
+        checked = state.placeNames,
+        onCheckedChange = actions.onPlaceNames,
+    )
     FwSettingsRow(
         stringResource(R.string.trip_settings_route_retention),
         value = stringResource(retentionLabel(state.routeRetention)),

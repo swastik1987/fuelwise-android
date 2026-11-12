@@ -564,9 +564,10 @@ class RefuelViewModel @Inject constructor(
             paymentMethod = payment,
             notes = notes.ifBlank { null },
             priceSource = priceSource,
-            // An edit keeps where the entry was logged (Logbook map, PRD F-05).
-            lat = editing?.lat,
-            lng = editing?.lng,
+            // An edit keeps where the entry was logged (Logbook map, PRD F-05); a fill-up logged from a prompt (PRD
+            // F-21.4) takes the station's position from the bundled list, for the trips map.
+            lat = if (editing == null) prompt?.lat else editing?.lat,
+            lng = if (editing == null) prompt?.lng else editing?.lng,
         ).let { if (isCharge) it.withChargeFields(this) else it }
     }
 

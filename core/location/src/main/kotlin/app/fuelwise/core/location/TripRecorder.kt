@@ -72,7 +72,9 @@ annotation class RecorderScope
  * reboot loses at most the fixes Play services hadn't delivered yet. Outside a recording trip there is no location
  * request at all (CLAUDE.md rule 11): pausing or stopping cancels it.
  */
-@Suppress("TooManyFunctions") // One recorder for manual GPS and automatic trips: start, pause, resume, stop, discard.
+// One recorder for manual GPS and automatic trips: start, pause, resume, stop, discard; and what follows a saved trip
+// (odometer prompt, fill-up check, place names) needs its collaborators, so the lists are long.
+@Suppress("TooManyFunctions", "LongParameterList")
 @Singleton
 class TripRecorder @Inject constructor(
     private val trips: TripRepository,
@@ -83,6 +85,7 @@ class TripRecorder @Inject constructor(
     private val host: RecordingHost,
     private val prompts: TripPrompts,
     private val fillUps: FillUpCheck,
+    private val placeNames: TripPlaceNames,
     private val clock: Clock,
     private val zoneId: ZoneId,
     @param:RecorderScope private val scope: CoroutineScope,
@@ -340,6 +343,8 @@ class TripRecorder @Inject constructor(
         trips.finishRecording(done, simplifyTrack(recorded))
         // "Filled up at …?" (PRD F-21.4) looks at the full track, which is gone from storage now; not waited for.
         scope.launch { fillUps.afterTrip(done, recorded) }
+        // "Koramangala → Whitefield" for the list, when place names are on (needs the network; retried daily).
+        placeNames.request()
         return tripId
     }
 

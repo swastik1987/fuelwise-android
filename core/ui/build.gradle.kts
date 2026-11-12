@@ -14,4 +14,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     // Map display only (PRD D8; approved 19 Oct 2026, PRD section 9). No Places, no geocoding.
     implementation(libs.maps.compose)
+    // Heatmap tiles for the consolidated trips map (android-maps-utils; approved 12 Nov 2026, PRD section 9).
+    implementation(libs.maps.compose.utils)
 }

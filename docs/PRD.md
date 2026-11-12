@@ -348,7 +348,7 @@ Users can add custom categories (name, icon, colour).
 
 **F-07.6 Post-trip odometer prompt.** ✅ built (M8 slice 4: after Stop, a notification "Trip saved · 23.4 km" with "Update odometer"; tapping either opens the trip with a single-field sheet whose prediction is a placeholder only. Without notifications, trip detail offers the same sheet. A reading below the last one known before the trip is refused. Finished trips' odometer readings now feed the predicted odometer on Home, the fill-up hint and odometer reminders) A notification action "Update odometer" opens a single-field sheet. **No floating overlay window.**
 
-**F-07.7 Weekly view and combined map:** (weekly list ✅ built in M8 slice 1; the combined map is Pro and R2, §6)
+**F-07.7 Weekly view and combined map:** (weekly list ✅ built in M8 slice 1; combined map ✅ built 12 Nov 2026, free in R1 (owner decision, user feedback): Trips → map icon shows every saved GPS and automatic route as a heatmap (android-maps-utils), places trips often start or end at, and fill-ups that have a place (logged from a fill-up prompt, which now keeps the station's position); 3 months, 12 months or all time. Trip rows show "From → To" first: GPS and automatic trips get their ends named, private places first, then Android Geocoder (CLAUDE.md rule 5 exception, §9))
 - Week-by-week list with totals.
 - "Show all trips on map" for any date range (a top Fuelio review request).
 
@@ -738,7 +738,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - Unlimited vehicles; fuel/EV/CNG logs; expenses
 - Consumption and cost engine; all core stats and charts
 - Reminders; documents vault; Drive backup on schedule
-- CSV import/export; GPS and manual trips; trip split
+- CSV import/export; GPS and manual trips; trip split; combined trips map (heatmap, R1)
 - City fuel prices; FASTag log and parser (parser R2); OCR scanning
 - Automatic trips, fill-up detection prompts and GPS odometer estimate (R1); station auto-detect (R2)
 - Monthly recap; quick widgets; themes; app lock
@@ -748,7 +748,7 @@ Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no
 - Trip planner with stop suggestions and border-price tips (R3)
 - Advanced insights (fuel-grade, CNG saving, EV vs petrol, forecasts, vehicle compare)
 - PDF reports (seller, business mileage, yearly)
-- Dashboard and consumption widgets; combined trips map
+- Dashboard and consumption widgets (the combined trips map moved to Free in R1, 12 Nov 2026)
 - Custom accent colours and app icons
 
 Rationale: never paywall the user's own data or safety (reminders, backup), or anything that makes logging happen (scan, station detect, fill-up prompts) — logging consistency is the North-star. Charge for intelligence, convenience, and anything with a per-call API cost.
@@ -794,7 +794,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | Performance | Cold start < 1.5 s on a mid-range device (Snapdragon 6-series / Dimensity 7000-class, 6 GB RAM). Add-fill sheet opens < 150 ms. Baseline Profiles shipped. |
 | Size | Download < 20 MB (ML Kit text model bundled for offline use is ~4 MB; prefer the bundled model for reliability). |
 | Offline | 100% of logging, stats, reminders and documents work offline. Network is needed only for backup, prices, maps and planner. |
-| Privacy | No analytics SDK that sends user content. Crash reporting is **opt-in** (see §13). Data safety form: no user content is collected; declare the ML Kit SDK diagnostics accepted on 20 Oct 2026 (§9) exactly as Google's current "ML Kit Play data disclosure" page lists them (check the page at release; don't guess the categories), and crash logs only if crash reporting is ever turned on. |
+| Privacy | No analytics SDK that sends user content. Crash reporting is **opt-in** (see §13). Data safety form: no user content is collected; declare the ML Kit SDK diagnostics accepted on 20 Oct 2026 (§9) exactly as Google's current "ML Kit Play data disclosure" page lists them (check the page at release; don't guess the categories), the trip place-name lookups accepted on 12 Nov 2026 (§9: approximate location of trip ends, sent to Google through Android Geocoder while the setting is on), and crash logs only if crash reporting is ever turned on. |
 | Security | Documents encrypted at rest; app lock; backups optionally encrypted; no secrets in the APK beyond restricted Maps SDK / Routes API keys (Android app restriction + API restriction). |
 | Battery | Trips (manual or automatic): high accuracy at ~5 s / ~25 m with batched delivery (60–120 s). Zero location requests outside trips. Measure drain on 3 devices (incl. one Xiaomi/Realme/Vivo) per release and keep a log in `docs/perf.md`. |
 | Accessibility | TalkBack labels on every interactive element; 48 dp targets; WCAG AA contrast; works at 200% font scale; charts have a data-table alternative. |
@@ -824,13 +824,15 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. Brand verification only. |
 | Network endpoints (M7) | `www.googleapis.com` Drive v3 only (`/drive/v3/files`, `/upload/drive/v3/files`), with the user's own token, app folder only. No other user-data endpoint. |
 | New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
-| Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. Wired in M8 slice 3 (manifest meta-data from `local.properties`). The user's own location layer is never shown. No coordinates go to any lookup API (no Places, no geocoding). |
+| Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. Wired in M8 slice 3 (manifest meta-data from `local.properties`). The user's own location layer is never shown. No coordinates go to any lookup API (no Places, no geocoding). Exception from 12 Nov 2026: trip place names, below. |
 | New libraries (M8) | ✅ Approved 19 Oct 2026: `play-services-location` (Fused Location Provider, in the stack) for GPS trips; `maps-compose` (pulls in `play-services-maps`, in the stack) for trip and Logbook maps. Added in M8 slices 2 (`core:location`) and 3 (`core:ui`, maps-compose 8.6.0). |
 | Permissions (M8) | ✅ Approved 19 Oct 2026: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (while-in-use, asked on Start trip), `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`. No background location in R1. Added in M8 slice 2 (declared in `core:location`). |
 | New libraries and permissions (M10/M11) | ✅ Approved 19 Oct 2026: ML Kit Text Recognition with the **bundled** model (offline) and CameraX for F-15, with `CAMERA` asked on first scan; `androidx.biometric` for the F-18 app lock, with `USE_BIOMETRIC` (install-time); Jetpack Glance for the F-16 widgets. |
 | Permissions (M13, automatic trips) | ✅ Approved 23 Oct 2026 (owner, all options): `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION` (+ `com.google.android.gms.permission.ACTIVITY_RECOGNITION` up to Android 9), `BLUETOOTH_CONNECT` and the Companion Device Manager presence permissions for car-Bluetooth starts. Activity detection comes from `play-services-location`, already approved; no new library. `RECEIVE_BOOT_COMPLETED` (already merged in by WorkManager) re-registers detection after a reboot. Declared in `core:location`; F-21.3 slice 1 adds all but the Bluetooth ones. Car-Bluetooth slice (23 Oct 2026): `REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE` and `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND` (normal permissions); `BLUETOOTH_CONNECT` turned out unnecessary (the system chooser and presence events give the car, the app never reads Bluetooth devices) and is not declared. |
 | ML Kit usage logging (F-15) | ✅ Accepted 20 Oct 2026: `com.google.mlkit:text-recognition` pulls in Google's SDK usage logging (`com.google.android.datatransport` transport-runtime / backend-cct and Firebase encoders, through `mlkit:common`). It sends ML Kit API usage and performance diagnostics to Google. Recognition itself runs on the device: camera images and recognised text are not part of that logging (per Google's ML Kit documentation; recheck when upgrading ML Kit). This is the one exception to "no data leaves the device except the user's Drive" (CLAUDE.md rule 5): disclosed in the Data safety form (see §8 Privacy) and the privacy policy. No other SDK may add logging without a new approval. |
 | Network endpoints (F-09) | None yet. D2/D3 are open: the price-feed client is built but switched off (`FeatureFlags.price_feed`) with no URL. The feed request must carry no location or identifiers; whole file, filtered on device. Approval of the feed host is still needed before any URL is added. |
+| Trip place names (F-07.7) | ✅ Approved 12 Nov 2026 (owner): Android `Geocoder` reverse-geocodes a recorded trip's start and end so the list shows "From → To". On most phones this goes to Google. Only the two ends, rounded to ~110 m; an end within 400 m of a private place uses the place's name and is never sent; never the route. "Place names for trips" in Trip settings, on by default, off stops all lookups. No new permission or library (`android.location.Geocoder`). The one exception to CLAUDE.md rule 5; declare it in the Data safety form (approximate location, shared with Google for app functionality) and the privacy policy. |
+| New libraries (F-07.7) | ✅ Approved 12 Nov 2026 (owner): `com.google.maps.android:maps-compose-utils` 8.6.0 (pulls in android-maps-utils) for heatmap tiles on the consolidated trips map, in `core:ui`. Drawing only, no network calls of its own beyond the Maps SDK tiles already approved. |
 | Account deletion policy | No accounts, so it's not applicable. Still provide in-app "Delete all data, including Drive backups". |
 | Target audience | 18+ (driving); not designed for children |
 | Store listing | No competitor names in title or short description. "No ads. Your data stays with you." |
@@ -842,7 +844,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | Release | Scope | Exit criteria |
 |---|---|---|
 | **R1 — Launch** | F-01–F-07, F-21.2–21.7 (bundled offline station list, automatic trips, fill-up detection, GPS odometer estimate, location privacy and retention, battery-saver guidance), F-09, F-10.1–10.3, F-11, F-12, F-13 (no PDF), F-14 (backup, restore, encrypt; no multi-device), F-15, F-16 (free surfaces), F-17 (monthly recap, milestones), F-18 (EN + HI). No billing; Pro cards show "Coming soon". | Golden tests green; closed test with 20+ real users for 14 days (Play requires a closed test for new personal developer accounts — verify current rule); median fill-up time ≤10 s in usability tests. **Play background-location approval received.** F-21.3 and F-21.4 ACs met. |
-| **R2** | F-21.1 station auto-detect (chip and picker) and the monthly station-list feed refresh; F-10.4 FASTag share parser; F-19 Pro and billing (PDF reports, Pro widgets, Pro insight cards); F-14.6 multi-device sync; F-10.5 statement import; combined trip map; regional languages; Drive Wrapped (December) | Sync soak test: 3 devices × 2 weeks, zero lost rows. F-21.1 AC met. |
+| **R2** | F-21.1 station auto-detect (chip and picker) and the monthly station-list feed refresh; F-10.4 FASTag share parser; F-19 Pro and billing (PDF reports, Pro widgets, Pro insight cards); F-14.6 multi-device sync; F-10.5 statement import; regional languages; Drive Wrapped (December) | Sync soak test: 3 devices × 2 weeks, zero lost rows. F-21.1 AC met. |
 | **R3** | F-08 trip planner (Routes API; stations from the offline list), border-price tips | Routes API cost per Pro user/month within budget (§13) |
 | **Later** | Station-level crowdsourced prices (needs backend + moderation), Android Auto POI app, OBD-II Bluetooth (fuel level, real odometer), on-device LLM Q&A over own data, iOS | Decided after R2 metrics |
 

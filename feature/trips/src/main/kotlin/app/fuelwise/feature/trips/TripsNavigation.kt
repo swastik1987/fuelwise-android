@@ -25,6 +25,10 @@ data object LiveTripRoute
 @Serializable
 data object AutoTripSetupRoute
 
+/** The consolidated trips map: routes as a heatmap, places visited often, fill-ups (PRD F-07.7, free in R1). */
+@Serializable
+data object TripsMapRoute
+
 /** Trip settings: automatic trips, location access, car Bluetooth, location privacy (moved from Settings). */
 @Serializable
 data object TripSettingsRoute
@@ -56,6 +60,8 @@ data class TripsLinks(
     val onAutoSetup: () -> Unit = {},
     /** The gear on Trips. */
     val onSettings: () -> Unit = {},
+    /** The map icon on Trips. */
+    val onMap: () -> Unit = {},
     /** Private places (PRD F-21.6), a screen in feature:settings. */
     val onPrivatePlaces: () -> Unit = {},
     /** The battery-saver fix (PRD F-21.7). */
@@ -70,4 +76,5 @@ fun NavGraphBuilder.tripsScreens(links: TripsLinks, onEditorClose: () -> Unit) {
     composable<AutoTripSetupRoute> { AutoTripSetupScreen(onClose = links.onBack) }
     composable<BatterySaverRoute> { BatterySaverScreen(onClose = links.onBack) }
     composable<TripSettingsRoute> { TripSettingsScreen(links) }
+    composable<TripsMapRoute> { TripsMapScreen(onBack = links.onBack) }
 }

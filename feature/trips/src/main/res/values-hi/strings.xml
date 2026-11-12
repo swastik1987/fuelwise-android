@@ -205,6 +205,28 @@
     <string name="battery_other_1">सेटिंग → ऐप → %1$s → बैटरी</string>
     <string name="battery_other_2">अप्रतिबंधित (या ऑप्टिमाइज़ नहीं) चुनें</string>
     <!-- Trip settings (moved from Settings, 12 Nov 2026; PRD F-21.3, F-21.6, design.md screen 29). -->
+    <string name="trips_map_title">यात्राओं का नक्शा</string>
+    <string name="trips_map_3_months">3 महीने</string>
+    <string name="trips_map_12_months">12 महीने</string>
+    <string name="trips_map_all">अब तक</string>
+    <string name="trips_map_empty">अभी कोई रिकॉर्ड किया रूट नहीं</string>
+    <string name="trips_map_empty_body">GPS और अपने-आप वाली यात्राएँ यहाँ हीटमैप में दिखती हैं। फ़िल-अप सुझाव से दर्ज किए गए फ़िल-अप बिंदु के रूप में दिखते हैं।</string>
+    <plurals name="trips_map_desc">
+        <item quantity="one">%d रिकॉर्ड की गई यात्रा का हीटमैप</item>
+        <item quantity="other">%d रिकॉर्ड की गई यात्राओं का हीटमैप</item>
+    </plurals>
+    <plurals name="trips_map_routes">
+        <item quantity="one">%d यात्रा के रूट</item>
+        <item quantity="other">%d यात्राओं के रूट</item>
+    </plurals>
+    <plurals name="trips_map_places">
+        <item quantity="one">%d जगह जहाँ आप अक्सर जाते हैं</item>
+        <item quantity="other">%d जगहें जहाँ आप अक्सर जाते हैं</item>
+    </plurals>
+    <plurals name="trips_map_fill_ups">
+        <item quantity="one">जगह वाला %d फ़िल-अप</item>
+        <item quantity="other">जगह वाले %d फ़िल-अप</item>
+    </plurals>
     <string name="trip_settings_title">यात्रा सेटिंग्स</string>
     <string name="trip_settings_section_auto">रिकॉर्डिंग</string>
     <string name="trip_settings_location_access">लोकेशन की अनुमति</string>
@@ -218,6 +240,8 @@
     <string name="trip_settings_car_unlink">अनलिंक करें</string>
     <string name="trip_settings_car_hint">इस कार का ब्लूटूथ जुड़ते ही इस वाहन की यात्रा शुरू होती है।</string>
     <string name="trip_settings_section_privacy">लोकेशन प्राइवेसी</string>
+    <string name="trip_settings_place_names">यात्राओं के लिए जगह के नाम</string>
+    <string name="trip_settings_place_names_body">रिकॉर्ड की गई यात्रा कहाँ शुरू और ख़त्म हुई, उसका नाम दिखाता है, जैसे इंदिरानगर → व्हाइटफ़ील्ड। इसके लिए वे दो जगहें, लगभग 100 मीटर तक गोल करके, Google को भेजी जाती हैं। रूट या आपकी निजी जगहें कभी नहीं।</string>
     <plurals name="trip_settings_private_places_count">
         <item quantity="one">%d जगह</item>
         <item quantity="other">%d जगहें</item>

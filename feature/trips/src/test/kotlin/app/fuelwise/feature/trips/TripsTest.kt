@@ -26,6 +26,7 @@ import app.fuelwise.core.location.FillUpCheck
 import app.fuelwise.core.location.RecordingHost
 import app.fuelwise.core.location.RecordingState
 import app.fuelwise.core.location.TripLocationSource
+import app.fuelwise.core.location.TripPlaceNames
 import app.fuelwise.core.location.TripPrompts
 import app.fuelwise.core.location.TripRecorder
 import app.fuelwise.core.model.EnergyType
@@ -647,6 +648,9 @@ class TripsTest {
         },
         object : FillUpCheck {
             override suspend fun afterTrip(trip: Trip, points: List<TrackPoint>) = Unit
+        },
+        object : TripPlaceNames {
+            override fun request(all: Boolean) = Unit
         },
         clock,
         zone,

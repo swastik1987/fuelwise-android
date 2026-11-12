@@ -19,6 +19,11 @@ interface LocationPrivacyRepository {
 
     val privatePlaces: Flow<List<PrivatePlace>>
 
+    /** Name trip ends with Android Geocoder (CLAUDE.md rule 5 exception, 12 Nov 2026). On by default. */
+    val placeNames: Flow<Boolean>
+
+    suspend fun setPlaceNames(on: Boolean)
+
     suspend fun setRetention(retention: RouteRetention)
 
     suspend fun addPrivatePlace(name: String, lat: Double, lng: Double)
@@ -97,6 +102,10 @@ internal class DataStoreLocationPrivacyRepository @Inject constructor(
     }
 
     override val privatePlaces: Flow<List<PrivatePlace>> = places.places
+
+    override val placeNames: Flow<Boolean> = source.preferences.map { !it.tripPlaceNamesOff }
+
+    override suspend fun setPlaceNames(on: Boolean) = source.update { tripPlaceNamesOff = !on }
 
     override suspend fun setRetention(retention: RouteRetention) = source.update {
         routeRetention = when (retention) {

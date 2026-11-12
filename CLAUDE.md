@@ -79,6 +79,7 @@ Feature modules depend only on `core:*`. They never depend on other feature modu
    - Crash reporting stays opt-in (PRD D7).
    - The price/station feed request must not include location or identifiers. Download whole files, filter on device.
    - Never send coordinates to any lookup API (no Places, no reverse geocoding services). Station matching is offline.
+     - **One documented exception (owner decision, 12 Nov 2026):** trip place names. Android `Geocoder` may reverse-geocode a recorded trip's start and end only, rounded to 3 decimals (~110 m), never a point within 400 m of a private place, never the route, and only while the "Place names for trips" setting is on (default on). Lives in `core:location` `TripPlaceNames`; nothing else may use `Geocoder`. Disclosed in the Data safety form and privacy policy (PRD §8, §9).
    - Raw trip points are encrypted at rest, follow the retention setting (PRD F-21.6), and are backed up only when encrypted backups are on.
 6. **Forbidden permissions/APIs** (Play policy):
    - `READ_SMS` / `RECEIVE_SMS` / any SMS permission

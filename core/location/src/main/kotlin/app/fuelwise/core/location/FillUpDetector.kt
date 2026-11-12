@@ -116,7 +116,10 @@ internal class NotificationFillUpNotifier @Inject constructor(@param:Application
             id,
             context.packageManager.getLaunchIntentForPackage(context.packageName)
                 ?.putExtra(NotificationRoutes.EXTRA_OPEN, NotificationRoutes.OPEN_ADD_FUEL_PROMPT)
-                ?.putExtra(NotificationRoutes.EXTRA_ARG, FillUpPrefill(vehicle.id, atUtcMs, station.label).encode())
+                ?.putExtra(
+                    NotificationRoutes.EXTRA_ARG,
+                    FillUpPrefill(vehicle.id, atUtcMs, station.label, station.lat, station.lng).encode(),
+                )
                 ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 ?: Intent(),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,

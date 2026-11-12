@@ -92,24 +92,54 @@ private const val MS_PER_S = 1_000.0
 /**
  * What a fill-up prompt pre-fills in the Add fill-up sheet (PRD F-21.4): station, time and vehicle. The odometer is
  * left to the sheet's own hint (the GPS estimate, F-21.5), never filled as a value. Travels as one string through the
- * notification tap.
+ * notification tap. [lat] and [lng] are the station's (from the bundled list), so the saved fill-up gets a place on
+ * the trips map; never the phone's own fix.
  */
-data class FillUpPrefill(val vehicleId: String, val atUtcMs: Long, val station: String?) {
-    fun encode(): String = listOf(VERSION, vehicleId, atUtcMs.toString(), station.orEmpty().replace('\t', ' '))
-        .joinToString("\t")
+data class FillUpPrefill(
+    val vehicleId: String,
+    val atUtcMs: Long,
+    val station: String?,
+    val lat: Double? = null,
+    val lng: Double? = null,
+) {
+    fun encode(): String = listOf(
+        VERSION,
+        vehicleId,
+        atUtcMs.toString(),
+        station.orEmpty().replace('\t', ' '),
+        lat?.toString().orEmpty(),
+        lng?.toString().orEmpty(),
+    ).joinToString("\t")
 
     companion object {
-        private const val VERSION = "1"
-        private const val FIELDS = 4
+        // Version 1 had no station position; a prompt still sitting in the shade from before an update decodes too.
+        private const val VERSION = "2"
+        private const val VERSION_1 = "1"
+        private const val FIELDS = 6
+        private const val FIELDS_1 = 4
         private const val V = 0
         private const val VEHICLE = 1
         private const val AT = 2
         private const val STATION = 3
+        private const val LAT = 4
+        private const val LNG = 5
 
         fun decode(text: String?): FillUpPrefill? {
-            val parts = text?.split('\t')?.takeIf { it.size == FIELDS && it[V] == VERSION } ?: return null
+            val parts = text?.split('\t')?.takeIf {
+                (it.size == FIELDS && it[V] == VERSION) || (it.size == FIELDS_1 && it[V] == VERSION_1)
+            } ?: return null
             val at = parts[AT].toLongOrNull() ?: return null
-            return FillUpPrefill(parts[VEHICLE], at, parts[STATION].ifEmpty { null })
+            val lat = parts.getOrNull(LAT)?.toDoubleOrNull()
+            val lng = parts.getOrNull(LNG)?.toDoubleOrNull()
+            // Both or neither: half a position is no position.
+            val placed = lat != null && lng != null
+            return FillUpPrefill(
+                parts[VEHICLE],
+                at,
+                parts[STATION].ifEmpty { null },
+                lat.takeIf { placed },
+                lng.takeIf { placed },
+            )
         }
     }
 }

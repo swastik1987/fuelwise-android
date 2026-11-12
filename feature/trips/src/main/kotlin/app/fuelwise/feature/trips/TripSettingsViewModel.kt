@@ -10,6 +10,7 @@ import app.fuelwise.core.domain.trip.AutoTripPause
 import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.domain.trip.autoTripPauseEnd
 import app.fuelwise.core.location.CarLinker
+import app.fuelwise.core.location.TripPlaceNames
 import app.fuelwise.core.model.VehicleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -30,6 +31,8 @@ data class TripSettingsUiState(
     /** Location privacy (PRD F-21.6). */
     val routeRetention: RouteRetention = RouteRetention.DEFAULT,
     val privatePlaceCount: Int = 0,
+    /** Name trip ends with Android Geocoder (CLAUDE.md rule 5 exception, 12 Nov 2026). */
+    val placeNames: Boolean = true,
 )
 
 /** The "Automatic trips" row: off, on, one-tap, or paused until [pausedUntilUtcMs] ([Long.MAX_VALUE] = until on). */
@@ -48,6 +51,7 @@ class TripSettingsViewModel @Inject constructor(
     private val privacy: LocationPrivacyRepository,
     vehicles: VehicleRepository,
     private val carLinker: CarLinker,
+    private val placeNameLookup: TripPlaceNames,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : ViewModel() {
@@ -56,7 +60,8 @@ class TripSettingsViewModel @Inject constructor(
         privacy.retention,
         privacy.privatePlaces,
         vehicles.observeVehicles(),
-    ) { auto, retention, places, list ->
+        privacy.placeNames,
+    ) { auto, retention, places, list, names ->
         TripSettingsUiState(
             loading = false,
             autoTrips = auto.takeIf { it.available }?.let { s ->
@@ -77,6 +82,7 @@ class TripSettingsViewModel @Inject constructor(
             },
             routeRetention = retention,
             privatePlaceCount = places.size,
+            placeNames = names,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), TripSettingsUiState())
 
@@ -95,6 +101,12 @@ class TripSettingsViewModel @Inject constructor(
     fun unlinkCar(vehicleId: String) = launch { carLinker.unlinkCar(vehicleId) }
 
     fun setRouteRetention(retention: RouteRetention) = launch { privacy.setRetention(retention) }
+
+    /** Turning place names on names every recorded trip that still has a saved route. */
+    fun setPlaceNames(on: Boolean) = launch {
+        privacy.setPlaceNames(on)
+        if (on) placeNameLookup.request(all = true)
+    }
 
     /** "Delete all location history" (PRD F-21.6): saved routes and private places; trips and everything else stay. */
     fun deleteLocationHistory() = launch { privacy.deleteAllLocationHistory() }

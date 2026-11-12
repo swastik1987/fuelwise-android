@@ -246,15 +246,16 @@ For each screen: purpose → layout (top to bottom) → states → notes. Frame 
 
 **5. Home ★** (the most important screen)
 - **Top bar:** vehicle switcher (left); tracking status pill if automatic trips are on; privacy-blur eye toggle and bell (right; bell shows due items).
-- **Hero:**
-  - Overline "THIS MONTH · COST PER KM"
-  - `display-xl` "₹4.82" + "/km"
-  - Delta chip "▼ 6% vs Sep"
-  - "i"
-- **Metric tiles (2-up):**
-  - "Mileage — 16.8 km/L (avg 16.1)" with a 30-day sparkline
-  - "Spent — ₹6,240 · 1,294 km"
-  - For EV: km/kWh and ₹/km. For bi-fuel: "CNG saved ₹1,180 this month (est.)".
+- **Month cards** (full-width pager; owner decision 12 Nov 2026, replaces the hero, the metric tiles and the "Start trip" tile):
+  - One card per month: this month first ("NOVEMBER · SO FAR"), then swipe for each earlier month with data, back to the first entry or trip. Page dots below (accent = current; a sliding window of 7 at most).
+  - Card: overline + "i", `display-xl` "₹4.82" + "/km", delta chip "▼ 6% vs Oct".
+  - Four stats on `surface-2` (2 × 2):
+    - Mileage: tanks closed that month. Without one, the last tank, shown as "Mileage (est.) · from your last tank".
+    - Driven: km.
+    - Trips: count, with km as the caption. Tapping it opens Trips filtered to that month.
+    - Spent: fuel used + expenses, with "Paid at the pump ₹X" when fuel used is an estimate.
+  - Tapping the card opens Insights on that month (this month: the default Month period).
+  - Starting a GPS trip lives on the Trips tab.
 - **"Last fill-up" card:** date, qty, ₹, efficiency chip, station; tap to open.
 - **Range & next fill** (if the last fill was full): "~310 km left (est.)" with a slim horizontal gauge.
 - **Upcoming (max 3 reminder pills):** "PUC renewal · in 12 days", "Service · in ~420 km", "Insurance · in 41 days". "See all".

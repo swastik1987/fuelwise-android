@@ -43,6 +43,8 @@ data class VehicleSummary(
     val rangeLeftKm: Double?,
     val mileageDrop: MileageDrop?,
     val isEstimate: Boolean,
+    /** Home's month cards, this month first, back to the first month with data (user feedback, 12 Nov 2026). */
+    val months: List<MonthSummary> = emptyList(),
 ) {
     val hasMileage: Boolean get() = averageInterval != null
 }
@@ -113,6 +115,12 @@ class ComputeVehicleSummary @Inject constructor(
             ),
             mileageDrop = report.mileageDrop(),
             isEstimate = vehicle.isBiFuel,
+            months = monthSummaries(
+                MonthInputs(vehicle, refuels, expenses, trips, spends, use, report, tankFills),
+                costMetrics,
+                now,
+                zone,
+            ),
         )
     }
 

@@ -12,23 +12,30 @@
     <string name="home_hide_amounts">Hide amounts</string>
     <string name="home_open_garage">Garage</string>
     <string name="home_show_amounts">Show amounts</string>
-    <string name="home_hero_overline">This month · cost per km</string>
     <string name="home_per_km">/km</string>
     <string name="home_delta_vs">%1$d%% vs %2$s</string>
     <string name="home_cost_per_km_title">What cost per km includes</string>
-    <string name="home_cost_per_km_body1">The fuel or charge your kilometres used this month, plus everything else spent on this vehicle this month (service, tolls, parking and other running costs), divided by the kilometres driven. Fuel used is an estimate: kilometres (from your odometer readings and recorded trips) times this vehicle\'s own cost per km, from its mileage and the price you last paid. So a month without a fill-up still has a cost per km.</string>
+    <string name="home_cost_per_km_body1">The fuel or charge your kilometres used in the month, plus everything else spent on this vehicle in it (service, tolls, parking and other running costs), divided by the kilometres driven. Fuel used is an estimate: kilometres (from your odometer readings and recorded trips) times this vehicle\'s own cost per km, from its mileage and the price you paid at the time. So a month without a fill-up still has a cost per km. Swipe the card for earlier months, or tap it to see the month in Insights.</string>
     <string name="home_cost_per_km_body2">Loan EMIs and the purchase price are left out, so the number shows what it costs to run the vehicle. You can change which categories count in Settings.</string>
     <string name="home_mileage">Mileage</string>
     <string name="home_mileage_est">Mileage (est.)</string>
-    <string name="home_mileage_avg">avg %1$s</string>
     <string name="home_spent">Spent</string>
     <string name="home_spent_est">Spent (est.)</string>
-    <string name="home_spent_km">%1$s km this month</string>
+    <!-- Month cards on Home (user feedback, 12 Nov 2026). 1: month name, e.g. "November" -->
+    <string name="home_month_so_far">%1$s · so far</string>
+    <!-- TalkBack for the page dots: 1: this page, 2: all pages -->
+    <string name="home_month_page">Month %1$d of %2$d</string>
+    <string name="home_month_mileage_carried">from your last tank</string>
+    <string name="home_driven">Driven</string>
+    <string name="home_driven_est">Driven (est.)</string>
+    <string name="home_km">km</string>
+    <!-- 1: kilometres, e.g. "214" -->
+    <string name="home_km_value">%1$s km</string>
+    <!-- 1: rupees actually paid for fuel in the month -->
+    <string name="home_paid_at_pump">Paid at the pump %1$s</string>
     <string name="home_prices_today">Fuel prices today</string>
     <string name="home_prices_empty">%1$s · add today\'s prices</string>
     <string name="home_trips">Trips</string>
-    <string name="home_start_trip">Start trip</string>
-    <string name="home_start_trip_caption">Record with GPS</string>
     <string name="home_last_fill">Last fill-up</string>
     <string name="home_range_left">~%1$s km left (est.)</string>
     <string name="home_insight">Insight</string>

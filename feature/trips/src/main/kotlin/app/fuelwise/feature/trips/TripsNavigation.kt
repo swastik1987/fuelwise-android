@@ -5,9 +5,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
-/** The trips list; [startTrip] starts a GPS trip on arrival (Home's "Start trip"), asking for location if needed. */
+/**
+ * The trips list. [startTrip] starts a GPS trip on arrival (the "Start trip" notification), asking for location if needed; [month]
+ * ("2026-09") opens the list filtered to that month (a month card on Home).
+ */
 @Serializable
-data class TripsRoute(val startTrip: Boolean = false)
+data class TripsRoute(val startTrip: Boolean = false, val month: String? = null)
 
 /** Add a manual trip (no id) or edit one. */
 @Serializable

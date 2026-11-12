@@ -55,6 +55,7 @@ import app.fuelwise.feature.garage.vehicleEditorScreen
 import app.fuelwise.feature.home.HomeActions
 import app.fuelwise.feature.home.HomeRoute
 import app.fuelwise.feature.home.homeScreen
+import app.fuelwise.feature.insights.InsightsRoute
 import app.fuelwise.feature.insights.RecapRoute
 import app.fuelwise.feature.insights.chartDetailScreen
 import app.fuelwise.feature.insights.insightsScreen
@@ -140,7 +141,7 @@ fun FuelwiseApp(
             NotificationRoutes.OPEN_ADD_TRIP -> TripEditorRoute()
 
             NotificationRoutes.OPEN_START_TRIP -> {
-                if (!startWithOnboarding) navController.navigateToTrips(startTrip = true)
+                if (!startWithOnboarding) navController.navigateFresh(TripsRoute(startTrip = true))
                 onOpenHandled()
                 return@LaunchedEffect
             }
@@ -214,8 +215,10 @@ fun FuelwiseApp(
                     onOpenLogbook = { navController.navigateToTopLevel(TopLevelDestination.Logbook) },
                     onOpenReminders = { navController.navigate(RemindersRoute) },
                     onOpenReminder = { id -> navController.navigate(ReminderEditorRoute(reminderId = id)) },
-                    onOpenTrips = { navController.navigateToTopLevel(TopLevelDestination.Trips) },
-                    onStartTrip = { navController.navigateToTrips(startTrip = true) },
+                    onOpenMonthInsights = { month ->
+                        navController.navigateFresh(InsightsRoute(month = month?.toString()))
+                    },
+                    onOpenMonthTrips = { month -> navController.navigateFresh(TripsRoute(month = month.toString())) },
                     onOpenPrices = { navController.navigate(PricesRoute()) },
                     onOpenGarage = { navController.navigate(GarageRoute) },
                     onFixBattery = { navController.navigate(BatterySaverRoute) },
@@ -382,11 +385,11 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
 }
 
 /**
- * The Trips tab with a GPS trip starting on arrival. A fresh entry (no state restore) so the screen sees
- * `startTrip`; the tab's earlier state is saved as with any tab switch.
+ * A tab opened with arguments: a GPS trip starting on arrival, or a month from a Home card. A fresh entry (no state
+ * restore) so the screen sees them; the tab's earlier state is saved as with any tab switch.
  */
-private fun NavHostController.navigateToTrips(startTrip: Boolean) {
-    navigate(TripsRoute(startTrip = startTrip)) {
+private fun NavHostController.navigateFresh(route: Any) {
+    navigate(route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
     }
 }

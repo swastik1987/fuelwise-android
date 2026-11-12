@@ -16,7 +16,6 @@ import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.ComputePredictions
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
-import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.testing.FakeCategoryRepository
@@ -61,19 +60,21 @@ class HomeScreensTest {
             categories = cats.associateBy { it.id },
             kmPerUnit = mapOf("r4" to 15.42, "r3" to 15.61),
             hideAmounts = hide,
-            previousMonthLabel = "Sep",
-            trips = if (refuels.isEmpty()) MonthTrips.NONE else MonthTrips(6, 214.0),
         )
     }
 
     @Test
-    fun tripTilesOpenTripsAndStartATrip() {
+    fun monthCardOpensInsightsAndItsTripsOpenTrips() {
         val taps = mutableListOf<String>()
-        val withTrips = actions.copy(onOpenTrips = { taps += "trips" }, onStartTrip = { taps += "start" })
-        compose.setContent { FuelwiseTheme { HomeContent(ready(SampleEntries.safariRefuels), withTrips, {}, {}) } }
-        compose.onNodeWithText("Start trip").performScrollTo().performClick()
-        compose.onNodeWithText("6").performScrollTo().performClick()
-        assertThat(taps).containsExactly("start", "trips").inOrder()
+        val linked = actions.copy(
+            onOpenMonthInsights = { taps += "insights $it" },
+            onOpenMonthTrips = { taps += "trips $it" },
+        )
+        compose.setContent { FuelwiseTheme { HomeContent(ready(SampleEntries.safariRefuels), linked, {}, {}) } }
+        compose.onNodeWithText("Start trip").assertDoesNotExist()
+        compose.onNodeWithText("Trips").performScrollTo().performClick()
+        compose.onNodeWithText("October · so far", ignoreCase = true).performClick()
+        assertThat(taps).containsExactly("trips 2026-10", "insights null").inOrder()
     }
 
     @Test

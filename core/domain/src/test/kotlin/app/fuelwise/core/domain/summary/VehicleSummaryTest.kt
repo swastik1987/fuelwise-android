@@ -71,6 +71,37 @@ class VehicleSummaryTest {
     }
 
     @Test
+    fun `month cards run from this month back to the first fill-up`() {
+        val months = summary(safari, fills, emptyList(), categories, zone, october).months
+        assertThat(months.map { it.month.toString() }).containsExactly("2026-10", "2026-09", "2026-08").inOrder()
+
+        val oct = months[0]
+        assertThat(oct.metrics.costPerKm).isEqualTo(Money(600))
+        assertThat(oct.trips.count).isEqualTo(2)
+        assertThat(oct.trips.distanceKm).isWithin(1e-9).of(200.0)
+        // No tank closed in October: September's 15 km/L, carried over.
+        assertThat(oct.mileage!!.kmPerUnit).isWithin(1e-9).of(15.0)
+        assertThat(oct.mileageCarried).isTrue()
+        assertThat(oct.costPerKmChange!!).isWithin(1e-9).of(0.0)
+
+        val sep = months[1]
+        assertThat(sep.mileage!!.kmPerUnit).isWithin(1e-9).of(15.0)
+        assertThat(sep.mileageCarried).isFalse()
+        assertThat(sep.trips.count).isEqualTo(0)
+
+        // August only has the first fill: no tank closed yet, so no mileage.
+        assertThat(months[2].mileage).isNull()
+    }
+
+    @Test
+    fun `a vehicle with nothing logged still gets this month's card`() {
+        val months = summary(safari, emptyList(), emptyList(), categories, zone).months
+        assertThat(months.map { it.month.toString() }).containsExactly("2026-10")
+        assertThat(months[0].metrics.totalSpend).isEqualTo(Money.ZERO)
+        assertThat(months[0].mileage).isNull()
+    }
+
+    @Test
     fun `loan EMI stays out of cost per km`() {
         val emi = Expense("e", "safari", SystemCategory.LoanEmi.id, day(2026, 10, 5), "Asia/Kolkata", Money(2_000_000))
         val service =

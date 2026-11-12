@@ -17,6 +17,7 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.FuelGrade
@@ -78,9 +79,11 @@ class RefuelViewModelTest {
         cityPrices: FakeFuelPriceRepository = FakeFuelPriceRepository(),
         userData: FakeUserDataRepository = FakeUserDataRepository(),
         scan: String? = null,
+        prompt: String? = null,
     ) = RefuelViewModel(
-        savedStateHandle = SavedStateHandle(mapOf("vehicleId" to vehicleId, "refuelId" to refuelId, "scan" to scan))
-            .also { handle = it },
+        savedStateHandle = SavedStateHandle(
+            mapOf("vehicleId" to vehicleId, "refuelId" to refuelId, "scan" to scan, "prompt" to prompt),
+        ).also { handle = it },
         vehicles = vehicles,
         entries = entries,
         trips = trips,
@@ -100,6 +103,21 @@ class RefuelViewModelTest {
     private fun RefuelViewModel.type(field: NumericField, text: String) {
         onFocus(field)
         text.forEach { c -> onKey(if (c == '.') KeypadKey.Dot else KeypadKey.Digit(c.digitToInt())) }
+    }
+
+    @Test
+    fun aFillUpFromAPromptKeepsTheStationsPosition() = runTest {
+        val prompt = FillUpPrefill("safari", clock.millis(), "HP · Indiranagar", 12.9716, 77.6408).encode()
+        val vm = viewModel(prompt = prompt)
+        assertThat(vm.state.value.station).isEqualTo("HP · Indiranagar")
+        vm.type(NumericField.Odometer, "42318")
+        vm.type(NumericField.Quantity, "40")
+        vm.type(NumericField.Total, "3558")
+        vm.save()
+        vm.state.first { it.reward != null }
+        val saved = entries.refuels.single()
+        assertThat(saved.lat).isEqualTo(12.9716)
+        assertThat(saved.lng).isEqualTo(77.6408)
     }
 
     @Test

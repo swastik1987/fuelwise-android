@@ -48,6 +48,15 @@ class TripRecorderTest {
             checked += trip.id to points.size
         }
     }
+
+    // How often a finished trip asked for place names.
+    private var placeNameRequests = 0
+    private val placeNames = object : TripPlaceNames {
+        override fun request(all: Boolean) {
+            placeNameRequests++
+        }
+    }
+
     private val prompts = object : TripPrompts {
         override fun odometerAfterTrip(tripId: String, distanceKm: Double) {
             prompted += tripId
@@ -68,6 +77,7 @@ class TripRecorderTest {
             host,
             prompts,
             fillUps,
+            placeNames,
             clock,
             zone,
             backgroundScope,
@@ -117,6 +127,8 @@ class TripRecorderTest {
         // Raw points are gone; the simplified route stays.
         assertThat(trips.points(id)).isEmpty()
         assertThat(trips.route(id).map { it.segment }.toSet()).containsExactly(0, 1)
+        // A saved trip asks for its place names.
+        assertThat(placeNameRequests).isEqualTo(1)
     }
 
     @Test

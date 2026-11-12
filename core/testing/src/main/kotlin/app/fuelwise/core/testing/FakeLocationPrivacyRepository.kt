@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 class FakeLocationPrivacyRepository : LocationPrivacyRepository {
     override val retention = MutableStateFlow(RouteRetention.DEFAULT)
     override val privatePlaces = MutableStateFlow(emptyList<PrivatePlace>())
+    override val placeNames = MutableStateFlow(true)
     var historyDeletes = 0
 
     override suspend fun setRetention(retention: RouteRetention) {
@@ -20,6 +21,10 @@ class FakeLocationPrivacyRepository : LocationPrivacyRepository {
         privatePlaces.update { it + PrivatePlace("p${it.size + 1}", name, lat, lng) }
 
     override suspend fun removePrivatePlace(id: String) = privatePlaces.update { all -> all.filterNot { it.id == id } }
+
+    override suspend fun setPlaceNames(on: Boolean) {
+        placeNames.value = on
+    }
 
     override suspend fun pruneExpiredRoutes(nowUtcMs: Long): Int = 0
 

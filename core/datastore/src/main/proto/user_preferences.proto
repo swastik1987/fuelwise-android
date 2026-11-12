@@ -64,6 +64,9 @@ message UserPreferences {
   bytes private_places = 82;
   // Fill-up prompts (PRD F-21.4): what the user said and when we last asked. Device-only.
   FillUpPrompts fill_up_prompts = 83;
+  // Trip place names (owner decision 12 Nov 2026): start and end named with Android Geocoder, which sends those two
+  // points to Google. On by default, so the stored flag is "off"; false = on.
+  bool trip_place_names_off = 84;
 }
 
 message FillUpPrompts {

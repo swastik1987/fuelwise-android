@@ -24,11 +24,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.trip.HeatPoint
 import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.ui.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -42,8 +44,11 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import com.google.maps.android.heatmaps.Gradient
+import com.google.maps.android.heatmaps.HeatmapTileProvider
 import kotlin.math.cos
 
 /**
@@ -154,6 +159,60 @@ fun FwPinMap(
     }
 }
 
+/**
+ * The consolidated trips map (PRD F-07.7, free in R1 since 12 Nov 2026): saved routes as a heatmap, with [pins] for
+ * places visited often and fill-ups. Display only: nothing is looked up. The camera fits everything once.
+ */
+@Composable
+fun FwHeatMap(heat: List<HeatPoint>, pins: List<MapPin>, contentDescription: String, modifier: Modifier = Modifier) {
+    val labelled = modifier.semantics { this.contentDescription = contentDescription }
+    val accent = FwTheme.colors.accent
+    if (!LocalMapsEnabled.current) {
+        HeatDots(heat, pins, accent, labelled)
+        return
+    }
+    val camera = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(INDIA_CENTRE, INDIA_ZOOM) }
+    var loaded by remember { mutableStateOf(false) }
+    val all = remember(heat, pins) { heat.map { LatLng(it.lat, it.lng) } + pins.map { LatLng(it.lat, it.lng) } }
+    LaunchedEffect(loaded, all) {
+        if (!loaded || all.isEmpty()) return@LaunchedEffect
+        if (all.size == 1) {
+            camera.move(CameraUpdateFactory.newLatLngZoom(all.first(), PLACE_ZOOM))
+        } else {
+            val bounds = LatLngBounds.builder().apply { all.forEach(::include) }.build()
+            camera.move(CameraUpdateFactory.newLatLngBounds(bounds, FIT_PADDING_PX))
+        }
+    }
+    // android-maps-utils draws the tiles; it needs at least one point. Cool to hot in the accent colour.
+    val tiles = remember(heat, accent) {
+        if (heat.isEmpty()) {
+            null
+        } else {
+            val colors = intArrayOf(accent.copy(alpha = HEAT_COOL_ALPHA).toArgb(), accent.toArgb())
+            HeatmapTileProvider.Builder()
+                .data(heat.map { LatLng(it.lat, it.lng) })
+                .radius(HEAT_RADIUS_PX)
+                .gradient(Gradient(colors, HEAT_STOPS))
+                .build()
+        }
+    }
+    val ring = FwTheme.colors.surface
+    GoogleMap(
+        modifier = labelled,
+        cameraPositionState = camera,
+        properties = mapProperties(),
+        uiSettings = MAP_UI,
+        onMapLoaded = { loaded = true },
+    ) {
+        tiles?.let { TileOverlay(tileProvider = it) }
+        pins.forEach { pin ->
+            MarkerComposable(pin.id, pin.color, state = rememberUpdatedMarkerState(LatLng(pin.lat, pin.lng))) {
+                Box(Modifier.size(PIN_DP.dp).background(pin.color, CircleShape).border(2.dp, ring, CircleShape))
+            }
+        }
+    }
+}
+
 @Composable
 private fun mapProperties(): MapProperties {
     val context = LocalContext.current
@@ -202,6 +261,26 @@ private fun PinDots(pins: List<MapPin>, modifier: Modifier) {
     }
 }
 
+/** The fallback for tests: heat as faint dots under the pins. */
+@Composable
+private fun HeatDots(heat: List<HeatPoint>, pins: List<MapPin>, color: Color, modifier: Modifier) {
+    val ring = FwTheme.colors.surface
+    Box(modifier.background(FwTheme.colors.surface2)) {
+        val points = heat.map { it.lat to it.lng } + pins.map { it.lat to it.lng }
+        if (points.isEmpty()) return@Box
+        Canvas(Modifier.fillMaxSize().padding(32.dp)) {
+            val project = Projection(points, size.width, size.height)
+            val faint = color.copy(alpha = HEAT_COOL_ALPHA)
+            heat.indices.forEach { drawCircle(faint, radius = 4.dp.toPx(), center = project(it)) }
+            pins.forEachIndexed { i, pin ->
+                val at = project(heat.size + i)
+                drawCircle(ring, radius = (PIN_DP / 2 + 2).dp.toPx(), center = at)
+                drawCircle(pin.color, radius = (PIN_DP / 2).dp.toPx(), center = at)
+            }
+        }
+    }
+}
+
 /** Fits lat/lng pairs into a width × height box, north up, keeping proportions. */
 private class Projection(points: List<Pair<Double, Double>>, width: Float, height: Float) {
     private val lat0 = Math.toRadians(points.first().first)
@@ -241,6 +320,10 @@ private const val ROUTE_WIDTH_PX = 14f
 private const val END_DOT_M = 12.0
 private const val PIN_DP = 16
 private const val HALF = 0.5f
+private const val PLACE_ZOOM = 14f
+private const val HEAT_RADIUS_PX = 30
+private const val HEAT_COOL_ALPHA = 0.35f
+private val HEAT_STOPS = floatArrayOf(0.2f, 1f)
 
 // About 10 m, so a near-stationary start isn't blown up to fill the box.
 private const val MIN_SPAN = 0.0001

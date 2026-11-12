@@ -84,5 +84,9 @@ class FillUpDetectionTest {
         assertThat(FillUpPrefill.decode(FillUpPrefill("ev", 1, null).encode())?.station).isNull()
         assertThat(FillUpPrefill.decode("junk")).isNull()
         assertThat(FillUpPrefill.decode(null)).isNull()
+        // The station's position travels too; a version-1 prompt from before an update still opens.
+        val placed = FillUpPrefill("safari", 5, "HP", 12.9716, 77.6408)
+        assertThat(FillUpPrefill.decode(placed.encode())).isEqualTo(placed)
+        assertThat(FillUpPrefill.decode("1\tsafari\t5\tHP")).isEqualTo(FillUpPrefill("safari", 5, "HP"))
     }
 }

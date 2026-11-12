@@ -11,6 +11,7 @@ import app.fuelwise.core.data.repository.ObserveReminderStatuses
 import app.fuelwise.core.data.repository.RecurrenceRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.domain.recurrence.balance
+import app.fuelwise.core.location.TripPlaceNames
 import app.fuelwise.core.notifications.Notifier
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import dagger.assisted.Assisted
@@ -42,6 +43,7 @@ class DailyCheckWorker @AssistedInject constructor(
     private val notifier: Notifier,
     private val insights: InsightNotifications,
     private val locationPrivacy: LocationPrivacyRepository,
+    private val placeNames: TripPlaceNames,
     private val clock: Clock,
     private val zoneId: ZoneId,
 ) : CoroutineWorker(context, params) {
@@ -49,6 +51,8 @@ class DailyCheckWorker @AssistedInject constructor(
         recurrences.createDueEntries()
         // Saved routes past the retention setting go; trip summaries stay (PRD F-21.6).
         locationPrivacy.pruneExpiredRoutes(clock.millis())
+        // Trips that finished offline get their start and end names now (place names on, last 7 days).
+        placeNames.request()
         if (!inputData.getBoolean(KEY_NOTIFY, true)) return Result.success()
 
         val names = vehicles.observeVehicles().first().associate { it.id to it.name }

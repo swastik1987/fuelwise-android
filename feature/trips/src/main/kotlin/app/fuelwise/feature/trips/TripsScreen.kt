@@ -264,6 +264,13 @@ internal fun TripsContent(
             // A bottom-nav tab (design.md §6), so no back arrow.
             title = stringResource(R.string.trips_title),
             actions = {
+                IconButton(onClick = links.onMap) {
+                    Icon(
+                        painterResource(FwIcons.Map),
+                        stringResource(R.string.trips_map_title),
+                        tint = FwTheme.colors.ink,
+                    )
+                }
                 if (state.weeks.isNotEmpty()) {
                     IconButton(onClick = actions.onExport) {
                         Icon(

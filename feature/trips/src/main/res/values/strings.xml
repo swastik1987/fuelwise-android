@@ -214,6 +214,28 @@
     <string name="battery_other_1">Settings → Apps → %1$s → Battery</string>
     <string name="battery_other_2">Choose Unrestricted (or Not optimised)</string>
     <!-- Trip settings (moved from Settings, 12 Nov 2026; PRD F-21.3, F-21.6, design.md screen 29). -->
+    <string name="trips_map_title">Trips map</string>
+    <string name="trips_map_3_months">3 months</string>
+    <string name="trips_map_12_months">12 months</string>
+    <string name="trips_map_all">All time</string>
+    <string name="trips_map_empty">No recorded routes yet</string>
+    <string name="trips_map_empty_body">GPS and automatic trips show here as a heatmap. Fill-ups logged from a fill-up prompt show as dots.</string>
+    <plurals name="trips_map_desc">
+        <item quantity="one">Heatmap of %d recorded trip</item>
+        <item quantity="other">Heatmap of %d recorded trips</item>
+    </plurals>
+    <plurals name="trips_map_routes">
+        <item quantity="one">Routes from %d trip</item>
+        <item quantity="other">Routes from %d trips</item>
+    </plurals>
+    <plurals name="trips_map_places">
+        <item quantity="one">%d place you go often</item>
+        <item quantity="other">%d places you go often</item>
+    </plurals>
+    <plurals name="trips_map_fill_ups">
+        <item quantity="one">%d fill-up with a place</item>
+        <item quantity="other">%d fill-ups with a place</item>
+    </plurals>
     <string name="trip_settings_title">Trip settings</string>
     <string name="trip_settings_section_auto">Recording</string>
     <string name="trip_settings_location_access">Location access</string>
@@ -227,6 +249,8 @@
     <string name="trip_settings_car_unlink">Unlink</string>
     <string name="trip_settings_car_hint">When this car\'s Bluetooth connects, a trip starts for this vehicle.</string>
     <string name="trip_settings_section_privacy">Location privacy</string>
+    <string name="trip_settings_place_names">Place names for trips</string>
+    <string name="trip_settings_place_names_body">Names where a recorded trip starts and ends, like Indiranagar → Whitefield. Sends those two points, rounded to about 100 m, to Google. Never the route or your private places.</string>
     <plurals name="trip_settings_private_places_count">
         <item quantity="one">%d place</item>
         <item quantity="other">%d places</item>

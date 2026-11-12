@@ -14,14 +14,18 @@ import app.fuelwise.core.location.FillUpDetector
 import app.fuelwise.core.location.FillUpNotifier
 import app.fuelwise.core.location.FusedSingleFix
 import app.fuelwise.core.location.FusedTripLocationSource
+import app.fuelwise.core.location.GeocoderPlaceLookup
 import app.fuelwise.core.location.NotificationFillUpNotifier
 import app.fuelwise.core.location.NotificationTripPrompts
+import app.fuelwise.core.location.PlaceLookup
 import app.fuelwise.core.location.RecorderScope
 import app.fuelwise.core.location.RecordingHost
+import app.fuelwise.core.location.RouteTripPlaceNames
 import app.fuelwise.core.location.ServiceAutoTripStarter
 import app.fuelwise.core.location.ServiceRecordingHost
 import app.fuelwise.core.location.SingleFix
 import app.fuelwise.core.location.TripLocationSource
+import app.fuelwise.core.location.TripPlaceNames
 import app.fuelwise.core.location.TripPrompts
 import dagger.Binds
 import dagger.Module
@@ -62,6 +66,12 @@ internal interface LocationModule {
 
     @Binds
     fun fillUpCheck(impl: FillUpDetector): FillUpCheck
+
+    @Binds
+    fun tripPlaceNames(impl: RouteTripPlaceNames): TripPlaceNames
+
+    @Binds
+    fun placeLookup(impl: GeocoderPlaceLookup): PlaceLookup
 
     @Binds
     fun fillUpNotifier(impl: NotificationFillUpNotifier): FillUpNotifier

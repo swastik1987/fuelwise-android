@@ -11,6 +11,7 @@ import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.trip.AutoTripPause
 import app.fuelwise.core.domain.trip.RouteRetention
 import app.fuelwise.core.location.CarLinker
+import app.fuelwise.core.location.TripPlaceNames
 import app.fuelwise.core.testing.FakeAutoTripSettingsRepository
 import app.fuelwise.core.testing.FakeLocationPrivacyRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
@@ -52,7 +53,26 @@ class TripSettingsTest {
         override suspend fun unlinkCar(vehicleId: String) = autoTrips.setCarLink(vehicleId, null)
     }
 
-    private fun viewModel() = TripSettingsViewModel(autoTrips, privacy, vehicles, linker, clock, zone)
+    private val namingRequests = mutableListOf<Boolean>()
+    private val placeNames = object : TripPlaceNames {
+        override fun request(all: Boolean) {
+            namingRequests += all
+        }
+    }
+
+    private fun viewModel() = TripSettingsViewModel(autoTrips, privacy, vehicles, linker, placeNames, clock, zone)
+
+    @Test
+    fun placeNamesOffAndBackOnNamesEveryTrip() = runTest {
+        val vm = viewModel()
+        assertThat(vm.state.first { !it.loading }.placeNames).isTrue()
+        vm.setPlaceNames(false)
+        assertThat(vm.state.first { !it.placeNames }.placeNames).isFalse()
+        assertThat(namingRequests).isEmpty()
+        vm.setPlaceNames(true)
+        assertThat(privacy.placeNames.value).isTrue()
+        assertThat(namingRequests).containsExactly(true)
+    }
 
     @Test
     fun routeRetentionAndLocationHistory() = runTest {

@@ -8,12 +8,10 @@ import app.fuelwise.core.model.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.net.URLEncoder
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
-import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 /** What a manual trip's typed odometers and distance add up to (PRD F-07.1: start/end odometer, or distance). */
@@ -77,18 +75,33 @@ object UpiPayLink {
     private fun encode(value: String) = URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 }
 
-/** Trips of one Monday-to-Sunday week (design.md screen 17; PRD F-07.7). */
-data class TripWeek<T>(val start: LocalDate, val end: LocalDate, val trips: List<T>)
+/** Trips of one calendar month (design.md screen 17; PRD F-07.7; months since 12 Nov 2026, user feedback). */
+data class TripMonth<T>(val month: YearMonth, val trips: List<T>)
 
-/** Groups trips by the local week they started in, newest week first, keeping the given order within a week. */
-fun <T> groupByWeek(trips: List<T>, zone: ZoneId, startUtcMs: (T) -> Long): List<TripWeek<T>> =
-    trips.groupBy { weekStart(Instant.ofEpochMilli(startUtcMs(it)).atZone(zone).toLocalDate()) }
+/** Groups trips by the local month they started in, newest month first, keeping the given order within a month. */
+fun <T> groupByMonth(trips: List<T>, zone: ZoneId, startUtcMs: (T) -> Long): List<TripMonth<T>> =
+    trips.groupBy { YearMonth.from(Instant.ofEpochMilli(startUtcMs(it)).atZone(zone)) }
         .toSortedMap(compareByDescending { it })
-        .map { (start, list) -> TripWeek(start, start.plusDays(DAYS_IN_WEEK - 1), list) }
+        .map { (month, list) -> TripMonth(month, list) }
 
-private fun weekStart(date: LocalDate): LocalDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+/** The Trips list date filter (user feedback, 12 Nov 2026). */
+enum class TripRange { All, ThisMonth, LastMonth, ThreeMonths, ThisYear, Custom }
 
-private const val DAYS_IN_WEEK = 7L
+/**
+ * The days [this] covers on [today], both ends included; null for [TripRange.All], and for [TripRange.Custom]
+ * without a picked range. Three months is this month and the two before it.
+ */
+fun TripRange.days(today: LocalDate, from: LocalDate? = null, to: LocalDate? = null): ClosedRange<LocalDate>? {
+    val month = YearMonth.from(today)
+    return when (this) {
+        TripRange.ThisMonth -> month.atDay(1)..today
+        TripRange.LastMonth -> month.minusMonths(1).let { it.atDay(1)..it.atEndOfMonth() }
+        TripRange.ThreeMonths -> month.minusMonths(2).atDay(1)..today
+        TripRange.ThisYear -> today.withDayOfYear(1)..today
+        TripRange.All -> null
+        TripRange.Custom -> if (from == null || to == null) null else minOf(from, to)..maxOf(from, to)
+    }
+}
 
 /** How many trips a vehicle finished in a month, and how far they went (Home trips tile). */
 data class MonthTrips(val count: Int, val distanceKm: Double) {

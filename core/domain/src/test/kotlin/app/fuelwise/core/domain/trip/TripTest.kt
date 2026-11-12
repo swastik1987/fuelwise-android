@@ -134,16 +134,33 @@ class TripTest {
     }
 
     @Test
-    fun `weeks run Monday to Sunday, newest first`() {
-        // 19 Oct 2026 is a Monday.
-        val starts = listOf(day(10, 19), day(10, 18), day(10, 13), day(10, 12))
-        val weeks = groupByWeek(starts, zone) { it }
-        assertThat(weeks.map { it.start }).containsExactly(
-            LocalDate.of(2026, 10, 19),
-            LocalDate.of(2026, 10, 12),
+    fun `months, newest first, by the local day a trip started`() {
+        // 31 Oct 23:30 IST is still October here, although it is 18:00 UTC.
+        val late = LocalDate.of(2026, 10, 31).atTime(23, 30).atZone(zone).toInstant().toEpochMilli()
+        val starts = listOf(day(11, 2), late, day(10, 12), day(9, 30))
+        val months = groupByMonth(starts, zone) { it }
+        assertThat(months.map { it.month }).containsExactly(
+            YearMonth.of(2026, 11),
+            YearMonth.of(2026, 10),
+            YearMonth.of(2026, 9),
         ).inOrder()
-        assertThat(weeks[1].end).isEqualTo(LocalDate.of(2026, 10, 18))
-        assertThat(weeks[1].trips).hasSize(3)
+        assertThat(months[1].trips).containsExactly(late, day(10, 12)).inOrder()
+    }
+
+    @Test
+    fun `date filter ranges include both ends`() {
+        val today = LocalDate.of(2026, 11, 12)
+        assertThat(TripRange.ThisMonth.days(today)).isEqualTo(LocalDate.of(2026, 11, 1)..today)
+        assertThat(TripRange.LastMonth.days(today))
+            .isEqualTo(LocalDate.of(2026, 10, 1)..LocalDate.of(2026, 10, 31))
+        assertThat(TripRange.ThreeMonths.days(today)).isEqualTo(LocalDate.of(2026, 9, 1)..today)
+        assertThat(TripRange.ThisYear.days(today)).isEqualTo(LocalDate.of(2026, 1, 1)..today)
+        assertThat(TripRange.All.days(today)).isNull()
+        // A range picked backwards still works; none picked yet means everything.
+        val a = LocalDate.of(2026, 10, 20)
+        val b = LocalDate.of(2026, 10, 5)
+        assertThat(TripRange.Custom.days(today, a, b)).isEqualTo(b..a)
+        assertThat(TripRange.Custom.days(today)).isNull()
     }
 
     private fun vehicle(id: String, vararg tanks: Tank) = Vehicle(

@@ -127,4 +127,69 @@ class ScanViewModelTest {
         vm.onCameraAccess(false)
         assertThat(vm.state.value.camera).isEqualTo(CameraAccess.Denied)
     }
+
+    @Test
+    fun aMissedLiveFrameBetweenTwoMatchingReadingsStillConfirms() = runTest {
+        // Live frames take turns with image clean-ups; one may read nothing useful.
+        val vm = viewModel()
+        vm.onFrame(pump)
+        vm.onFrame(frame("ENSURE ZERO BEFORE DELIVERY"))
+        assertThat(vm.state.value.review).isNull()
+        vm.onFrame(pump)
+        assertThat(requireNotNull(vm.state.value.review).validated).isTrue()
+    }
+
+    @Test
+    fun aSnapThatChecksOutOpensTheTickedSheetAndPausesLiveFrames() = runTest {
+        val vm = viewModel()
+        vm.onSnapStarted()
+        assertThat(vm.state.value.snapping).isTrue()
+        vm.onFrame(pump)
+        assertThat(vm.state.value.hasReading).isFalse()
+
+        // The owner's Gilbarco photo: the plain read misses the rate, a cleaned-up read gets all three.
+        vm.onSnap(
+            OcrSnap(
+                reads = listOf(
+                    lines("ENSURE ZERO BEFORE DELIVERY", "2887.14", "29.32", "Litre"),
+                    lines("2887.14 ₹", "29.32", "Litre", "821.4", "Density Kg/m3", "98.47", "₹/Litre"),
+                ),
+                width = 1125,
+                height = 2000,
+            ) { photo },
+        )
+        val s = vm.state.value
+        assertThat(s.snapping).isFalse()
+        val review = requireNotNull(s.review)
+        assertThat(review.validated).isTrue()
+        assertThat(review.hasPhoto).isTrue()
+        assertThat(review.values).isEqualTo(
+            ScanPrefill(total = Money(288_714), quantity = 29.32, unitPrice = Money(9_847)),
+        )
+    }
+
+    @Test
+    fun partialSnapReadsCombine() = runTest {
+        val vm = viewModel()
+        vm.onSnapStarted()
+        vm.onSnap(
+            OcrSnap(listOf(lines("2887.14", "29.32 Litre"), lines("Density 821.4", "98.47 ₹/Litre")), 1125, 2000) {
+                photo
+            },
+        )
+        assertThat(requireNotNull(vm.state.value.review).validated).isTrue()
+    }
+
+    @Test
+    fun aSnapThatReadsNothingShowsTheFailureState() = runTest {
+        val vm = viewModel()
+        vm.onSnapStarted()
+        vm.onSnap(OcrSnap.Nothing)
+        val s = vm.state.value
+        assertThat(s.snapping).isFalse()
+        assertThat(s.review).isNull()
+        assertThat(s.struggling).isTrue()
+    }
+
+    private fun lines(vararg text: String) = text.map { OcrLine(it) }
 }

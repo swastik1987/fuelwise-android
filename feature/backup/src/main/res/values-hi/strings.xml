@@ -21,6 +21,9 @@
     <string name="backup_encrypt_body">ऐसे पासफ़्रेज़ से जो सिर्फ़ आप जानते हैं। कागज़ात और उनकी फ़ोटो के बैकअप के लिए ज़रूरी।</string>
     <string name="backup_now">अभी बैकअप लें</string>
     <string name="backup_restore">Drive से वापस लाएँ</string>
+    <string name="backup_save_copy">My Drive में कॉपी सेव करें</string>
+    <string name="backup_save_copy_body">यह बैकअप “%1$s” फ़ोल्डर में रखता है, जिसे आप देख और शेयर कर सकते हैं। हर बार पिछली कॉपी बदल जाती है। कागज़ों की फ़ोटो इसी फ़ोन पर रहती हैं।</string>
+    <string name="backup_copy_saved_toast">कॉपी My Drive › %1$s में सेव हो गई</string>
     <string name="backup_file_section">बैकअप फ़ाइल</string>
     <string name="backup_file_body">एक कॉपी जो आप कहीं भी रख सकते हैं, बिना साइन-इन। कागज़ों की फ़ोटो इसी फ़ोन पर रहती हैं।</string>
     <string name="backup_save_file">बैकअप फ़ाइल सेव करें</string>
@@ -62,6 +65,7 @@
     <string name="busy_restoring">वापस ला रहे हैं…</string>
     <string name="busy_encrypting">एन्क्रिप्शन सेट हो रहा है…</string>
     <string name="busy_exporting">फ़ाइल सेव हो रही है…</string>
+    <string name="busy_saving_copy">Drive में कॉपी सेव हो रही है…</string>
     <string name="error_sign_in">Google Drive तक नहीं पहुँच पाए। बैकअप जारी रखने के लिए फिर से जोड़ें।</string>
     <string name="error_offline">इंटरनेट नहीं है। ऑनलाइन होते ही बैकअप फिर कोशिश करेगा।</string>
     <string name="error_storage_full">आपका Google Drive भर गया है। जगह खाली करके फिर बैकअप लें।</string>

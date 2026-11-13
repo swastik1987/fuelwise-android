@@ -21,6 +21,9 @@
     <string name="backup_encrypt_body">With a passphrase only you know. Needed to back up your documents and their photos.</string>
     <string name="backup_now">Back up now</string>
     <string name="backup_restore">Restore from Drive</string>
+    <string name="backup_save_copy">Save a copy to My Drive</string>
+    <string name="backup_save_copy_body">Puts this backup in a “%1$s” folder you can see and share. Each save replaces the last copy. Document photos stay on this phone.</string>
+    <string name="backup_copy_saved_toast">Copy saved to My Drive › %1$s</string>
     <string name="backup_file_section">Backup file</string>
     <string name="backup_file_body">A copy you keep anywhere, without signing in. Document photos stay on this phone.</string>
     <string name="backup_save_file">Save backup file</string>
@@ -62,6 +65,7 @@
     <string name="busy_restoring">Restoring…</string>
     <string name="busy_encrypting">Setting up encryption…</string>
     <string name="busy_exporting">Saving the file…</string>
+    <string name="busy_saving_copy">Saving a copy to Drive…</string>
     <string name="error_sign_in">Couldn\'t reach Google Drive. Reconnect to keep backing up.</string>
     <string name="error_offline">No connection. The backup will retry when you\'re online.</string>
     <string name="error_storage_full">Your Google Drive is full. Free up space and back up again.</string>

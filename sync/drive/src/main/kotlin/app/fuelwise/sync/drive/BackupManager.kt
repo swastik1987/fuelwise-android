@@ -1,5 +1,6 @@
 package app.fuelwise.sync.drive
 
+import android.app.PendingIntent
 import android.content.Context
 import app.fuelwise.core.data.DeviceIdProvider
 import app.fuelwise.core.data.repository.BackupSettingsRepository
@@ -25,6 +26,16 @@ sealed interface BackupOutcome {
     data class Success(val sizeBytes: Long) : BackupOutcome
 
     data class Failed(val error: BackupError) : BackupOutcome
+}
+
+/** "Export a visible copy to Drive" (PRD F-14.1). */
+sealed interface VisibleCopyOutcome {
+    data class Saved(val sizeBytes: Long) : VisibleCopyOutcome
+
+    /** First use: Google asks the user to let the app create files in their Drive. */
+    data class NeedsConsent(val intent: PendingIntent) : VisibleCopyOutcome
+
+    data class Failed(val error: BackupError) : VisibleCopyOutcome
 }
 
 sealed interface RestoreOutcome {
@@ -133,6 +144,35 @@ class BackupManager @Inject constructor(
     suspend fun exportFile(): ByteArray = mutex.withLock {
         val key = if (settings.settings.first().encrypted) keys.load() else null
         snapshotBytes(key, clock.millis())
+    }
+
+    /**
+     * Saves the same snapshot as the backup file (encrypted when backups are) to a "Fuelwise backups" folder the user
+     * can see in My Drive, replacing the previous copy (PRD F-14.1, owner choice 13 Nov 2026: always one file).
+     * Document photos stay on the phone, as with the backup file.
+     */
+    suspend fun saveVisibleCopy(): VisibleCopyOutcome = mutex.withLock {
+        val email = settings.settings.first().accountEmail
+            ?: return VisibleCopyOutcome.Failed(BackupError.SignIn)
+        val token = when (val access = runCatching { auth.authorize(email, DriveScope.OwnFiles) }.getOrNull()) {
+            is DriveAccess.Granted -> access.accessToken
+            is DriveAccess.NeedsConsent -> return VisibleCopyOutcome.NeedsConsent(access.intent)
+            else -> return VisibleCopyOutcome.Failed(BackupError.SignIn)
+        }
+        val key = if (settings.settings.first().encrypted) {
+            keys.load() ?: return VisibleCopyOutcome.Failed(BackupError.KeyMissing)
+        } else {
+            null
+        }
+        val result = withDriveErrors {
+            val bytes = snapshotBytes(key, clock.millis())
+            drive.saveVisibleCopy(token, VISIBLE_FOLDER, VISIBLE_FILE, bytes)
+            bytes.size.toLong()
+        }
+        when (result) {
+            is DriveResult.Ok -> VisibleCopyOutcome.Saved(result.value)
+            is DriveResult.Error -> VisibleCopyOutcome.Failed(result.error)
+        }
     }
 
     suspend fun importFile(bytes: ByteArray, passphrase: CharArray?): RestoreOutcome = mutex.withLock {
@@ -248,8 +288,12 @@ class BackupManager @Inject constructor(
             is DriveAccess.Granted -> access.accessToken
             else -> return DriveResult.Error(BackupError.SignIn)
         }
+        return withDriveErrors { block(token) }
+    }
+
+    private suspend fun <T> withDriveErrors(block: suspend () -> T): DriveResult<T> {
         return try {
-            DriveResult.Ok(block(token))
+            DriveResult.Ok(block())
         } catch (_: DriveException.Unauthorized) {
             DriveResult.Error(BackupError.SignIn)
         } catch (_: DriveException.StorageFull) {
@@ -264,8 +308,12 @@ class BackupManager @Inject constructor(
         }
     }
 
-    private companion object {
-        val VAULT_TABLES = setOf("document", "attachment")
-        val DEVICE_ONLY_TABLES = setOf("trip_point_batch")
+    companion object {
+        private val VAULT_TABLES = setOf("document", "attachment")
+        private val DEVICE_ONLY_TABLES = setOf("trip_point_batch")
+
+        /** Shown in My Drive; the user can rename or move them, and a new folder or file appears next time. */
+        const val VISIBLE_FOLDER = "Fuelwise backups"
+        const val VISIBLE_FILE = "fuelwise-backup.json.gz"
     }
 }

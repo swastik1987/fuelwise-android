@@ -502,11 +502,11 @@ FREE users can generate a text/CSV version of each. ✅ built (free text/CSV ver
 
 ---
 
-### F-14 Backup and sync (Google Drive) — FREE backup R1 · PRO multi-device sync R2 ✅ built R1 scope (M7: Credential Manager + AuthorizationClient, Drive REST v3 app folder over OkHttp, gzip JSON snapshots with every table and tombstones, Argon2id + AES-256-GCM, content-addressed attachments with HMAC names, retention 10 + monthly, WorkManager schedules and constraints, local backup file. Restore is one Room transaction rather than a temp-file swap: same all-or-nothing result without restarting the app. "Export a visible copy to Drive" with drive.file is not built; multi-device sync is R2)
+### F-14 Backup and sync (Google Drive) — FREE backup R1 · PRO multi-device sync R2 ✅ built R1 scope (M7: Credential Manager + AuthorizationClient, Drive REST v3 app folder over OkHttp, gzip JSON snapshots with every table and tombstones, Argon2id + AES-256-GCM, content-addressed attachments with HMAC names, retention 10 + monthly, WorkManager schedules and constraints, local backup file. Restore is one Room transaction rather than a temp-file swap: same all-or-nothing result without restarting the app. "Export a visible copy to Drive" ✅ 13 Nov 2026: "Save a copy to My Drive" on the Backup screen asks for `drive.file` on first use and saves the backup snapshot (encrypted when backups are) as one file, `fuelwise-backup.json.gz`, in a "Fuelwise backups" folder, replaced on each save (owner choice); restored with "Restore from file". Multi-device sync is R2)
 
 - **F-14.1 Storage location:**
   - The user's own Google Drive, **appDataFolder** (scope `drive.appdata`, classified non-sensitive by Google → basic OAuth verification only, no security assessment).
-  - It's a hidden app folder; the user doesn't see the files in Drive. The settings screen says so, and offers "Export a copy to Drive (visible)" using `drive.file` via the system picker if the user wants a visible file.
+  - It's a hidden app folder; the user doesn't see the files in Drive. The settings screen says so, and offers "Export a copy to Drive (visible)" using `drive.file` (one tap, no picker; owner decision 13 Nov 2026) if the user wants a visible file. ✅ built
 - **F-14.2 Sign-in:** Credential Manager "Sign in with Google" for identity, then `AuthorizationClient` to request the `drive.appdata` scope. No app account, no backend.
 - **F-14.3 Frequency (user setting):**
   - After every change (debounced 2 min)
@@ -824,7 +824,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | `BLUETOOTH_CONNECT` | R1, auto-trip only |
 | SMS / call log / notification listener | **Never** |
 | `SYSTEM_ALERT_WINDOW` | **Never** |
-| Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. Brand verification only. |
+| Google OAuth | `drive.appdata` (non-sensitive) plus optional `drive.file`. `drive.file` is asked only when the user taps "Save a copy to My Drive" (F-14.1, built 13 Nov 2026); it creates one folder and one file, same `www.googleapis.com` Drive v3 endpoints. Brand verification only. |
 | Network endpoints (M7) | `www.googleapis.com` Drive v3 only (`/drive/v3/files`, `/upload/drive/v3/files`), with the user's own token, app folder only. No other user-data endpoint. |
 | New libraries (M7) | Credential Manager, Google ID, Play services auth (sign-in and the Drive scope, in the stack), OkHttp (in the stack), BouncyCastle `bcprov` for Argon2id passphrase derivation (the stack names Argon2id; Tink has no Argon2), Secrets Gradle Plugin (CLAUDE.md). |
 | Network endpoints (M8) | ✅ Approved 19 Oct 2026: Google Maps SDK for Android tile and map data servers, for map display only, with the restricted `MAPS_API_KEY`. Wired in M8 slice 3 (manifest meta-data from `local.properties`). The user's own location layer is never shown. No coordinates go to any lookup API (no Places, no geocoding). Exception from 12 Nov 2026: trip place names, below. |

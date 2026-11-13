@@ -1,5 +1,6 @@
 package app.fuelwise.sync.drive
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.room.Room
@@ -45,12 +46,23 @@ class BackupManagerTest {
     private lateinit var db: FuelwiseDatabase
     private val settings = FakeBackupSettingsRepository(BackupSettings(accountEmail = "user@example.com"))
     private val keys = MemoryKeyStore()
+    private var ownFilesGranted = true
+    private val consentIntent = PendingIntent.getActivity(
+        ApplicationProvider.getApplicationContext(),
+        0,
+        Intent(),
+        PendingIntent.FLAG_IMMUTABLE,
+    )
     private val auth = object : DriveAuth {
         override val isConfigured = true
 
         override suspend fun signIn(activityContext: Context) = "user@example.com"
 
-        override suspend fun authorize(email: String): DriveAccess = DriveAccess.Granted("token")
+        override suspend fun authorize(email: String, scope: DriveScope): DriveAccess = when {
+            scope == DriveScope.AppData -> DriveAccess.Granted("token")
+            ownFilesGranted -> DriveAccess.Granted("own-files-token")
+            else -> DriveAccess.NeedsConsent(consentIntent)
+        }
 
         override fun complete(data: Intent?): DriveAccess = DriveAccess.Granted("token")
     }
@@ -200,6 +212,61 @@ class BackupManagerTest {
         second.close()
     }
 
+    @Test
+    fun aVisibleCopyGoesToOneFileInAFolderTheUserCanSee() = runTest {
+        val first = manager().saveVisibleCopy()
+        assertThat(first).isInstanceOf(VisibleCopyOutcome.Saved::class.java)
+        val folder = drive.files.values.single { it.mimeType == FOLDER }
+        assertThat(folder.name).isEqualTo("Fuelwise backups")
+        val copy = drive.files.values.single { it.mimeType != FOLDER }
+        assertThat(copy.name).isEqualTo("fuelwise-backup.json.gz")
+        assertThat(copy.parent).isEqualTo(folder.id)
+        assertThat(copy.token).isEqualTo("own-files-token")
+        // Nothing went to the hidden app folder.
+        assertThat(drive.files.values.none { it.parent == "appDataFolder" }).isTrue()
+
+        // Saving again replaces the content: still one folder and one file, and it restores.
+        db.openHelper.writableDatabase.execSQL("UPDATE refuel SET odometerKm = 42400.0 WHERE id = 'r1'")
+        assertThat(manager().saveVisibleCopy()).isInstanceOf(VisibleCopyOutcome.Saved::class.java)
+        assertThat(drive.files).hasSize(2)
+        val second = newDb()
+        val bytes = drive.files.values.single { it.mimeType != FOLDER }.bytes
+        assertThat(manager(second).importFile(bytes, null)).isInstanceOf(RestoreOutcome.Success::class.java)
+        second.openHelper.readableDatabase.query("SELECT odometerKm FROM refuel").use { c ->
+            c.moveToFirst()
+            assertThat(c.getDouble(0)).isEqualTo(42400.0)
+        }
+        second.close()
+    }
+
+    @Test
+    fun aVisibleCopyAsksForDriveAccessFirstAndStaysEncryptedWhenBackupsAre() = runTest {
+        ownFilesGranted = false
+        assertThat(manager().saveVisibleCopy()).isEqualTo(VisibleCopyOutcome.NeedsConsent(consentIntent))
+        assertThat(drive.files).isEmpty()
+
+        ownFilesGranted = true
+        settings.update { it.copy(encrypted = true) }
+        assertThat(manager().saveVisibleCopy()).isEqualTo(VisibleCopyOutcome.Failed(BackupError.KeyMissing))
+        assertThat(drive.files).isEmpty()
+
+        manager().enableEncryption("correct horse battery".toCharArray())
+        assertThat(manager().saveVisibleCopy()).isInstanceOf(VisibleCopyOutcome.Saved::class.java)
+        val copy = drive.files.values.single { it.mimeType != FOLDER }
+        assertThat(BackupCrypto.isEncrypted(copy.bytes)).isTrue()
+    }
+
+    @Test
+    fun aVisibleCopyNeedsDriveConnected() = runTest {
+        settings.update { it.copy(accountEmail = null) }
+        assertThat(manager().saveVisibleCopy()).isEqualTo(VisibleCopyOutcome.Failed(BackupError.SignIn))
+    }
+
+    private companion object {
+        const val FOLDER = "application/vnd.google-apps.folder"
+        const val CREATED = "2026-10-16T04:30:00Z"
+    }
+
     private class MemoryKeyStore : BackupKeyStore {
         private var key: BackupKey? = null
 
@@ -216,7 +283,15 @@ class BackupManagerTest {
 
     /** Enough of Drive v3 for these tests: list, multipart upload, download, delete, and injected failures. */
     private class FakeDrive : Dispatcher() {
-        data class File(val id: String, val name: String, val bytes: ByteArray, val created: String)
+        data class File(
+            val id: String,
+            val name: String,
+            val bytes: ByteArray,
+            val created: String,
+            val parent: String? = null,
+            val mimeType: String? = null,
+            val token: String? = null,
+        )
 
         val files = linkedMapOf<String, File>()
         var failWith: Int? = null
@@ -228,9 +303,10 @@ class BackupManagerTest {
                 return MockResponse.Builder().code(code).body(body).build()
             }
             val path = request.url.encodedPath
+            ownFilesRoute(request, path)?.let { return it }
             return when {
                 request.method == "GET" && path == "/drive/v3/files" -> {
-                    val list = files.values.joinToString(",") {
+                    val list = files.values.filter { it.parent == "appDataFolder" }.joinToString(",") {
                         val size = it.bytes.size
                         """{"id":"${it.id}","name":"${it.name}","size":"$size","createdTime":"${it.created}"}"""
                     }
@@ -239,9 +315,11 @@ class BackupManagerTest {
 
                 request.method == "POST" && path == "/upload/drive/v3/files" -> {
                     val body = request.body?.utf8().orEmpty()
-                    val name = Regex("\"name\":\"([^\"]+)\"").find(body)!!.groupValues[1]
+                    val name = field(body, "name")!!
+                    val parent = Regex("\"parents\":\\[\"([^\"]+)\"").find(body)!!.groupValues[1]
                     val id = "f${next++}"
-                    files[id] = File(id, name, mediaPart(request), "2026-10-16T04:30:00Z")
+                    val token = request.headers["Authorization"]!!.removePrefix("Bearer ")
+                    files[id] = File(id, name, mediaPart(request), CREATED, parent, token = token)
                     MockResponse.Builder().body("""{"id":"$id"}""").build()
                 }
 
@@ -258,6 +336,44 @@ class BackupManagerTest {
                 else -> MockResponse.Builder().code(404).build()
             }
         }
+
+        /** The visible copy (scope drive.file): search, folder create and content replace. */
+        private fun ownFilesRoute(request: RecordedRequest, path: String): MockResponse? {
+            val q = request.url.queryParameter("q")
+            return when {
+                request.method == "GET" && path == "/drive/v3/files" && q != null -> search(q)
+
+                request.method == "POST" && path == "/drive/v3/files" -> {
+                    val body = request.body?.utf8().orEmpty()
+                    val id = "f${next++}"
+                    val name = field(body, "name")!!
+                    files[id] = File(id, name, ByteArray(0), CREATED, mimeType = field(body, "mimeType"))
+                    MockResponse.Builder().body("""{"id":"$id"}""").build()
+                }
+
+                request.method == "PATCH" && path.startsWith("/upload/drive/v3/files/") -> {
+                    val id = path.substringAfterLast('/')
+                    files[id] = files.getValue(id).copy(bytes = request.body!!.toByteArray())
+                    MockResponse.Builder().body("""{"id":"$id"}""").build()
+                }
+
+                else -> null
+            }
+        }
+
+        /** Only the clauses the client sends: name, mimeType and parent equality, trashed ignored. */
+        private fun search(q: String): MockResponse {
+            val name = Regex("name = '([^']+)'").find(q)?.groupValues?.get(1)
+            val mime = Regex("mimeType = '([^']+)'").find(q)?.groupValues?.get(1)
+            val parent = Regex("'([^']+)' in parents").find(q)?.groupValues?.get(1)
+            val hits = files.values.filter {
+                it.name == name && (mime == null || it.mimeType == mime) && (parent == null || it.parent == parent)
+            }
+            val list = hits.joinToString(",") { """{"id":"${it.id}"}""" }
+            return MockResponse.Builder().body("""{"files":[$list]}""").build()
+        }
+
+        private fun field(json: String, key: String) = Regex("\"$key\":\"([^\"]+)\"").find(json)?.groupValues?.get(1)
 
         /** The second part of the multipart/related body: the file bytes. */
         private fun mediaPart(request: RecordedRequest): ByteArray {

@@ -26,7 +26,16 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 /** Qualifier for the Google web OAuth client ID, provided by the app from local.properties (setup step L1). */
 const val WEB_CLIENT_ID_NAME = "googleWebClientId"
 
-/** The result of asking for the drive.appdata scope. */
+/**
+ * The Drive scopes the app asks for (PRD F-14.1, §9): the hidden app folder for backups, and files the app itself
+ * creates for the visible copy. Both are non-sensitive; neither lets the app see anything else in the user's Drive.
+ */
+enum class DriveScope(val uri: String) {
+    AppData("https://www.googleapis.com/auth/drive.appdata"),
+    OwnFiles("https://www.googleapis.com/auth/drive.file"),
+}
+
+/** The result of asking for a Drive scope. */
 sealed interface DriveAccess {
     data class Granted(val accessToken: String) : DriveAccess
 
@@ -44,8 +53,8 @@ interface DriveAuth {
     /** Credential Manager "Sign in with Google" (PRD F-14.2). Needs an Activity context. Returns the account email. */
     suspend fun signIn(activityContext: Context): String
 
-    /** Asks for drive.appdata for [email]; silent when already granted. */
-    suspend fun authorize(email: String): DriveAccess
+    /** Asks for [scope] for [email]; silent when already granted. The visible copy asks for its scope on first use. */
+    suspend fun authorize(email: String, scope: DriveScope = DriveScope.AppData): DriveAccess
 
     /** Finishes a consent screen started from [DriveAccess.NeedsConsent]. */
     fun complete(data: Intent?): DriveAccess
@@ -83,10 +92,10 @@ internal class GoogleDriveAuth @Inject constructor(
         }
     }
 
-    override suspend fun authorize(email: String): DriveAccess {
+    override suspend fun authorize(email: String, scope: DriveScope): DriveAccess {
         if (!isConfigured) return DriveAccess.NotConfigured
         val request = AuthorizationRequest.builder()
-            .setRequestedScopes(listOf(Scope(DRIVE_APPDATA)))
+            .setRequestedScopes(listOf(Scope(scope.uri)))
             .setAccount(Account(email, ACCOUNT_TYPE))
             .build()
         return Identity.getAuthorizationClient(context).authorize(request).await().toAccess()
@@ -106,7 +115,6 @@ internal class GoogleDriveAuth @Inject constructor(
     }
 
     companion object {
-        const val DRIVE_APPDATA = "https://www.googleapis.com/auth/drive.appdata"
         private const val ACCOUNT_TYPE = "com.google"
     }
 }

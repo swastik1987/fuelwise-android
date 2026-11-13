@@ -19,6 +19,7 @@ import app.fuelwise.sync.drive.DriveAccess
 import app.fuelwise.sync.drive.DriveAuth
 import app.fuelwise.sync.drive.RemoteBackup
 import app.fuelwise.sync.drive.RestoreOutcome
+import app.fuelwise.sync.drive.VisibleCopyOutcome
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** What's in progress, so buttons disable and the right spinner shows. */
-enum class BackupBusy { Connecting, BackingUp, Listing, Restoring, Encrypting, Exporting }
+enum class BackupBusy { Connecting, BackingUp, Listing, Restoring, Encrypting, Exporting, SavingCopy }
 
 /** A restore waiting for something: the user's confirmation, or the passphrase of an encrypted backup. */
 sealed interface PendingRestore {
@@ -67,6 +68,9 @@ sealed interface BackupEvent {
     data class Restored(val entries: Int) : BackupEvent
 
     data object Exported : BackupEvent
+
+    /** The visible copy is in My Drive, in the folder [folder]. */
+    data class CopySaved(val folder: String) : BackupEvent
 }
 
 /** Backup & sync (design.md screen 27; PRD F-14). */
@@ -90,6 +94,9 @@ class BackupViewModel @Inject constructor(
     private val eventChannel = Channel<BackupEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
+    /** The consent screen on screen is for the visible copy's scope, not the backup one. */
+    private var copyConsentPending = false
+
     /** Sign in and grant Drive access; needs the Activity for Credential Manager's account picker. */
     fun connect(activityContext: Context) = op(BackupBusy.Connecting) {
         val access = runCatching { backups.connect(activityContext) }.getOrElse {
@@ -99,8 +106,33 @@ class BackupViewModel @Inject constructor(
         handleAccess(access)
     }
 
-    fun onConsentResult(data: Intent?) = op(BackupBusy.Connecting) {
-        handleAccess(runCatching { auth.complete(data) }.getOrElse { DriveAccess.NotConfigured })
+    fun onConsentResult(data: Intent?) {
+        val forCopy = copyConsentPending
+        copyConsentPending = false
+        op(if (forCopy) BackupBusy.SavingCopy else BackupBusy.Connecting) {
+            val access = runCatching { auth.complete(data) }.getOrElse { DriveAccess.NotConfigured }
+            when {
+                !forCopy -> handleAccess(access)
+                access is DriveAccess.Granted -> saveCopy()
+                else -> Unit // Declined: nothing to say, the button is still there.
+            }
+        }
+    }
+
+    /** "Save a copy to My Drive" (PRD F-14.1): one visible file, replaced each time. */
+    fun saveVisibleCopy() = op(BackupBusy.SavingCopy) { saveCopy() }
+
+    private suspend fun saveCopy() {
+        when (val outcome = backups.saveVisibleCopy()) {
+            is VisibleCopyOutcome.Saved -> eventChannel.send(BackupEvent.CopySaved(BackupManager.VISIBLE_FOLDER))
+
+            is VisibleCopyOutcome.NeedsConsent -> {
+                copyConsentPending = true
+                eventChannel.send(BackupEvent.Consent(outcome.intent.intentSender))
+            }
+
+            is VisibleCopyOutcome.Failed -> eventChannel.send(BackupEvent.Failed(outcome.error))
+        }
     }
 
     private suspend fun handleAccess(access: DriveAccess) {

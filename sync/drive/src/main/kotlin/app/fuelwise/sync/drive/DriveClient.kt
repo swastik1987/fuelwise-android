@@ -35,8 +35,9 @@ sealed class DriveException(message: String) : IOException(message) {
 }
 
 /**
- * Drive REST v3 against the hidden `appDataFolder` (scope `drive.appdata`, PRD F-14.1). The only network calls the
- * app makes for user data; nothing is sent anywhere else (CLAUDE.md rule 5).
+ * Drive REST v3 against the hidden `appDataFolder` (scope `drive.appdata`, PRD F-14.1), plus the one visible copy the
+ * user asks for (scope `drive.file`). The only network calls the app makes for user data; nothing is sent anywhere
+ * else (CLAUDE.md rule 5).
  */
 @Singleton
 class DriveClient @Inject constructor(
@@ -114,6 +115,84 @@ class DriveClient @Inject constructor(
         }
     }
 
+    /**
+     * "Export a visible copy" (PRD F-14.1), with the `drive.file` token: saves [bytes] as [fileName] in a My Drive
+     * folder called [folderName], replacing the copy saved before so there is always one file. `drive.file` only sees
+     * files this app created, so the search can't find anything else of the user's. Returns the file's ID.
+     */
+    suspend fun saveVisibleCopy(token: String, folderName: String, fileName: String, bytes: ByteArray): String =
+        withContext(io) {
+            val folder = findOwn(token, folderName, FOLDER_MIME, parent = null)
+                ?: createFolder(token, folderName)
+            val existing = findOwn(token, fileName, mimeType = null, parent = folder)
+            if (existing != null) {
+                replaceContent(token, existing, bytes)
+            } else {
+                createIn(token, folder, fileName, bytes)
+            }
+        }
+
+    private fun findOwn(token: String, name: String, mimeType: String?, parent: String?): String? {
+        val q = buildList {
+            add("name = '${name.escapeQuery()}'")
+            add("trashed = false")
+            mimeType?.let { add("mimeType = '$it'") }
+            parent?.let { add("'${it.escapeQuery()}' in parents") }
+        }.joinToString(" and ")
+        val url = api.newBuilder()
+            .addQueryParameter("spaces", "drive")
+            .addQueryParameter("q", q)
+            .addQueryParameter("orderBy", "modifiedTime desc")
+            .addQueryParameter("fields", "files(id)")
+            .build()
+        val body = execute(Request.Builder().url(url).auth(token).build()).use { it.body.string() }
+        val files = json.parseToJsonElement(body).jsonObject["files"] as? JsonArray
+        return files?.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content
+    }
+
+    private fun createFolder(token: String, name: String): String {
+        val metadata = JsonObject(mapOf("name" to JsonPrimitive(name), "mimeType" to JsonPrimitive(FOLDER_MIME)))
+        val url = api.newBuilder().addQueryParameter("fields", "id").build()
+        val request = Request.Builder().url(url).auth(token)
+            .post(metadata.toString().toRequestBody(JSON_MIME.toMediaType()))
+            .build()
+        return execute(request).use { it.idOf() }
+    }
+
+    private fun createIn(token: String, folder: String, name: String, bytes: ByteArray): String {
+        val metadata = JsonObject(
+            mapOf("name" to JsonPrimitive(name), "parents" to JsonArray(listOf(JsonPrimitive(folder)))),
+        )
+        val body = MultipartBody.Builder()
+            .setType("multipart/related".toMediaType())
+            .addPart(metadata.toString().toRequestBody(JSON_MIME.toMediaType()))
+            .addPart(bytes.toRequestBody(GZIP_MIME.toMediaType()))
+            .build()
+        val url = "$baseUrl/upload/drive/v3/files".toHttpUrl().newBuilder()
+            .addQueryParameter("uploadType", "multipart")
+            .addQueryParameter("fields", "id")
+            .build()
+        return execute(Request.Builder().url(url).auth(token).post(body).build()).use { it.idOf() }
+    }
+
+    /** One request: Drive keeps the old content until the new upload is complete. */
+    private fun replaceContent(token: String, id: String, bytes: ByteArray): String {
+        val url = "$baseUrl/upload/drive/v3/files".toHttpUrl().newBuilder()
+            .addPathSegment(id)
+            .addQueryParameter("uploadType", "media")
+            .addQueryParameter("fields", "id")
+            .build()
+        val request = Request.Builder().url(url).auth(token)
+            .patch(bytes.toRequestBody(GZIP_MIME.toMediaType()))
+            .build()
+        return execute(request).use { it.idOf() }
+    }
+
+    private fun Response.idOf(): String =
+        json.parseToJsonElement(body.string()).jsonObject.getValue("id").jsonPrimitive.content
+
+    private fun String.escapeQuery() = replace("\\", "\\\\").replace("'", "\\'")
+
     private fun execute(request: Request): Response {
         val response = http.newCall(request).execute()
         if (response.isSuccessful) return response
@@ -135,5 +214,8 @@ class DriveClient @Inject constructor(
         private const val PAGE_SIZE = "1000"
         private const val HTTP_UNAUTHORIZED = 401
         private const val HTTP_FORBIDDEN = 403
+        private const val FOLDER_MIME = "application/vnd.google-apps.folder"
+        private const val JSON_MIME = "application/json; charset=UTF-8"
+        private const val GZIP_MIME = "application/gzip"
     }
 }

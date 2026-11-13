@@ -62,6 +62,7 @@ import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.model.BackupError
 import app.fuelwise.core.model.BackupFrequency
 import app.fuelwise.core.ui.format.IndianNumberFormat
+import app.fuelwise.sync.drive.BackupManager
 import app.fuelwise.sync.drive.RemoteBackup
 import java.time.Instant
 import java.time.ZoneId
@@ -86,6 +87,7 @@ internal data class BackupActions(
     val onCancelRestore: () -> Unit = {},
     val onSaveFile: () -> Unit = {},
     val onOpenFile: () -> Unit = {},
+    val onSaveCopy: () -> Unit = {},
 )
 
 @Composable
@@ -121,6 +123,8 @@ internal fun BackupScreen(onBack: () -> Unit, onRestored: () -> Unit, viewModel:
                 }
 
                 BackupEvent.Exported -> resources.getString(R.string.backup_exported_toast)
+
+                is BackupEvent.CopySaved -> resources.getString(R.string.backup_copy_saved_toast, event.folder)
             }
             message?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
         }
@@ -144,6 +148,7 @@ internal fun BackupScreen(onBack: () -> Unit, onRestored: () -> Unit, viewModel:
             onCancelRestore = viewModel::cancelRestore,
             onSaveFile = { save.launch(viewModel.exportFileName) },
             onOpenFile = { open.launch(arrayOf("application/gzip", "application/octet-stream", "*/*")) },
+            onSaveCopy = viewModel::saveVisibleCopy,
         ),
     )
 }
@@ -222,6 +227,7 @@ internal fun BackupContent(state: BackupUiState, actions: BackupActions) {
                     Modifier.fillMaxWidth(),
                     enabled = !busy,
                 )
+                VisibleCopy(busy, actions.onSaveCopy)
             }
             FwOverline(stringResource(R.string.backup_file_section))
             Text(stringResource(R.string.backup_file_body), style = FwTheme.type.bodyS, color = FwTheme.colors.ink2)
@@ -278,6 +284,24 @@ internal fun BackupContent(state: BackupUiState, actions: BackupActions) {
     state.backups?.let { BackupList(it, actions) }
     state.confirmRestore?.let { ConfirmRestore(actions) }
     state.askPassphrase?.let { AskPassphrase(state.wrongPassphrase, actions) }
+}
+
+/** "Export a visible copy to Drive" (PRD F-14.1): the one backup the user can see, share or download from Drive. */
+@Composable
+private fun VisibleCopy(busy: Boolean, onSave: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
+        FwSecondaryButton(
+            stringResource(R.string.backup_save_copy),
+            onSave,
+            Modifier.fillMaxWidth(),
+            enabled = !busy,
+        )
+        Text(
+            stringResource(R.string.backup_save_copy_body, BackupManager.VISIBLE_FOLDER),
+            style = FwTheme.type.bodyS,
+            color = FwTheme.colors.ink2,
+        )
+    }
 }
 
 @Composable
@@ -555,6 +579,7 @@ private fun busyLabel(busy: BackupBusy): Int = when (busy) {
     BackupBusy.Restoring -> R.string.busy_restoring
     BackupBusy.Encrypting -> R.string.busy_encrypting
     BackupBusy.Exporting -> R.string.busy_exporting
+    BackupBusy.SavingCopy -> R.string.busy_saving_copy
 }
 
 internal fun errorText(error: BackupError): Int = when (error) {

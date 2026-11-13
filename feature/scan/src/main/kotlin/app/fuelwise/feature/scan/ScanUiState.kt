@@ -46,6 +46,8 @@ data class ScanUiState(
     val struggling: Boolean = false,
     val review: ScanReview? = null,
     val attachPhoto: Boolean = true,
+    /** A "Snap" photo is being taken and read. */
+    val snapping: Boolean = false,
 ) {
     val hasReading: Boolean get() = live.fields().isNotEmpty()
 }

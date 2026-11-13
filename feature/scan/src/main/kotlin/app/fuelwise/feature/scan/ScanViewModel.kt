@@ -14,6 +14,7 @@ import app.fuelwise.core.domain.FwDispatcher
 import app.fuelwise.core.domain.scan.OdometerParser
 import app.fuelwise.core.domain.scan.PumpMeterParser
 import app.fuelwise.core.domain.scan.ReceiptParser
+import app.fuelwise.core.domain.scan.ScanChoice
 import app.fuelwise.core.domain.scan.TriangleReading
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Money
@@ -105,20 +106,20 @@ class ScanViewModel @Inject constructor(
 
     /** Called for every analysed frame; frames that arrive while one is being parsed are dropped. */
     fun onFrame(frame: OcrFrame) {
-        if (busy || _state.value.review != null) return
+        if (busy || _state.value.review != null || _state.value.snapping) return
         busy = true
         val mode = _state.value.mode
         viewModelScope.launch {
             val (live, valid) = withContext(parsing) { parse(mode, frame) }
             busy = false
-            if (_state.value.review != null || _state.value.mode != mode) return@launch
+            if (_state.value.review != null || _state.value.snapping || _state.value.mode != mode) return@launch
             latestJpeg = frame.jpeg
-            stableFrames = when {
-                !valid -> 0
-                live.values == lastValid -> stableFrames + 1
-                else -> 1
+            // Live frames take turns with different image clean-ups, so one may miss what the others read. A miss
+            // doesn't reset the count: two consistent readings that agree still confirm each other.
+            if (valid) {
+                stableFrames = if (live.values == lastValid) stableFrames + 1 else 1
+                lastValid = live.values
             }
-            lastValid = live.values.takeIf { valid }
             if (live.labels.isNotEmpty()) restartStruggleTimer()
             _state.update {
                 it.copy(
@@ -165,6 +166,49 @@ class ScanViewModel @Inject constructor(
             unitPrice?.box?.let { LiveLabel(ScanField.Rate, it) },
         ),
     )
+
+    /** "Snap" was tapped: live reading pauses until [onSnap] reports the photo's reading. */
+    fun onSnapStarted() {
+        if (_state.value.review != null || _state.value.snapping) return
+        struggleJob?.cancel()
+        _state.update { it.copy(snapping = true, struggling = false) }
+    }
+
+    /**
+     * A full-resolution photo read several ways (PRD F-15). The best reading opens the confirm sheet: ticked when its
+     * values check out, unticked otherwise. Nothing read shows the failure state.
+     */
+    internal fun onSnap(snap: OcrSnap) {
+        val mode = _state.value.mode
+        viewModelScope.launch {
+            val readings = withContext(parsing) {
+                ScanChoice.candidates(snap.reads).map { parse(mode, OcrFrame(it, snap.width, snap.height, snap.jpeg)) }
+            }
+            val best = ScanChoice.best(readings, { it.second }, { it.first.values.fields().size })
+            if (_state.value.review != null || _state.value.mode != mode) {
+                _state.update { it.copy(snapping = false) }
+                return@launch
+            }
+            if (best == null) {
+                _state.update { it.copy(snapping = false, struggling = true) }
+                return@launch
+            }
+            val (live, valid) = best
+            latestJpeg = snap.jpeg
+            _state.update {
+                it.copy(
+                    snapping = false,
+                    live = live.values,
+                    labels = live.labels,
+                    frameWidth = snap.width,
+                    frameHeight = snap.height,
+                    allValid = valid,
+                    struggling = false,
+                )
+            }
+            openReview(validated = valid)
+        }
+    }
 
     /** "Read now": review whatever was read, each field to be ticked unless the reading was consistent. */
     fun onReadNow() {

@@ -45,7 +45,10 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -395,7 +398,7 @@ class RefuelViewModelTest {
         vm.type(NumericField.Odometer, "42318")
         vm.type(NumericField.Quantity, "19.43")
         // A scan handed back to the open sheet (banner flow) after the user typed.
-        applyScanForTest(ScanPrefill(unitPrice = Money(10_292)))
+        vm.onScanResult(ScanPrefill(unitPrice = Money(10_292)).encode())
         val s = vm.state.value
         assertThat(s.odometer).isEqualTo("42318")
         assertThat(s.total).isEqualTo("1999.74")
@@ -413,7 +416,39 @@ class RefuelViewModelTest {
         assertThat(documents.observeAttachments(saved.id).first()).isEmpty()
     }
 
-    private fun applyScanForTest(scan: ScanPrefill) = handle.set("scan", scan.encode())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun aBannerScanArrivesThroughTheNavigationEntryHandle() = runTest {
+        // Regression (F-15): the app sets the result on the Add fuel entry's NavBackStackEntry.savedStateHandle,
+        // which is a different SavedStateHandle from the ViewModel's own. The destination forwards it.
+        val vm = viewModel()
+        val entryHandle = SavedStateHandle()
+        backgroundScope.launch { entryHandle.deliverScanResults(vm::onScanResult) }
+        runCurrent()
+
+        val receipt = ScanPrefill(
+            total = Money(288_714),
+            quantity = 29.32,
+            unitPrice = Money(9_847),
+            stationName = "HP",
+        )
+        entryHandle[SCAN_RESULT_KEY] = receipt.encode()
+        runCurrent()
+
+        val s = vm.state.value
+        assertThat(s.total).isEqualTo("2887.14")
+        assertThat(s.quantity).isEqualTo("29.32")
+        assertThat(s.unitPrice).isEqualTo("98.47")
+        assertThat(s.station).isEqualTo("HP")
+        assertThat(entryHandle.get<String?>(SCAN_RESULT_KEY)).isNull()
+    }
+
+    @Test
+    fun aRouteScanIsAppliedOnceAndClearedFromSavedState() = runTest {
+        val vm = viewModel(scan = ScanPrefill(unitPrice = Money(10_292)).encode())
+        assertThat(vm.state.value.unitPrice).isEqualTo("102.92")
+        assertThat(handle.get<String?>("scan")).isNull()
+    }
 
     private companion object {
         const val DAY = 86_400_000L

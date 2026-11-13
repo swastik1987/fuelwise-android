@@ -8,6 +8,7 @@ import app.fuelwise.core.data.repository.CategoryRepository
 import app.fuelwise.core.data.repository.DocumentRepository
 import app.fuelwise.core.data.repository.EntryRepository
 import app.fuelwise.core.data.repository.FuelPriceRepository
+import app.fuelwise.core.data.repository.StationRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
 import app.fuelwise.core.designsystem.component.FwPhoto
@@ -17,6 +18,9 @@ import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.entry.LookupIntervals
 import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.priceFuelFor
+import app.fuelwise.core.domain.station.StationMatch
+import app.fuelwise.core.domain.station.StationOption
+import app.fuelwise.core.domain.station.fillNeedFor
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EntrySource
@@ -31,15 +35,19 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -80,6 +88,7 @@ class EntryDetailViewModel @Inject constructor(
     userData: UserDataRepository,
     private val cityPrices: FuelPriceRepository,
     private val documents: DocumentRepository,
+    private val stations: StationRepository,
     @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<EntryDetailRoute>()
@@ -143,6 +152,59 @@ class EntryDetailViewModel @Inject constructor(
         return FairPrice.of(refuel.unitPrice, day, history)
     }
 
+    private val _stationEdit = MutableStateFlow<StationEdit?>(null)
+
+    /** The "Change station" sheet, or null when it's closed. */
+    val stationEdit: StateFlow<StationEdit?> = _stationEdit.asStateFlow()
+
+    /**
+     * Opens "Change station" (PRD F-02.1, F-21.1). With a saved position it lists the stations near it, from the
+     * bundled list and the user's other fill-ups, matched on the phone. Without one, the user can only type a name.
+     */
+    fun onEditStation() {
+        val fill = uiState.value as? EntryDetailUiState.FillUp ?: return
+        val refuel = fill.refuel
+        val lat = refuel.lat
+        val lng = refuel.lng
+        val located = lat != null && lng != null
+        _stationEdit.value = StationEdit(loading = located, hasLocation = located, current = refuel.stationName)
+        if (lat == null || lng == null) return
+        viewModelScope.launch {
+            val listed = stations.near(lat, lng, StationMatch.WIDE_M)
+            // This fill-up's own name doesn't vouch for itself.
+            val history = entries.observeAllRefuels().first().filter { it.id != refuel.id }
+            val energy = fill.vehicle?.tanks?.firstOrNull { it.id == refuel.tankId }?.energyType
+            val options = StationMatch.options(lat, lng, listed, history, fillNeedFor(energy))
+            _stationEdit.update { it?.copy(loading = false, options = options) }
+        }
+    }
+
+    fun onDismissStation() {
+        _stationEdit.value = null
+    }
+
+    /** A listed station: its name, and its position, which is more exact than where the phone was. */
+    fun onPickStation(option: StationOption) = saveStation {
+        it.copy(stationName = option.label, lat = option.lat, lng = option.lng)
+    }
+
+    /**
+     * A typed name, kept at the saved position: the next fill-up near here suggests it first (PRD F-21.1 learning).
+     * Blank clears the name.
+     */
+    fun onTypeStation(name: String) = saveStation {
+        it.copy(stationName = name.trim().take(MAX_STATION).ifEmpty { null })
+    }
+
+    /** Drops the saved position; the name stays. */
+    fun onRemoveLocation() = saveStation { it.copy(lat = null, lng = null) }
+
+    private fun saveStation(change: (Refuel) -> Refuel) {
+        val refuel = (uiState.value as? EntryDetailUiState.FillUp)?.refuel ?: return
+        _stationEdit.value = null
+        viewModelScope.launch { entries.saveRefuel(change(refuel)) }
+    }
+
     private val deletedChannel = Channel<Unit>(Channel.BUFFERED)
     val deleted = deletedChannel.receiveAsFlow()
 
@@ -158,5 +220,15 @@ class EntryDetailViewModel @Inject constructor(
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
+        const val MAX_STATION = 60
     }
 }
+
+/** "Change station" (PRD F-02.1): nearby stations around the fill-up's saved position, best first. */
+data class StationEdit(
+    val loading: Boolean,
+    /** The fill-up has a position: nearby stations can be listed, and the position removed. */
+    val hasLocation: Boolean,
+    val current: String?,
+    val options: List<StationOption> = emptyList(),
+)

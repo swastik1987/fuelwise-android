@@ -7,6 +7,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.IntervalResult
 import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.station.Station
+import app.fuelwise.core.domain.station.StationFuel
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.SystemCategory
@@ -14,6 +16,7 @@ import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFuelPriceRepository
+import app.fuelwise.core.testing.FakeStationRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
 import app.fuelwise.core.testing.MainDispatcherRule
@@ -22,6 +25,8 @@ import app.fuelwise.core.testing.SampleVehicles
 import com.google.common.truth.Truth.assertThat
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -36,7 +41,18 @@ class EntryDetailViewModelTest {
     @get:Rule
     val main = MainDispatcherRule()
 
-    private val entries = FakeEntryRepository(SampleEntries.safariRefuels, listOf(SampleEntries.safariService))
+    // 100 Feet Road, Indiranagar, Bengaluru; the stations are made up. r3 was saved at the road as "Shell" (wrong).
+    private val hereLat = 12.97842
+    private val hereLng = 77.64081
+    private val hp = Station(1, hereLat + 0.0003, hereLng, "HP", "Sri Lakshmi Fuels", setOf(StationFuel.Diesel), false)
+    private val iocl = Station(2, hereLat - 0.0006, hereLng, "IndianOil", null, setOf(StationFuel.Diesel), false)
+
+    private val entries = FakeEntryRepository(
+        SampleEntries.safariRefuels.map {
+            if (it.id == "r3") it.copy(stationName = "Shell", lat = hereLat, lng = hereLng) else it
+        },
+        listOf(SampleEntries.safariService),
+    )
 
     private val documents = FakeDocumentRepository()
 
@@ -49,6 +65,7 @@ class EntryDetailViewModelTest {
         userData = FakeUserDataRepository(),
         cityPrices = FakeFuelPriceRepository(),
         documents = documents,
+        stations = FakeStationRepository(listOf(hp, iocl)),
         io = main.dispatcher,
     )
 
@@ -102,5 +119,63 @@ class EntryDetailViewModelTest {
             it is EntryDetailUiState.Cost && it.photos.isNotEmpty()
         } as EntryDetailUiState.Cost
         assertThat(cost.photos).hasSize(1)
+    }
+
+    /** Keeps the detail state live, as the screen does, and waits for the fill-up. */
+    private suspend fun TestScope.openFillUp(id: String): EntryDetailViewModel {
+        val vm = viewModel(EntrySource.Refuel, id)
+        backgroundScope.launch { vm.uiState.collect {} }
+        vm.uiState.first { it is EntryDetailUiState.FillUp }
+        return vm
+    }
+
+    @Test
+    fun changeStationListsStationsNearTheSavedPositionAndSavesThePick() = runTest {
+        val vm = openFillUp("r3")
+        vm.onEditStation()
+        val edit = vm.stationEdit.first { it != null && !it.loading }!!
+        assertThat(edit.hasLocation).isTrue()
+        assertThat(edit.current).isEqualTo("Shell")
+        assertThat(edit.options.map { it.label }).containsExactly("HP · Sri Lakshmi Fuels", "IndianOil").inOrder()
+
+        vm.onPickStation(edit.options[1])
+        assertThat(vm.stationEdit.value).isNull()
+        val saved = entries.refuels.single { it.id == "r3" }
+        assertThat(saved.stationName).isEqualTo("IndianOil")
+        assertThat(saved.lat).isEqualTo(iocl.lat)
+        assertThat(saved.lng).isEqualTo(iocl.lng)
+    }
+
+    @Test
+    fun aTypedNameKeepsThePositionSoItIsLearnedThere() = runTest {
+        val vm = openFillUp("r3")
+        vm.onEditStation()
+        vm.onTypeStation("  Raju Fuels ")
+        val saved = entries.refuels.single { it.id == "r3" }
+        assertThat(saved.stationName).isEqualTo("Raju Fuels")
+        assertThat(saved.lat).isEqualTo(hereLat)
+    }
+
+    @Test
+    fun removingTheLocationKeepsTheName() = runTest {
+        val vm = openFillUp("r3")
+        vm.onEditStation()
+        vm.onRemoveLocation()
+        val saved = entries.refuels.single { it.id == "r3" }
+        assertThat(saved.lat).isNull()
+        assertThat(saved.lng).isNull()
+        assertThat(saved.stationName).isEqualTo("Shell")
+    }
+
+    @Test
+    fun withoutAPositionOnlyANameCanBeTyped() = runTest {
+        val vm = openFillUp("r1")
+        vm.onEditStation()
+        val edit = vm.stationEdit.value!!
+        assertThat(edit.hasLocation).isFalse()
+        assertThat(edit.loading).isFalse()
+        assertThat(edit.options).isEmpty()
+        vm.onDismissStation()
+        assertThat(vm.stationEdit.value).isNull()
     }
 }

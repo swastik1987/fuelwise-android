@@ -5,10 +5,9 @@ import app.fuelwise.core.data.repository.StationRepository
 import app.fuelwise.core.domain.station.Station
 import app.fuelwise.core.domain.station.StationMatch
 import app.fuelwise.core.domain.station.StationOption
-import app.fuelwise.core.domain.trip.FillNeed
+import app.fuelwise.core.domain.station.fillNeedFor
 import app.fuelwise.core.location.Fix
 import app.fuelwise.core.location.SingleFix
-import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Refuel
 import app.fuelwise.core.model.Tank
 import javax.inject.Inject
@@ -44,16 +43,10 @@ class RefuelStation @Inject constructor(
 
     fun options(tank: Tank?): List<StationOption> {
         val here = position ?: return emptyList()
-        return StationMatch.options(here.lat, here.lng, listed, history, tank.fillNeed())
+        return StationMatch.options(here.lat, here.lng, listed, history, fillNeedFor(tank?.energyType))
     }
 
     fun forget() {
         position = null
-    }
-
-    private fun Tank?.fillNeed(): FillNeed = when (this?.energyType) {
-        EnergyType.ELECTRIC -> FillNeed.Electric
-        EnergyType.CNG -> FillNeed.Cng
-        else -> FillNeed.Liquid
     }
 }

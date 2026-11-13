@@ -36,6 +36,14 @@
     <string name="refuel_discount_comes_to">= %1$s की छूट</string>
     <string name="refuel_station">पंप</string>
     <string name="refuel_station_placeholder">जैसे HP, इंदिरानगर</string>
+    <string name="refuel_station_detect">पंप पहचानें</string>
+    <string name="refuel_station_detect_hint">आपकी लोकेशन सिर्फ़ एक बार, इसी फ़ोन पर इस्तेमाल होती है। कुछ भी भेजा नहीं जाता।</string>
+    <string name="refuel_station_locating">पास का पंप ढूँढ रहे हैं…</string>
+    <string name="refuel_station_none">पास में सूची का कोई पंप नहीं मिला। नाम लिखें, अगली बार यहीं सुझाया जाएगा।</string>
+    <string name="refuel_station_detected">आपके पास मिला · %1$d मी</string>
+    <string name="refuel_station_used_before">आप यहाँ पहले भरवा चुके हैं · %1$d मी</string>
+    <string name="refuel_station_other">दूसरा…</string>
+    <string name="refuel_station_other_hint">पंप का नाम लिखें। अगली बार यहीं सुझाया जाएगा।</string>
     <string name="refuel_notes">नोट</string>
     <string name="refuel_photos">फ़ोटो</string>
     <string name="refuel_photo">फ़िल-अप की फ़ोटो</string>

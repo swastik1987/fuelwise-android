@@ -29,6 +29,7 @@ import app.fuelwise.core.domain.prices.FairPrice
 import app.fuelwise.core.domain.prices.PriceDefault
 import app.fuelwise.core.domain.prices.choosePriceDefault
 import app.fuelwise.core.domain.prices.priceFuelFor
+import app.fuelwise.core.domain.station.isBackDated
 import app.fuelwise.core.domain.trip.FillUpPrefill
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
@@ -83,6 +84,7 @@ class RefuelViewModel @Inject constructor(
     private val scanPhotos: ScanPhotoStash,
     private val photos: EntryPhotoDraft,
     private val picked: PickedPhotoReader,
+    private val stationDetector: RefuelStation,
     @param:Dispatcher(FwDispatcher.IO) private val io: CoroutineDispatcher,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<RefuelRoute>()
@@ -137,7 +139,7 @@ class RefuelViewModel @Inject constructor(
             var next = s.withScannedTriangle(scan)
             scan.odometerKm?.let { next = next.copy(odometer = it.toString()) }
             scan.dateTimeUtcMs?.let { next = next.copy(dateTimeUtcMs = it) }
-            scan.stationName?.let { next = next.copy(station = it.take(MAX_TEXT), moreExpanded = true) }
+            scan.stationName?.let { next = next.withStationText(it.take(MAX_TEXT)) }
             next.copy(scanPhotoToken = scan.photoToken ?: s.scanPhotoToken, focus = null).revalidated()
         }
     }
@@ -201,7 +203,69 @@ class RefuelViewModel @Inject constructor(
             refreshTank()
         } else {
             refreshTank(applyDefaults = true)
+            // A fill-up prompt (PRD F-21.4) brings its own station and position.
+            if (prompt == null) detectStation()
         }
+    }
+
+    /**
+     * Station auto-detect (PRD F-21.1): one location fix when the sheet opens, matched on the phone. Without
+     * permission, a chip offers it; if the fix doesn't come in time, the field just stays empty and editable.
+     */
+    private fun detectStation() {
+        val s = _state.value
+        if (s.isEdit || isBackDated(s.dateTimeUtcMs, clock.millis())) return
+        if (!stationDetector.hasPermission) {
+            _state.update { it.copy(stationDetect = StationDetect.NeedsPermission) }
+            return
+        }
+        _state.update { it.copy(stationDetect = StationDetect.Locating) }
+        viewModelScope.launch {
+            val located = stationDetector.locate()
+            val backDated = isBackDated(_state.value.dateTimeUtcMs, clock.millis())
+            if (!located || backDated || _state.value.stationDetect != StationDetect.Locating) {
+                if (backDated) stationDetector.forget()
+                _state.update {
+                    if (it.stationDetect == StationDetect.Locating) it.copy(stationDetect = StationDetect.Off) else it
+                }
+                return@launch
+            }
+            _state.update { it.withStationOptions() }
+        }
+    }
+
+    /** Ranks the stations for the current tank (CNG and EV fit), keeping what the user already chose or typed. */
+    private fun RefuelFormState.withStationOptions(): RefuelFormState {
+        if (!stationDetect.hasLocation && stationDetect != StationDetect.Locating) return this
+        val options = stationDetector.options(tank)
+        if (options.isEmpty()) return copy(stationDetect = StationDetect.NotFound)
+        val typed = this.station.trim()
+        // An empty field takes the best match; a name already there (typed, or from a receipt) is kept.
+        val selected = if (typed.isEmpty()) 0 else options.indexOfFirst { it.label.equals(typed, ignoreCase = true) }
+        return copy(
+            stationDetect = StationDetect.Found(options, selected.takeIf { it >= 0 }),
+            station = if (typed.isEmpty()) options.first().label else this.station,
+        )
+    }
+
+    /** The "Detect station" chip's permission request came back (while-in-use location only). */
+    fun onLocationPermission(granted: Boolean) {
+        if (granted) {
+            detectStation()
+        } else {
+            _state.update { it.copy(stationDetect = StationDetect.Off) }
+        }
+    }
+
+    /** A station chip; null is "Other", which shows the name field. */
+    fun onStationOption(index: Int?) = _state.update { s ->
+        val found = s.stationDetect as? StationDetect.Found ?: return@update s
+        val option = index?.let(found.options::getOrNull)
+        s.copy(
+            stationDetect = found.copy(selected = option?.let { index }),
+            station = option?.label ?: "",
+            focus = null,
+        )
     }
 
     /** Reloads the tank's fills (for checks, prediction and defaults). Defaults apply only to new entries. */
@@ -399,7 +463,14 @@ class RefuelViewModel @Inject constructor(
     }
 
     fun onDateTime(utcMs: Long) {
-        _state.update { it.copy(dateTimeUtcMs = utcMs).withPreviousFill().revalidated() }
+        _state.update { it.copy(dateTimeUtcMs = utcMs).withPreviousFill().revalidated().withoutLocationIfBackDated() }
+    }
+
+    /** A back-dated entry doesn't use the current location (PRD F-21.1); a name already chosen stays as text. */
+    private fun RefuelFormState.withoutLocationIfBackDated(): RefuelFormState {
+        if (stationDetect == StationDetect.Off || !isBackDated(dateTimeUtcMs, clock.millis())) return this
+        stationDetector.forget()
+        return copy(stationDetect = StationDetect.Off)
     }
 
     fun onTank(index: Int) {
@@ -407,7 +478,11 @@ class RefuelViewModel @Inject constructor(
         _state.update {
             it.copy(tankIndex = index, unitPrice = "", quantity = "", total = "", recentEdits = emptyList())
         }
-        viewModelScope.launch { refreshTank(applyDefaults = true) }
+        viewModelScope.launch {
+            refreshTank(applyDefaults = true)
+            // A CNG or petrol tank ranks the stations differently (PRD F-21.1 fuel fit).
+            _state.update { it.withStationOptions() }
+        }
     }
 
     fun onVehicle(id: String?) {
@@ -419,6 +494,9 @@ class RefuelViewModel @Inject constructor(
                 vehicles = it.vehicles,
                 vehicle = vehicle,
                 dateTimeUtcMs = it.dateTimeUtcMs,
+                // Same place, different vehicle: the station stays, re-ranked for its fuel.
+                station = it.station,
+                stationDetect = it.stationDetect,
             )
         }
         viewModelScope.launch {
@@ -426,6 +504,7 @@ class RefuelViewModel @Inject constructor(
             val units = userData.userData.first().units.forVehicle(vehicle.id)
             _state.update { it.copy(units = units) }
             refreshTank(applyDefaults = true)
+            _state.update { it.withStationOptions() }
         }
     }
 
@@ -546,6 +625,7 @@ class RefuelViewModel @Inject constructor(
         val totalMoney = MoneyInput.parse(total) ?: return null
         val price = MoneyInput.parse(unitPrice) ?: PriceTriangle.unitPriceOf(qty, totalMoney) ?: return null
         val discountMoney = discountMoney(totalMoney)?.takeIf { it <= totalMoney } ?: Money.ZERO
+        val position = savedPosition()
         return Refuel(
             id = editing?.id.orEmpty(),
             vehicleId = vehicle.id,
@@ -564,11 +644,42 @@ class RefuelViewModel @Inject constructor(
             paymentMethod = payment,
             notes = notes.ifBlank { null },
             priceSource = priceSource,
-            // An edit keeps where the entry was logged (Logbook map, PRD F-05); a fill-up logged from a prompt (PRD
-            // F-21.4) takes the station's position from the bundled list, for the trips map.
-            lat = if (editing == null) prompt?.lat else editing?.lat,
-            lng = if (editing == null) prompt?.lng else editing?.lng,
+            lat = position?.first,
+            lng = position?.second,
         ).let { if (isCharge) it.withChargeFields(this) else it }
+    }
+
+    /**
+     * Where the fill-up happened (Logbook and trips maps, PRD F-05; next detection, F-21.1). An edit keeps what it
+     * had; a fill-up prompt (F-21.4) has its station's position. A new entry takes the chosen station's position,
+     * or the phone's own when the user typed a name ("Other"): that's how a station the list lacks is learned.
+     */
+    private fun RefuelFormState.savedPosition(): Pair<Double, Double>? {
+        val chosen = (stationDetect as? StationDetect.Found)?.selectedOption
+        val phone = stationDetector.position
+        return when {
+            editing != null -> pair(editing?.lat, editing?.lng)
+            prompt != null -> pair(prompt.lat, prompt.lng)
+            !stationDetect.hasLocation -> null
+            chosen != null -> chosen.lat to chosen.lng
+            else -> phone?.let { it.lat to it.lng }
+        }
+    }
+
+    private fun pair(lat: Double?, lng: Double?): Pair<Double, Double>? = if (lat != null &&
+        lng != null
+    ) {
+        lat to lng
+    } else {
+        null
+    }
+
+    /** A station name from elsewhere (a receipt): selects its chip if one matches, otherwise "Other" with the name. */
+    private fun RefuelFormState.withStationText(text: String): RefuelFormState {
+        val found = stationDetect as? StationDetect.Found
+            ?: return copy(station = text, moreExpanded = moreExpanded || !stationDetect.ownsStationField)
+        val index = found.options.indexOfFirst { it.label.equals(text.trim(), ignoreCase = true) }
+        return copy(station = text, stationDetect = found.copy(selected = index.takeIf { it >= 0 }))
     }
 
     /** EV sessions carry SoC, charger and operator; a charge to 99% or more counts as full (PRD F-03.4). */

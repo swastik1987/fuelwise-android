@@ -49,6 +49,7 @@ object FwSize {
     val entryRowHeight: Dp = 64.dp
     val iconTile: Dp = 40.dp
     val icon: Dp = 24.dp
+    val iconSmall: Dp = 16.dp
     val fab: Dp = 64.dp
     val navBarHeight: Dp = 72.dp
     val hairline: Dp = 1.dp

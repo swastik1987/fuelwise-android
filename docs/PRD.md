@@ -100,7 +100,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 | 18 | Nearest gas stations | Free | F-09.4 | FREE | R1 | Hand-off to Google Maps search (zero API cost) |
 | 19 | Trip log: manual or GPS; trip cost; map preview; GPX export; restore interrupted trip | Free | F-07 | FREE | R1 | Parity |
 | 20 | Trip auto-start via vehicle Bluetooth | Free | F-21.3 | FREE | R1 | **Better than parity:** automatic trips from driving detection (works for two-wheelers too), with car Bluetooth as an extra signal. This is the app's one declared background-location feature. |
-| 20a | — (new) Auto-detect the fuel station when logging | — | F-21.1 | FREE | R2 | New. Offline station list (OpenStreetMap) plus the user's own history. No Google Places. |
+| 20a | — (new) Auto-detect the fuel station when logging | — | F-21.1 | FREE | R1 (D17) | New. Offline station list (OpenStreetMap) plus the user's own history. No Google Places. |
 | 20b | — (new) Detect a likely fill-up from a stop at a station and prompt to log | — | F-21.4 | FREE | R1 | New. Attacks the #1 risk: users forgetting to log. |
 | 21 | Post-trip odometer prompt; floating "smart bubble" | Free | F-07.6 | FREE | R1 | Prompt yes; floating overlay **no** (SYSTEM_ALERT_WINDOW is a review risk; use a notification action instead) |
 | 22 | Trip weekly view | Pro | F-07.7 | FREE | R1 | Cheap to build, keep free |
@@ -164,7 +164,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-02 Refuel and charge log — FREE · R1
 
-**F-02.1 Fill-up entry fields:** ✅ built (photos ✅ 23 Oct 2026: up to 4 from the photo picker under More, kept in memory until save, then encrypted with the entry and shown on entry detail; GPS location not yet: the station chip is R2, F-21.1)
+**F-02.1 Fill-up entry fields:** ✅ built (photos ✅ 23 Oct 2026: up to 4 from the photo picker under More, kept in memory until save, then encrypted with the entry and shown on entry detail; GPS location ✅ 13 Nov 2026 with the F-21.1 station chip, D17)
 - Vehicle, tank (bi-fuel only), date-time (default now)
 - Odometer
 - Quantity, price/unit and total (the **price triangle**)
@@ -177,7 +177,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 - Rounding: quantity to 2 dp, price to 2 dp, total to 2 dp. Display ₹ with lakh grouping.
 - Discount reduces **amount paid**, not price/unit. Both "pump price" and "paid" are stored.
 
-**F-02.3 Smart defaults.** ✅ built (station auto-detect waits for F-21.1, R2)
+**F-02.3 Smart defaults.** ✅ built (station auto-detect ✅ 13 Nov 2026 with F-21.1, D17)
 - Price/unit = last price paid for that tank's grade. If a city price is available (F-09) and newer, use it and tag the source.
 - Odometer field pre-filled with the **predicted** odometer (last odo + avg km/day × days since). Shown as a placeholder hint, not a value. The user must confirm or type it.
 - Station = auto-detected from the current location when the sheet opens (F-21.1), if location permission is granted.
@@ -624,11 +624,11 @@ Point-of-interest category app (fuel stations with prices). Blocked on station-l
 
 ---
 
-### F-21 Location intelligence — FREE · R1 (F-21.2–21.7) / R2 (F-21.1) — re-scoped 23 Oct 2026 (D15)
+### F-21 Location intelligence — FREE · R1 — re-scoped 23 Oct 2026 (D15); F-21.1 moved to R1 13 Nov 2026 (D17)
 
 Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no Google Places), D13 (automatic trips are the app's single declared background-location feature).
 
-**F-21.1 Station auto-detect when logging (R2)**
+**F-21.1 Station auto-detect when logging (R1, D17)** ✅ built 13 Nov 2026 (single fix when a new fill-up or charge sheet opens; bundled list + the user's own past fill-ups with a name and position, ranked as below; chip row with "Other"; a "Detect station" chip asks for while-in-use location when it isn't allowed yet; the chosen station's position is saved, or the phone's when the name was typed, which is how corrections are learned (no separate store). Not yet: the back-dated trip-stop fallback (back-dated entries just skip detection), brand-aware premium-grade labels, the picker info sheet with OSM attribution, and the 30-fill Bengaluru AC run. The monthly list feed stays R2)
 - **Trigger:** the Add fill-up or Add charge sheet opens.
 - **Location:** request a single current location (balanced priority, 10 s timeout, max age 2 min).
   - Needs while-in-use location only. No background permission.
@@ -810,7 +810,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 
 | Item | Decision |
 |---|---|
-| `ACCESS_FINE/COARSE_LOCATION` | While-in-use: manual GPS trips via foreground service (R1); station auto-detect and fill-up tagging (R2) |
+| `ACCESS_FINE/COARSE_LOCATION` | While-in-use: manual GPS trips via foreground service (R1); station auto-detect and fill-up tagging (R1 since 13 Nov 2026, D17), asked from the sheet's "Detect station" chip, never at app start |
 | `ACCESS_BACKGROUND_LOCATION` | R1 (since 23 Oct 2026, D15), for **one declared feature: "Automatic trip log and fill-up detection"** (F-21.3/21.4, both R1; D13). Requires the Permissions Declaration Form, a ≤30 s demo video showing the disclosure, the permission prompt and the feature working in the background, and the disclosure in the store description. Off by default. Submit for review early with a closed-test build — expect a possible rejection round. Any new background-location use later needs a new declaration. |
 | `ACTIVITY_RECOGNITION` (runtime, Android 10+) | R1, automatic trips only. Asked on the automatic-trip setup screen after the disclosure. |
 | Foreground service type `location` + `FOREGROUND_SERVICE_LOCATION` | Declare in manifest and Play Console (Android 14+ FGS type declaration) |
@@ -846,8 +846,8 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 
 | Release | Scope | Exit criteria |
 |---|---|---|
-| **R1 — Launch** | F-01–F-07, F-21.2–21.7 (bundled offline station list, automatic trips, fill-up detection, GPS odometer estimate, location privacy and retention, battery-saver guidance), F-09, F-10.1–10.3, F-11, F-12, F-13 (no PDF), F-14 (backup, restore, encrypt; no multi-device), F-15, F-16 (free surfaces), F-17 (monthly recap, milestones), F-18 (EN + HI). No billing; Pro cards show "Coming soon". | Golden tests green; closed test with 20+ real users for 14 days (Play requires a closed test for new personal developer accounts — verify current rule); median fill-up time ≤10 s in usability tests. **Play background-location approval received.** F-21.3 and F-21.4 ACs met. |
-| **R2** | F-21.1 station auto-detect (chip and picker) and the monthly station-list feed refresh; F-10.4 FASTag share parser; F-19 Pro and billing (PDF reports, Pro widgets, Pro insight cards); F-14.6 multi-device sync; F-10.5 statement import; regional languages; Drive Wrapped (December) | Sync soak test: 3 devices × 2 weeks, zero lost rows. F-21.1 AC met. |
+| **R1 — Launch** | F-01–F-07, F-21.1–21.7 (station auto-detect (D17), bundled offline station list, automatic trips, fill-up detection, GPS odometer estimate, location privacy and retention, battery-saver guidance), F-09, F-10.1–10.3, F-11, F-12, F-13 (no PDF), F-14 (backup, restore, encrypt; no multi-device), F-15, F-16 (free surfaces), F-17 (monthly recap, milestones), F-18 (EN + HI). No billing; Pro cards show "Coming soon". | Golden tests green; closed test with 20+ real users for 14 days (Play requires a closed test for new personal developer accounts — verify current rule); median fill-up time ≤10 s in usability tests. **Play background-location approval received.** F-21.3 and F-21.4 ACs met. |
+| **R2** | The monthly station-list feed refresh (F-21.2, with D3); F-10.4 FASTag share parser; F-19 Pro and billing (PDF reports, Pro widgets, Pro insight cards); F-14.6 multi-device sync; F-10.5 statement import; regional languages; Drive Wrapped (December) | Sync soak test: 3 devices × 2 weeks, zero lost rows. F-21.1 AC met. |
 | **R3** | F-08 trip planner (Routes API; stations from the offline list), border-price tips | Routes API cost per Pro user/month within budget (§13) |
 | **Later** | Station-level crowdsourced prices (needs backend + moderation), Android Auto POI app, OBD-II Bluetooth (fuel level, real odometer), on-device LLM Q&A over own data, iOS | Decided after R2 metrics |
 
@@ -894,6 +894,7 @@ Settings live in DataStore (Proto), are included in the backup snapshot and excl
 | D14 | OSM coverage audit (action, owner: Swastik; needed before building F-21.2, now R1) | Check 30 known pumps each in Bengaluru, Delhi, Mumbai against OSM before building F-21.2. If hit rate < 60%, consider seeding personal history from the first 2 fill-ups only and lowering the F-21.1 AC. |
 | D15 | ✅ **Decided (23 Oct 2026):** R1/R2 re-scope | R1 gains F-21.3 automatic trips, F-21.6 location privacy and retention, F-21.7 battery-saver guidance. R2 gains F-21.1–21.2 station auto-detect and offline station list, F-10.4 FASTag share parser, F-19 Pro and billing. Same day: F-21.4 fill-up detection and F-21.5 GPS odometer estimate moved to R1 too; R1 shows Pro cards as "Coming soon" (F-19). Consequence: R1 needs Play's background-location approval before launch (§9, §12.6). |
 | D16 | ✅ **Decided (23 Oct 2026):** station source for F-21.4 in R1 | Option (b): the F-21.2 OpenStreetMap list comes into R1, bundled in the APK and refreshed with app updates; the station chip F-21.1 stays R2. Rejected: Google Places (sends stop coordinates to Google and is billed per call, against D12 and CLAUDE.md rule 5; the Maps SDK can't query its own POIs from code), personal history only (too slow to start), any-stop prompts (too many false prompts). |
+| D17 | ✅ **Decided (13 Nov 2026, owner field test):** station auto-detect in R1 | F-21.1 moves from R2 to R1 so fill-ups record where they happened. UI: chip row (best match pre-selected, up to 2 alternatives, "Other"). No new permission (while-in-use location is already declared for trips), no endpoint, no library. The list feed refresh stays R2 with D3. |
 
 ---
 

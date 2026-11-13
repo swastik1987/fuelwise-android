@@ -17,7 +17,11 @@ import app.fuelwise.core.domain.entry.ComputeFillReward
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.station.Station
+import app.fuelwise.core.domain.station.StationFuel
 import app.fuelwise.core.domain.trip.FillUpPrefill
+import app.fuelwise.core.location.Fix
+import app.fuelwise.core.location.SingleFix
 import app.fuelwise.core.model.Attachment
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.FuelGrade
@@ -33,6 +37,7 @@ import app.fuelwise.core.model.TripSource
 import app.fuelwise.core.testing.FakeDocumentRepository
 import app.fuelwise.core.testing.FakeEntryRepository
 import app.fuelwise.core.testing.FakeFuelPriceRepository
+import app.fuelwise.core.testing.FakeStationRepository
 import app.fuelwise.core.testing.FakeTripRepository
 import app.fuelwise.core.testing.FakeUserDataRepository
 import app.fuelwise.core.testing.FakeVehicleRepository
@@ -80,6 +85,7 @@ class RefuelViewModelTest {
         userData: FakeUserDataRepository = FakeUserDataRepository(),
         scan: String? = null,
         prompt: String? = null,
+        location: SingleFix = noLocation,
     ) = RefuelViewModel(
         savedStateHandle = SavedStateHandle(
             mapOf("vehicleId" to vehicleId, "refuelId" to refuelId, "scan" to scan, "prompt" to prompt),
@@ -97,6 +103,7 @@ class RefuelViewModelTest {
         scanPhotos = stash,
         photos = EntryPhotoDraft(documents),
         picked = PickedPhotoReader(ApplicationProvider.getApplicationContext(), main.dispatcher),
+        stationDetector = RefuelStation(location, FakeStationRepository(listOf(hp, iocl)), entries),
         io = main.dispatcher,
     )
 
@@ -417,5 +424,117 @@ class RefuelViewModelTest {
 
     private companion object {
         const val DAY = 86_400_000L
+    }
+
+    // Station auto-detect (PRD F-21.1). 100 Feet Road, Indiranagar, Bengaluru; the stations are made up.
+    private val hereLat = 12.97842
+    private val hereLng = 77.64081
+    private val hp = Station(1, hereLat + 0.0003, hereLng, "HP", "Sri Lakshmi Fuels", setOf(StationFuel.Petrol), false)
+    private val iocl = Station(2, hereLat - 0.0006, hereLng, "IndianOil", null, setOf(StationFuel.Diesel), false)
+
+    private class FakeFix(override var hasPermission: Boolean, private val fix: Fix?) : SingleFix {
+        var requests = 0
+
+        override suspend fun once(): Fix? {
+            requests++
+            return fix.takeIf { hasPermission }
+        }
+    }
+
+    private val noLocation = FakeFix(hasPermission = false, fix = null)
+    private val atTheRoad = Fix(hereLat, hereLng, accuracyM = 12f)
+
+    private suspend fun RefuelViewModel.fillAndSave(): Refuel {
+        type(NumericField.Odometer, "42318")
+        type(NumericField.Quantity, "40")
+        type(NumericField.Total, "3558")
+        save()
+        state.first { it.reward != null }
+        return entries.refuels.last()
+    }
+
+    @Test
+    fun withoutLocationPermissionTheSheetOffersDetectAndSavesNoPosition() = runTest {
+        val vm = viewModel()
+        assertThat(vm.state.value.stationDetect).isEqualTo(StationDetect.NeedsPermission)
+        assertThat(noLocation.requests).isEqualTo(0)
+        vm.onLocationPermission(false)
+        assertThat(vm.state.value.stationDetect).isEqualTo(StationDetect.Off)
+        val saved = vm.fillAndSave()
+        assertThat(saved.lat).isNull()
+        assertThat(saved.stationName).isNull()
+    }
+
+    @Test
+    fun grantingPermissionDetectsTheNearestStationAndSavesItsPosition() = runTest {
+        val fix = FakeFix(hasPermission = false, fix = atTheRoad)
+        val vm = viewModel(location = fix)
+        fix.hasPermission = true
+        vm.onLocationPermission(true)
+
+        val found = vm.state.value.stationDetect as StationDetect.Found
+        assertThat(found.options.map { it.label }).containsExactly("HP · Sri Lakshmi Fuels", "IndianOil").inOrder()
+        assertThat(found.selected).isEqualTo(0)
+        assertThat(vm.state.value.station).isEqualTo("HP · Sri Lakshmi Fuels")
+
+        // Pumps face each other across the road: the user picks the other one.
+        vm.onStationOption(1)
+        assertThat(vm.state.value.station).isEqualTo("IndianOil")
+        val saved = vm.fillAndSave()
+        assertThat(saved.stationName).isEqualTo("IndianOil")
+        assertThat(saved.lat).isEqualTo(iocl.lat)
+        assertThat(saved.lng).isEqualTo(iocl.lng)
+        assertThat(fix.requests).isEqualTo(1)
+    }
+
+    @Test
+    fun aTypedStationIsSavedAtThePhonesPositionAndSuggestedFirstNextTime() = runTest {
+        val fix = FakeFix(hasPermission = true, fix = atTheRoad)
+        val vm = viewModel(location = fix)
+        vm.onStationOption(null)
+        assertThat(vm.state.value.stationDetect.ownsStationField).isTrue()
+        assertThat(vm.state.value.station).isEmpty()
+        vm.onStation("Raju Fuels")
+        val saved = vm.fillAndSave()
+        assertThat(saved.lat).isEqualTo(hereLat)
+
+        val next = viewModel(location = fix)
+        val found = next.state.value.stationDetect as StationDetect.Found
+        assertThat(found.options.first().label).isEqualTo("Raju Fuels")
+        assertThat(found.options.first().usedBefore).isTrue()
+        assertThat(next.state.value.station).isEqualTo("Raju Fuels")
+    }
+
+    @Test
+    fun noStationNearbyAsksForTheNameAndKeepsThePosition() = runTest {
+        val elsewhere = Fix(hereLat + 0.05, hereLng, accuracyM = 20f)
+        val vm = viewModel(location = FakeFix(hasPermission = true, fix = elsewhere))
+        assertThat(vm.state.value.stationDetect).isEqualTo(StationDetect.NotFound)
+        vm.onStation("Highway Fuels")
+        val saved = vm.fillAndSave()
+        assertThat(saved.stationName).isEqualTo("Highway Fuels")
+        assertThat(saved.lat).isEqualTo(elsewhere.lat)
+    }
+
+    @Test
+    fun aBackDatedEntryDropsTheCurrentLocation() = runTest {
+        val vm = viewModel(location = FakeFix(hasPermission = true, fix = atTheRoad))
+        assertThat(vm.state.value.stationDetect).isInstanceOf(StationDetect.Found::class.java)
+        vm.onDateTime(clock.millis() - 2 * 60 * 60 * 1_000L)
+        assertThat(vm.state.value.stationDetect).isEqualTo(StationDetect.Off)
+        // The name chosen stays as text; the position isn't saved.
+        assertThat(vm.state.value.station).isEqualTo("HP · Sri Lakshmi Fuels")
+        val saved = vm.fillAndSave()
+        assertThat(saved.lat).isNull()
+    }
+
+    @Test
+    fun editingAnEntryNeverReadsTheLocation() = runTest {
+        val fix = FakeFix(hasPermission = true, fix = atTheRoad)
+        val first = viewModel(location = noLocation)
+        val saved = first.fillAndSave()
+        val edit = viewModel(refuelId = saved.id, location = fix)
+        assertThat(edit.state.value.stationDetect).isEqualTo(StationDetect.Off)
+        assertThat(fix.requests).isEqualTo(0)
     }
 }

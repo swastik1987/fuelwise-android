@@ -164,7 +164,7 @@ This is the parity map from the research (Play Store listing, fuel.io, Pro relea
 
 ### F-02 Refuel and charge log — FREE · R1
 
-**F-02.1 Fill-up entry fields:** ✅ built (photos ✅ 23 Oct 2026: up to 4 from the photo picker under More, kept in memory until save, then encrypted with the entry and shown on entry detail; GPS location ✅ 13 Nov 2026 with the F-21.1 station chip, D17)
+**F-02.1 Fill-up entry fields:** ✅ built (photos ✅ 23 Oct 2026: up to 4 from the photo picker under More, kept in memory until save, then encrypted with the entry and shown on entry detail; GPS location ✅ 13 Nov 2026 with the F-21.1 station chip, D17; fill-up details show the station with a small still map and an edit button: "Change station" lists stations near the saved position, takes a typed name or removes the position, 13 Nov 2026)
 - Vehicle, tank (bi-fuel only), date-time (default now)
 - Odometer
 - Quantity, price/unit and total (the **price triangle**)
@@ -628,7 +628,7 @@ Point-of-interest category app (fuel stations with prices). Blocked on station-l
 
 Decisions behind this section: D11 (free), D12 (OpenStreetMap + history only, no Google Places), D13 (automatic trips are the app's single declared background-location feature).
 
-**F-21.1 Station auto-detect when logging (R1, D17)** ✅ built 13 Nov 2026 (single fix when a new fill-up or charge sheet opens; bundled list + the user's own past fill-ups with a name and position, ranked as below; chip row with "Other"; a "Detect station" chip asks for while-in-use location when it isn't allowed yet; the chosen station's position is saved, or the phone's when the name was typed, which is how corrections are learned (no separate store). Not yet: the back-dated trip-stop fallback (back-dated entries just skip detection), brand-aware premium-grade labels, the picker info sheet with OSM attribution, and the 30-fill Bengaluru AC run. The monthly list feed stays R2)
+**F-21.1 Station auto-detect when logging (R1, D17)** ✅ built 13 Nov 2026 (single fix when a new fill-up or charge sheet opens; bundled list + the user's own past fill-ups with a name and position, ranked as below; chip row with "Other"; a "Detect station" chip asks for while-in-use location when it isn't allowed yet; the chosen station's position is saved, or the phone's when the name was typed, which is how corrections are learned (no separate store). Corrections can also be made later from fill-up details ("Change station", with "Station data © OpenStreetMap contributors"). Not yet: the back-dated trip-stop fallback (back-dated entries just skip detection), brand-aware premium-grade labels, and the 30-fill Bengaluru AC run. The monthly list feed stays R2)
 - **Trigger:** the Add fill-up or Add charge sheet opens.
 - **Location:** request a single current location (balanced priority, 10 s timeout, max age 2 min).
   - Needs while-in-use location only. No background permission.

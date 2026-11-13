@@ -1,18 +1,26 @@
 package app.fuelwise.feature.logbook
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.core.graphics.createBitmap
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.component.FwPhoto
+import app.fuelwise.core.designsystem.component.FwSheetContent
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
+import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
+import app.fuelwise.core.domain.station.StationOption
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
@@ -23,6 +31,7 @@ import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
 import app.fuelwise.core.ui.map.LocalMapsEnabled
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.common.truth.Truth.assertThat
 import java.time.YearMonth
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
@@ -90,6 +99,67 @@ class LogbookScreensTest {
     @Test fun fillUpDetailLight() = capture("entry_detail_light", false) { EntryDetailContent(fillUp, {}, {}, {}) }
 
     @Test fun fillUpDetailDark() = capture("entry_detail_dark", true) { EntryDetailContent(fillUp, {}, {}, {}) }
+
+    // Station and where it was (PRD F-02.1): name with the edit button, and the still map (plain fallback here).
+    private val fillUpAtStation = fillUp.copy(
+        refuel = fillUp.refuel.copy(stationName = "HP · Sri Lakshmi Fuels", lat = 12.97872, lng = 77.64081),
+    )
+
+    @Test fun fillUpStationLight() = capture("entry_detail_station_light", false) {
+        EntryDetailContent(fillUpAtStation, {}, {}, {})
+    }
+
+    @Test fun fillUpStationDark() = capture("entry_detail_station_dark", true) {
+        EntryDetailContent(fillUpAtStation, {}, {}, {})
+    }
+
+    private val stationEdit = StationEdit(
+        loading = false,
+        hasLocation = true,
+        current = "HP · Sri Lakshmi Fuels",
+        options = listOf(
+            StationOption("HP · Sri Lakshmi Fuels", 12.97872, 77.64081, 33.0, usedBefore = false),
+            StationOption("IOCL 100 Ft Rd", 12.97782, 77.64081, 67.0, usedBefore = true),
+            StationOption("BPCL · Speed Point", 12.97952, 77.64081, 122.0, usedBefore = false),
+        ),
+    )
+
+    @Test fun changeStationLight() = capture("change_station_light", false) {
+        Surface(color = FwTheme.colors.surface) {
+            FwSheetContent("Change station") { StationEditBody(stationEdit, StationActions()) }
+        }
+    }
+
+    @Test fun changeStationTypingDark() = capture("change_station_typing_dark", true) {
+        Surface(color = FwTheme.colors.surface) {
+            FwSheetContent("Change station") { StationEditBody(stationEdit, StationActions(), initialQuery = "Raju") }
+        }
+    }
+
+    @Test fun changeStationNoLocationLight() = capture("change_station_no_location_light", false) {
+        Surface(color = FwTheme.colors.surface) {
+            FwSheetContent("Change station") {
+                StationEditBody(StationEdit(loading = false, hasLocation = false, current = null), StationActions())
+            }
+        }
+    }
+
+    @Test
+    fun pickingAStationOrTypingANameCallsBack() {
+        var picked: StationOption? = null
+        var typed: String? = null
+        val actions = StationActions(onPick = { picked = it }, onType = { typed = it })
+        compose.setContent {
+            CompositionLocalProvider(LocalMapsEnabled provides false) {
+                FuelwiseTheme { Column { StationEditBody(stationEdit, actions) } }
+            }
+        }
+        compose.onNodeWithText("IOCL 100 Ft Rd").performClick()
+        assertThat(picked?.label).isEqualTo("IOCL 100 Ft Rd")
+        compose.onNodeWithText("Search or type a name").performTextInput("Raju Fuels")
+        compose.onNodeWithText("Use “Raju Fuels”").performClick()
+        assertThat(typed).isEqualTo("Raju Fuels")
+    }
 
     @Test fun expenseDetailLight() = capture("expense_detail_light", false) {
         EntryDetailContent(

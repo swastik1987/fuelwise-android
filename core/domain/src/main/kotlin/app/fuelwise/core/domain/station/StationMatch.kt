@@ -2,6 +2,7 @@ package app.fuelwise.core.domain.station
 
 import app.fuelwise.core.domain.trip.FillNeed
 import app.fuelwise.core.domain.trip.distanceM
+import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.Refuel
 import java.util.Locale
 
@@ -128,3 +129,10 @@ object StationMatch {
 fun isBackDated(entryUtcMs: Long, nowUtcMs: Long): Boolean = nowUtcMs - entryUtcMs > BACK_DATED_MS
 
 private const val BACK_DATED_MS = 30 * 60 * 1_000L
+
+/** What a tank fills with, for station fit (PRD F-21.1): CNG pumps for CNG, charging points for an EV. */
+fun fillNeedFor(energy: EnergyType?): FillNeed = when (energy) {
+    EnergyType.ELECTRIC -> FillNeed.Electric
+    EnergyType.CNG -> FillNeed.Cng
+    else -> FillNeed.Liquid
+}

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +35,7 @@ import app.fuelwise.core.domain.trip.HeatPoint
 import app.fuelwise.core.model.TrackPoint
 import app.fuelwise.core.ui.R
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -213,6 +215,40 @@ fun FwHeatMap(heat: List<HeatPoint>, pins: List<MapPin>, contentDescription: Str
     }
 }
 
+/**
+ * Where one entry happened (PRD F-02.1 fill-up details): a small, still map with a pin. Lite mode draws a static
+ * picture and ignores touches; the page scrolls over it. Display only: nothing is looked up (CLAUDE.md rule 5).
+ */
+@Composable
+fun FwPlaceMap(lat: Double, lng: Double, contentDescription: String, modifier: Modifier = Modifier) {
+    val labelled = modifier.semantics { this.contentDescription = contentDescription }
+    val accent = FwTheme.colors.accent
+    val ring = FwTheme.colors.surface
+    if (!LocalMapsEnabled.current) {
+        // The fallback for tests: the pin in the middle, as the real map centres on it.
+        Box(labelled.background(FwTheme.colors.surface2), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(PIN_DP.dp).background(accent, CircleShape).border(2.dp, ring, CircleShape))
+        }
+        return
+    }
+    // A new place (the user changed the station) starts a new map, centred on it.
+    key(lat, lng) {
+        val at = LatLng(lat, lng)
+        val camera = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(at, PLACE_DETAIL_ZOOM) }
+        GoogleMap(
+            modifier = labelled,
+            cameraPositionState = camera,
+            properties = mapProperties(),
+            uiSettings = STILL_UI,
+            googleMapOptionsFactory = { GoogleMapOptions().liteMode(true) },
+        ) {
+            MarkerComposable(lat, lng, accent, state = rememberUpdatedMarkerState(at)) {
+                Box(Modifier.size(PIN_DP.dp).background(accent, CircleShape).border(2.dp, ring, CircleShape))
+            }
+        }
+    }
+}
+
 @Composable
 private fun mapProperties(): MapProperties {
     val context = LocalContext.current
@@ -312,6 +348,14 @@ private val MAP_UI = MapUiSettings(
     myLocationButtonEnabled = false,
     zoomControlsEnabled = false,
 )
+
+// A still map: no gestures, nothing to tap but the page around it.
+private val STILL_UI = MAP_UI.copy(
+    scrollGesturesEnabled = false,
+    zoomGesturesEnabled = false,
+    rotationGesturesEnabled = false,
+    tiltGesturesEnabled = false,
+)
 private val INDIA_CENTRE = LatLng(22.5, 79.0)
 private const val INDIA_ZOOM = 4f
 private const val FOLLOW_ZOOM = 16f
@@ -321,6 +365,7 @@ private const val END_DOT_M = 12.0
 private const val PIN_DP = 16
 private const val HALF = 0.5f
 private const val PLACE_ZOOM = 14f
+private const val PLACE_DETAIL_ZOOM = 16f
 private const val HEAT_RADIUS_PX = 30
 private const val HEAT_COOL_ALPHA = 0.35f
 private val HEAT_STOPS = floatArrayOf(0.2f, 1f)

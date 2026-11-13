@@ -61,20 +61,33 @@ internal fun EntryDetailScreen(
     viewModel: EntryDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val stationEdit by viewModel.stationEdit.collectAsStateWithLifecycle()
+    val stationActions = StationActions(
+        onEdit = viewModel::onEditStation,
+        onPick = viewModel::onPickStation,
+        onType = viewModel::onTypeStation,
+        onRemoveLocation = viewModel::onRemoveLocation,
+        onDismiss = viewModel::onDismissStation,
+    )
     LaunchedEffect(viewModel) { viewModel.deleted.collect { onBack() } }
     when (val s = state) {
         EntryDetailUiState.Loading -> Box(Modifier.fillMaxSize().background(FwTheme.colors.bg))
 
         EntryDetailUiState.Gone -> LaunchedEffect(Unit) { onBack() }
 
-        is EntryDetailUiState.FillUp -> EntryDetailContent(s, onBack, {
-            onEdit(EntrySource.Refuel, s.refuel.id)
-        }, viewModel::delete)
+        is EntryDetailUiState.FillUp -> EntryDetailContent(
+            s,
+            onBack,
+            { onEdit(EntrySource.Refuel, s.refuel.id) },
+            viewModel::delete,
+            station = stationActions,
+        )
 
         is EntryDetailUiState.Cost -> EntryDetailContent(s, onBack, {
             onEdit(EntrySource.Expense, s.expense.id)
         }, viewModel::delete)
     }
+    stationEdit?.let { StationEditSheet(it, stationActions) }
 }
 
 /** Entry detail (design.md screen 13): hero amount, key facts, the interval's mileage with its formula, notes. */
@@ -84,6 +97,7 @@ internal fun EntryDetailContent(
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    station: StationActions = StationActions(),
 ) {
     var confirming by rememberSaveable { mutableStateOf(false) }
     var showFormula by rememberSaveable { mutableStateOf(false) }
@@ -132,7 +146,7 @@ internal fun EntryDetailContent(
             verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
         ) {
             when (state) {
-                is EntryDetailUiState.FillUp -> FillUpFacts(state) { showFormula = true }
+                is EntryDetailUiState.FillUp -> FillUpFacts(state, station.onEdit) { showFormula = true }
                 is EntryDetailUiState.Cost -> CostFacts(state)
                 else -> Unit
             }
@@ -196,7 +210,7 @@ internal fun EntryDetailContent(
 }
 
 @Composable
-private fun FillUpFacts(state: EntryDetailUiState.FillUp, onFormula: () -> Unit) {
+private fun FillUpFacts(state: EntryDetailUiState.FillUp, onEditStation: () -> Unit, onFormula: () -> Unit) {
     val r = state.refuel
     val tank = state.vehicle?.tanks?.firstOrNull { it.id == r.tankId }
     val unit = tank?.let { stringResource(VehicleLabels.unit(it.energyType.canonicalUnit)) }.orEmpty()
@@ -240,10 +254,10 @@ private fun FillUpFacts(state: EntryDetailUiState.FillUp, onFormula: () -> Unit)
                 r.socEndPct?.toInt() ?: 0,
             ),
         )
-        r.stationName?.let { Fact(stringResource(R.string.detail_station), it) }
         r.paymentMethod?.let { Fact(stringResource(R.string.detail_payment), stringResource(EntryLabels.payment(it))) }
         r.grade?.let { Fact(stringResource(R.string.detail_grade), stringResource(EntryLabels.grade(it))) }
     }
+    StationCard(r, onEditStation)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         FwOverline(stringResource(R.string.detail_this_interval))
         FwCard(contentPadding = PaddingValues(16.dp)) {

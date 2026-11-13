@@ -37,7 +37,7 @@ fun FwTopBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.statusBars)
-            .height(56.dp)
+            .height(FwTheme.size.topBarHeight)
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

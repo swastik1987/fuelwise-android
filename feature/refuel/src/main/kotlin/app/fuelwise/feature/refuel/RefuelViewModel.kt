@@ -52,10 +52,10 @@ import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -97,6 +97,7 @@ class RefuelViewModel @Inject constructor(
     /** Home charging tariff from Settings (PRD F-02.5, F-18); Home AC charges start from it when set. */
     private var homeTariff: Money? = null
     private var attemptedSave = false
+    private val loadJob: Job
 
     // From a fill-up prompt (PRD F-21.4): the stop's time and station. The odometer stays a hint (F-21.5).
     private val prompt = FillUpPrefill.decode(route.prompt)
@@ -120,14 +121,25 @@ class RefuelViewModel @Inject constructor(
                 _state.update { it.copy(photos = strip, canAddPhoto = photos.canAdd) }
             }
         }
-        viewModelScope.launch {
+        loadJob = viewModelScope.launch {
             load()
-            // Scan results arrive in the route (opened from the scan screen) or later on this entry's saved state
-            // (scanned from the sheet's banner). Each is applied once.
-            savedStateHandle.getStateFlow<String?>(SCAN_RESULT_KEY, null).filterNotNull().collect { text ->
-                savedStateHandle[SCAN_RESULT_KEY] = null
+            // A scan in the route (the scan screen opened this sheet) is applied once; clearing it keeps a restored
+            // sheet from applying it over later edits.
+            savedStateHandle.get<String?>(ROUTE_SCAN_KEY)?.let { text ->
+                savedStateHandle[ROUTE_SCAN_KEY] = null
                 applyScan(ScanPrefill.decode(text))
             }
+        }
+    }
+
+    /**
+     * A scan handed back to this open sheet (scanned from its banner). The app delivers it from the navigation
+     * entry's saved state ([SCAN_RESULT_KEY]), which is not this ViewModel's handle. Applied after the sheet loads.
+     */
+    fun onScanResult(text: String) {
+        viewModelScope.launch {
+            loadJob.join()
+            applyScan(ScanPrefill.decode(text))
         }
     }
 
@@ -704,5 +716,8 @@ class RefuelViewModel @Inject constructor(
         const val MAX_TEXT = 60
         const val MAX_NOTES = 500
         const val FULL_SOC = 99f
+
+        /** [RefuelRoute.scan] in this ViewModel's saved state. */
+        const val ROUTE_SCAN_KEY = "scan"
     }
 }

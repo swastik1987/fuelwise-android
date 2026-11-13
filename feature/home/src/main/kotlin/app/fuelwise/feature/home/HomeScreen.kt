@@ -6,7 +6,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,15 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.fuelwise.core.designsystem.component.Delta
 import app.fuelwise.core.designsystem.component.FwCard
 import app.fuelwise.core.designsystem.component.FwEmptyState
-import app.fuelwise.core.designsystem.component.FwHeroMetric
 import app.fuelwise.core.designsystem.component.FwInfoSheet
-import app.fuelwise.core.designsystem.component.FwMetricTile
 import app.fuelwise.core.designsystem.component.FwOverline
 import app.fuelwise.core.designsystem.component.FwSectionHeader
-import app.fuelwise.core.designsystem.component.FwSparkline
 import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
@@ -55,8 +50,6 @@ import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.reminder.ReminderStatus
 import app.fuelwise.core.domain.reminder.Urgency
 import app.fuelwise.core.domain.summary.VehicleSummary
-import app.fuelwise.core.domain.trip.MonthTrips
-import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
@@ -65,15 +58,13 @@ import app.fuelwise.core.ui.care.CareLabels
 import app.fuelwise.core.ui.entry.LogbookEntryRow
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.efficiencyText
-import app.fuelwise.core.ui.format.efficiencyUnit
-import app.fuelwise.core.ui.format.efficiencyValue
 import app.fuelwise.core.ui.format.quantityText
 import app.fuelwise.core.ui.price.PriceLabels
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherPill
 import app.fuelwise.core.ui.vehicle.VehicleSwitcherSheet
 import java.time.Instant
+import java.time.YearMonth
 import java.time.ZoneId
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** Navigation out of Home; kept in one place so the screen signature stays short. */
@@ -84,9 +75,10 @@ data class HomeActions(
     val onOpenLogbook: () -> Unit,
     val onOpenReminders: () -> Unit = {},
     val onOpenReminder: (String) -> Unit = {},
-    val onOpenTrips: () -> Unit = {},
-    /** Starts a GPS trip, asking for location first if needed; opens the live trip if one is already recording. */
-    val onStartTrip: () -> Unit = {},
+    /** A month card: Insights on that month; null for this month (Insights as it is). */
+    val onOpenMonthInsights: (YearMonth?) -> Unit = {},
+    /** A month card's trips: Trips filtered to that month. */
+    val onOpenMonthTrips: (YearMonth) -> Unit = {},
     val onOpenPrices: () -> Unit = {},
     /** Garage: vehicles, reminders, documents, backup and Settings (Trips took its bottom-nav tab). */
     val onOpenGarage: () -> Unit = {},
@@ -109,7 +101,7 @@ internal fun HomeScreen(actions: HomeActions, viewModel: HomeViewModel = hiltVie
     )
 }
 
-/** Home (design.md screen 5): ₹/km hero, mileage and spend tiles, last fill-up, range, insight, recent entries. */
+/** Home (design.md screen 5): month cards, last fill-up and range, care, prices, insight, recent entries. */
 @Composable
 internal fun HomeContent(
     state: HomeUiState,
@@ -181,12 +173,19 @@ internal fun HomeContent(
                         .padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.m),
                     verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xl),
                 ) {
-                    if (state.summary.hasMileage) {
-                        Dashboard(state, actions) { heroInfo = true }
-                    } else {
-                        BrandNewVehicle(state.summary.fullFillCount, actions.onLogFuel)
-                        TripTiles(state.trips, actions)
-                    }
+                    if (!state.summary.hasMileage) BrandNewVehicle(state.summary.fullFillCount, actions.onLogFuel)
+                    MonthPager(
+                        months = state.summary.months,
+                        style = MonthCardStyle(
+                            quantity = state.vehicle.primaryTank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE,
+                            units = state.units,
+                            hideAmounts = state.hideAmounts,
+                            mileageEstimate = state.summary.isEstimate,
+                        ),
+                        actions = actions,
+                        onInfo = { heroInfo = true },
+                    )
+                    if (state.summary.hasMileage) Dashboard(state, actions)
                     CareCards(state, actions, onConfirmAuto)
                     state.prices?.let { PriceStrip(it, actions.onOpenPrices) }
                     if (state.recent.isNotEmpty()) Recent(state, actions)
@@ -231,23 +230,12 @@ internal fun HomeContent(
     }
 }
 
+/** Below the month cards once mileage is unlocked: last fill-up with range, and the mileage insight. */
 @Composable
-private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo: () -> Unit) {
+private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions) {
     val s = state.summary
     val hide = state.hideAmounts
     val quantity = state.vehicle.primaryTank?.energyType?.canonicalUnit ?: QuantityUnit.LITRE
-    FwHeroMetric(
-        overline = stringResource(R.string.home_hero_overline),
-        value = s.month.costPerKm?.let { money(it, hide, whole = false) } ?: "—",
-        unit = stringResource(R.string.home_per_km),
-        delta = s.costPerKmChange?.let { costDelta(it, state.previousMonthLabel) },
-        onInfoClick = onHeroInfo,
-        infoContentDescription = stringResource(R.string.home_cost_per_km_title),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(TILE_GAP)) {
-        MetricTiles(s, hide, quantity, state.units)
-        TripTiles(state.trips, actions)
-    }
     s.lastRefuel?.let { last ->
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FwOverline(stringResource(R.string.home_last_fill))
@@ -290,77 +278,6 @@ private fun Dashboard(state: HomeUiState.Ready, actions: HomeActions, onHeroInfo
                 style = FwTheme.type.body,
                 color = FwTheme.colors.ink,
                 modifier = Modifier.padding(top = 6.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun MetricTiles(s: VehicleSummary, hide: Boolean, quantity: QuantityUnit, units: DisplayUnits) {
-    // Mileage in the chosen unit (PRD F-18); L/100 km reads lower-is-better, so the sparkline follows the shown value.
-    fun shown(kmPerUnit: Double) = units.efficiency(kmPerUnit, quantity)?.value
-    Row(horizontalArrangement = Arrangement.spacedBy(TILE_GAP)) {
-        FwMetricTile(
-            overline = stringResource(if (s.isEstimate) R.string.home_mileage_est else R.string.home_mileage),
-            value = efficiencyValue(s.latestInterval?.kmPerUnit, quantity, units),
-            unit = efficiencyUnit(quantity, units),
-            caption = s.averageInterval?.let {
-                stringResource(R.string.home_mileage_avg, efficiencyValue(it.kmPerUnit, quantity, units))
-            },
-            modifier = Modifier.weight(1f),
-            extra = {
-                FwSparkline(s.recentIntervals.mapNotNull { shown(it.kmPerUnit) }, Modifier.padding(top = 8.dp))
-            },
-        )
-        FwMetricTile(
-            // Fuel used this month plus expenses (PRD F-03.5), so it isn't ₹0 in a month without a fill-up.
-            overline = stringResource(if (s.month.energyEstimated) R.string.home_spent_est else R.string.home_spent),
-            value = money(s.month.totalSpend, hide, whole = true),
-            caption = s.month.distance?.let {
-                stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(it.km, 0))
-            },
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-/** This month's trips (tap → Trips) beside a one-tap GPS trip start; design.md 5 says Trips is reachable from Home. */
-@Composable
-private fun TripTiles(trips: MonthTrips, actions: HomeActions) {
-    Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(TILE_GAP)) {
-        FwMetricTile(
-            overline = stringResource(R.string.home_trips),
-            value = IndianNumberFormat.decimal(trips.count.toDouble(), 0),
-            caption = stringResource(R.string.home_spent_km, IndianNumberFormat.decimal(trips.distanceKm, 0)),
-            onClick = actions.onOpenTrips,
-            modifier = Modifier.weight(1f).fillMaxHeight(),
-        )
-        FwCard(
-            onClick = actions.onStartTrip,
-            modifier = Modifier.weight(1f).fillMaxHeight(),
-            contentPadding = PaddingValues(18.dp),
-        ) {
-            Box(
-                Modifier.size(40.dp).background(FwTheme.colors.accent, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painterResource(FwIcons.Route),
-                    contentDescription = null,
-                    tint = FwTheme.colors.onAccent,
-                    modifier = Modifier.size(22.dp),
-                )
-            }
-            Text(
-                stringResource(R.string.home_start_trip),
-                style = FwTheme.type.label,
-                color = FwTheme.colors.ink,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-            Text(
-                stringResource(R.string.home_start_trip_caption),
-                style = FwTheme.type.caption,
-                color = FwTheme.colors.ink2,
             )
         }
     }
@@ -447,23 +364,8 @@ private fun Recent(state: HomeUiState.Ready, actions: HomeActions) {
     }
 }
 
-@Composable
-private fun costDelta(change: Double, previousMonth: String): Delta {
-    val pct = (abs(change) * PERCENT).roundToInt()
-    val direction = when {
-        pct == 0 -> Delta.Direction.Flat
-        change < 0 -> Delta.Direction.Down
-        else -> Delta.Direction.Up
-    }
-    return Delta(
-        label = stringResource(R.string.home_delta_vs, pct, previousMonth),
-        direction = direction,
-        isImprovement = if (direction == Delta.Direction.Flat) null else change < 0,
-    )
-}
-
 /** Privacy mode masks every ₹ figure (design.md 5, "Privacy blur"). */
-private fun money(value: Money, hide: Boolean, whole: Boolean): String = when {
+internal fun money(value: Money, hide: Boolean, whole: Boolean): String = when {
     hide -> HIDDEN_AMOUNT
     whole -> IndianNumberFormat.rupeesWhole(value)
     else -> IndianNumberFormat.rupees(value)
@@ -478,8 +380,8 @@ private fun shortDate(utcMs: Long, zoneId: String): String {
     return IndianNumberFormat.date(date)
 }
 
-private const val PERCENT = 100
-private val TILE_GAP = 12.dp
+internal const val PERCENT = 100
+internal val TILE_GAP = 12.dp
 private const val HIDDEN_AMOUNT = "₹ •••"
 
 private val Milestone.title: Int

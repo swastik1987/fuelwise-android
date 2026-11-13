@@ -8,6 +8,7 @@ import app.fuelwise.core.domain.insights.CustomRange
 import app.fuelwise.core.domain.insights.InsightPeriod
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,14 +21,23 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class InsightsViewModel @Inject constructor(private val source: InsightsSource) : ViewModel() {
+class InsightsViewModel @Inject constructor(private val source: InsightsSource, savedStateHandle: SavedStateHandle) :
+    ViewModel() {
     private data class Controls(
         val allVehicles: Boolean = false,
         val period: InsightPeriod = InsightPeriod.Month,
         val custom: CustomRange? = null,
     )
 
-    private val controls = MutableStateFlow(Controls())
+    // A past month's card on Home opens Insights on that whole month (InsightsRoute.month).
+    private val controls = MutableStateFlow(
+        savedStateHandle.get<String>(InsightsRoute::month.name)?.let(::controlsFor) ?: Controls(),
+    )
+
+    private fun controlsFor(month: String): Controls? {
+        val picked = runCatching { YearMonth.parse(month) }.getOrNull() ?: return null
+        return Controls(period = InsightPeriod.Custom, custom = CustomRange(picked.atDay(1), picked.atEndOfMonth()))
+    }
 
     /** null until the first snapshot loads. */
     val state: StateFlow<InsightsSnapshot?> = controls

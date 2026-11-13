@@ -5,8 +5,9 @@ import androidx.navigation.compose.composable
 import app.fuelwise.core.domain.insights.InsightPeriod
 import kotlinx.serialization.Serializable
 
+/** The Insights tab. [month] ("2026-09") opens it on that whole month, from a past month's card on Home. */
 @Serializable
-data object InsightsRoute
+data class InsightsRoute(val month: String? = null)
 
 /**
  * Chart detail (design.md screen 15). [chart] is a [ChartKind] name, [period] an [InsightPeriod] name; a custom

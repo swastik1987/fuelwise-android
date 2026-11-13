@@ -1,5 +1,6 @@
 package app.fuelwise.feature.insights
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
@@ -43,6 +44,7 @@ class InsightsViewModelTest {
         vehicles: List<Vehicle> = listOf(SampleVehicles.safari, SampleVehicles.ertiga),
         userData: FakeUserDataRepository = FakeUserDataRepository(),
         prices: FakeFuelPriceRepository = FakeFuelPriceRepository(),
+        saved: SavedStateHandle = SavedStateHandle(),
     ) = InsightsViewModel(
         InsightsSource(
             vehicles = FakeVehicleRepository(vehicles),
@@ -54,6 +56,7 @@ class InsightsViewModelTest {
             compute = ComputeInsights(ComputeConsumption(), ComputeCostMetrics(), clock),
             zoneId = zone,
         ),
+        saved,
     )
 
     @Test
@@ -62,6 +65,13 @@ class InsightsViewModelTest {
         assertThat(state.period).isEqualTo(InsightPeriod.Month)
         assertThat(state.selected?.id).isEqualTo("safari")
         assertThat(state.report!!.fillCount).isEqualTo(1)
+    }
+
+    @Test
+    fun aPastMonthFromHomeOpensOnThatWholeMonth() = runTest {
+        val state = viewModel(saved = SavedStateHandle(mapOf("month" to "2026-09"))).state.first { it != null }!!
+        assertThat(state.period).isEqualTo(InsightPeriod.Custom)
+        assertThat(state.custom).isEqualTo(CustomRange(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
     }
 
     @Test

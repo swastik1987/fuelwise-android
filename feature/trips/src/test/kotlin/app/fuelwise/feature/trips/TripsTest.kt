@@ -350,19 +350,32 @@ class TripsTest {
         assertThat(list.state.first { !it.loading }.offerAutoTrips).isFalse()
     }
 
-    private fun TestScope.listViewModel(repo: FakeTripRepository) = TripsViewModel(
-        repo,
-        vehicles,
-        FakeEntryRepository(),
-        userData,
-        recorder(repo),
-        autoTrips,
-        files,
-        estimate,
-        clock,
-        zone,
-        SavedStateHandle(),
-    )
+    private fun TestScope.listViewModel(repo: FakeTripRepository, saved: SavedStateHandle = SavedStateHandle()) =
+        TripsViewModel(
+            repo,
+            vehicles,
+            FakeEntryRepository(),
+            userData,
+            recorder(repo),
+            autoTrips,
+            files,
+            estimate,
+            clock,
+            zone,
+            saved,
+        )
+
+    @Test
+    fun aMonthFromHomeOpensTheListFilteredToIt() = runTest {
+        suspend fun openedOn(month: String) =
+            listViewModel(FakeTripRepository(), SavedStateHandle(mapOf("month" to month)))
+                .state.first { !it.loading }.filter
+        // Today is 16 Oct 2026.
+        assertThat(openedOn("2026-10")).isEqualTo(TripFilter(TripRange.ThisMonth))
+        assertThat(openedOn("2026-09")).isEqualTo(TripFilter(TripRange.LastMonth))
+        assertThat(openedOn("2026-06"))
+            .isEqualTo(TripFilter(TripRange.Custom, LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)))
+    }
 
     @Test
     fun gpsTripAsksForTheOdometerAndExportsGpx() = runTest {

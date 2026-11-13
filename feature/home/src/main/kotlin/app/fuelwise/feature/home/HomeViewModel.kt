@@ -16,20 +16,15 @@ import app.fuelwise.core.domain.insights.VehicleHistory
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.domain.summary.VehicleSummary
 import app.fuelwise.core.domain.trip.AutoTripPause
-import app.fuelwise.core.domain.trip.MonthTrips
 import app.fuelwise.core.domain.trip.autoTripPauseEnd
 import app.fuelwise.core.domain.trip.autoTripsLikelyBlocked
-import app.fuelwise.core.domain.trip.monthTrips
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Vehicle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
-import java.time.YearMonth
 import java.time.ZoneId
-import java.time.format.TextStyle
-import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -55,13 +50,9 @@ sealed interface HomeUiState {
         val categories: Map<String, Category>,
         val kmPerUnit: Map<String, Double>,
         val hideAmounts: Boolean,
-        /** Short name of last month, for "▼ 6% vs Sep". */
-        val previousMonthLabel: String,
         /** A milestone earned and not yet celebrated (PRD F-17). */
         val milestone: Milestone? = null,
         val care: HomeCare = HomeCare(),
-        /** This month's finished trips for the vehicle (Home trips tile). */
-        val trips: MonthTrips = MonthTrips.NONE,
         /** This vehicle's display units (PRD F-18). */
         val units: DisplayUnits = DisplayUnits.INDIA,
         /** The home city's prices for the strip; null without a home city (PRD F-09.1). */
@@ -162,14 +153,11 @@ class HomeViewModel @Inject constructor(
                     categories = cats.associateBy { it.id },
                     kmPerUnit = lookupIntervals.kmPerUnit(refuels),
                     hideAmounts = data.hideAmounts,
-                    previousMonthLabel = YearMonth.now(clock.withZone(zoneId)).minusMonths(1).month
-                        .getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
                     milestone = milestones(VehicleHistory(selected, refuels, expenses)).firstOrNull {
                         it.key !in
                             data.shownMilestones
                     },
                     care = homeCare,
-                    trips = monthTrips(tripList, selected.id, YearMonth.now(clock.withZone(zoneId)), zoneId),
                     units = data.units.forVehicle(selected.id),
                     prices = priceStrip,
                 )

@@ -124,7 +124,7 @@ class HomeViewModelTest {
         assertThat(state.summary.lastRefuel?.id).isEqualTo("r4")
         assertThat(state.recent.map { it.id }).containsExactly("r4", "e1", "r3").inOrder()
         assertThat(state.kmPerUnit.keys).containsExactly("r2", "r3", "r4")
-        assertThat(state.previousMonthLabel).isEqualTo("Sep")
+        assertThat(state.summary.months.first().month.toString()).isEqualTo("2026-10")
     }
 
     @Test
@@ -139,15 +139,17 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun tripsTileCountsThisMonthsFinishedTrips() = runTest {
+    fun monthCardsCountEachMonthsFinishedTrips() = runTest {
         fun trip(id: String, month: Int, km: Double) =
             Trip(id, "safari", SampleEntries.at(2026, month, 10), zone.id, km, TripPurpose.Personal)
         val trips = FakeTripRepository(listOf(trip("t1", 10, 23.4), trip("t2", 10, 146.0), trip("t3", 9, 40.0)))
         val state = viewModel(listOf(SampleVehicles.safari), FakeEntryRepository(), trips).uiState.first {
             it is HomeUiState.Ready
         } as HomeUiState.Ready
-        assertThat(state.trips.count).isEqualTo(2)
-        assertThat(state.trips.distanceKm).isWithin(1e-9).of(169.4)
+        val (october, september) = state.summary.months
+        assertThat(october.trips.count).isEqualTo(2)
+        assertThat(october.trips.distanceKm).isWithin(1e-9).of(169.4)
+        assertThat(september.trips.count).isEqualTo(1)
     }
 
     @Test

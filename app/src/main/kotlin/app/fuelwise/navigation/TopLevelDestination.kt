@@ -19,6 +19,6 @@ enum class TopLevelDestination(
 ) {
     Home(HomeRoute, HomeRoute::class, R.string.nav_home, FwIcons.Home, FwIcons.HomeFilled),
     Logbook(LogbookRoute, LogbookRoute::class, R.string.nav_logbook, FwIcons.Logbook, FwIcons.LogbookFilled),
-    Insights(InsightsRoute, InsightsRoute::class, R.string.nav_insights, FwIcons.Insights, FwIcons.InsightsFilled),
+    Insights(InsightsRoute(), InsightsRoute::class, R.string.nav_insights, FwIcons.Insights, FwIcons.InsightsFilled),
     Trips(TripsRoute(), TripsRoute::class, R.string.nav_trips, FwIcons.Route, FwIcons.RouteFilled),
 }

@@ -572,4 +572,18 @@ class RefuelViewModelTest {
         assertThat(edit.state.value.stationDetect).isEqualTo(StationDetect.Off)
         assertThat(fix.requests).isEqualTo(0)
     }
+
+    @Test
+    fun aScannedReceiptsStationSelectsTheMatchingDetectedChip() = runTest {
+        val vm = viewModel(location = FakeFix(hasPermission = true, fix = atTheRoad))
+        assertThat((vm.state.value.stationDetect as StationDetect.Found).selected).isEqualTo(0)
+        // The receipt names the pump across the road; scanned from the sheet's banner (PRD F-15 + F-21.1).
+        vm.onScanResult(ScanPrefill(stationName = "IndianOil").encode())
+        assertThat((vm.state.value.stationDetect as StationDetect.Found).selected).isEqualTo(1)
+        assertThat(vm.state.value.station).isEqualTo("IndianOil")
+        // A name that isn't listed becomes "Other" with the name kept.
+        vm.onScanResult(ScanPrefill(stationName = "Raju Fuels").encode())
+        assertThat((vm.state.value.stationDetect as StationDetect.Found).selected).isNull()
+        assertThat(vm.state.value.station).isEqualTo("Raju Fuels")
+    }
 }

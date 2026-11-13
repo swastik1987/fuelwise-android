@@ -3,16 +3,21 @@ package app.fuelwise.feature.refuel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
+import app.fuelwise.core.domain.station.StationOption
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.PriceSource
 import app.fuelwise.core.testing.SampleVehicles
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -88,6 +93,56 @@ class RefuelScreensTest {
             {},
             now,
         )
+    }
+
+    // Station auto-detect (PRD F-21.1): keypad closed so the station row shows.
+    private val detected = fuel.copy(
+        focus = null,
+        station = "HP · Sri Lakshmi Fuels",
+        stationDetect = StationDetect.Found(
+            listOf(
+                StationOption("HP · Sri Lakshmi Fuels", 12.9787, 77.6408, 38.0, usedBefore = false),
+                StationOption("IndianOil · 100 Ft Rd", 12.9778, 77.6408, 71.0, usedBefore = false),
+                StationOption("BPCL", 12.9795, 77.6408, 122.0, usedBefore = false),
+            ),
+            selected = 0,
+        ),
+    )
+
+    @Test fun stationDetectedLight() = capture("add_fuel_station_light", false) {
+        RefuelContent(detected, RefuelActions(), {}, now)
+    }
+
+    @Test fun stationDetectedDark() = capture("add_fuel_station_dark", true) {
+        RefuelContent(detected, RefuelActions(), {}, now)
+    }
+
+    @Test fun stationOtherLight() = capture("add_fuel_station_other_light", false) {
+        val other = detected.copy(
+            station = "Raju Fuels",
+            stationDetect = (detected.stationDetect as StationDetect.Found).copy(selected = null),
+        )
+        RefuelContent(other, RefuelActions(), {}, now)
+    }
+
+    @Test fun stationNeedsPermissionLight() = capture("add_fuel_station_permission_light", false) {
+        RefuelContent(fuel.copy(focus = null, stationDetect = StationDetect.NeedsPermission), RefuelActions(), {}, now)
+    }
+
+    @Test fun stationNotFoundDark() = capture("add_fuel_station_none_dark", true) {
+        RefuelContent(fuel.copy(focus = null, stationDetect = StationDetect.NotFound), RefuelActions(), {}, now)
+    }
+
+    @Test
+    fun tappingAStationChipSelectsIt() {
+        var picked: Int? = -1
+        compose.setContent {
+            FuelwiseTheme { RefuelContent(detected, RefuelActions(onStationOption = { picked = it }), {}, now) }
+        }
+        compose.onNodeWithText("IndianOil · 100 Ft Rd").performScrollTo().performClick()
+        assertThat(picked).isEqualTo(1)
+        compose.onNodeWithText("Other…").performScrollTo().performClick()
+        assertThat(picked).isNull()
     }
 
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {

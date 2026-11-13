@@ -5,6 +5,7 @@ import app.fuelwise.core.domain.entry.CheckFillUp
 import app.fuelwise.core.domain.entry.FillReward
 import app.fuelwise.core.domain.entry.PriceTriangle
 import app.fuelwise.core.domain.prices.FairPrice
+import app.fuelwise.core.domain.station.StationOption
 import app.fuelwise.core.domain.units.DisplayUnits
 import app.fuelwise.core.model.ChargerType
 import app.fuelwise.core.model.EnergyType
@@ -61,6 +62,8 @@ data class RefuelFormState(
     /** The discount is typed as a percentage of the total rather than in rupees (PRD F-02.2). Stored as rupees. */
     val discountPercent: Boolean = false,
     val station: String = "",
+    /** Station auto-detect (PRD F-21.1) for a new entry; [StationDetect.Off] for edits and back-dated entries. */
+    val stationDetect: StationDetect = StationDetect.Off,
     val notes: String = "",
     val missedPrevious: Boolean = false,
     val socStart: Float = DEFAULT_SOC_START,
@@ -98,3 +101,28 @@ internal fun RefuelFormState.discountMoney(total: Money?): Money? = if (discount
 } else {
     MoneyInput.parse(discount)
 }
+
+/** Station auto-detect on the sheet (PRD F-21.1). Detected stations are suggestions; nothing is saved until Save. */
+sealed interface StationDetect {
+    /** Not offered: an edit, a fill-up prompt (it brings its station), a back-dated entry, or no location fix. */
+    data object Off : StationDetect
+
+    /** Location isn't allowed yet: a "Detect station" chip asks for it (while the app is in use only). */
+    data object NeedsPermission : StationDetect
+
+    data object Locating : StationDetect
+
+    /** Up to three nearby stations, best first. [selected] is null for "Other", where the user types a name. */
+    data class Found(val options: List<StationOption>, val selected: Int?) : StationDetect {
+        val selectedOption: StationOption? get() = selected?.let(options::getOrNull)
+    }
+
+    /** A fix but no station near it: the user types the name, and it's remembered for this spot. */
+    data object NotFound : StationDetect
+}
+
+/** The station field shows in the detect section (not under More) once a location was found. */
+internal val StationDetect.ownsStationField: Boolean
+    get() = this == StationDetect.NotFound || (this is StationDetect.Found && selected == null)
+
+internal val StationDetect.hasLocation: Boolean get() = this is StationDetect.Found || this == StationDetect.NotFound

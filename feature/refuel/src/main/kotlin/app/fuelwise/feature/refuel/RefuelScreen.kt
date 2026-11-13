@@ -1,5 +1,6 @@
 package app.fuelwise.feature.refuel
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,8 +86,17 @@ internal fun RefuelScreen(
         ActivityResultContracts.PickMultipleVisualMedia(EntryPhotoDraft.MAX_PHOTOS),
         viewModel::onPhotosPicked,
     )
+    // While-in-use location only, asked when the user taps "Detect station" (PRD F-21.1, §9); never at app start.
+    val location = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        viewModel.onLocationPermission(result.values.any { it })
+    }
     val actions = viewModel.actions().copy(
         onScan = { onScan(state.vehicle?.id) },
+        onDetectStation = {
+            location.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+            )
+        },
         onAddPhoto = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
     )
     RefuelContent(state, actions, onClose)
@@ -104,6 +114,10 @@ internal data class RefuelActions(
     val onPayment: (PaymentMethod) -> Unit = {},
     val onDiscountUnit: (percent: Boolean) -> Unit = {},
     val onStation: (String) -> Unit = {},
+    /** A station chip (PRD F-21.1); null is "Other". */
+    val onStationOption: (Int?) -> Unit = {},
+    /** "Detect station": asks for while-in-use location. */
+    val onDetectStation: () -> Unit = {},
     val onNotes: (String) -> Unit = {},
     val onOperator: (String) -> Unit = {},
     val onMissedPrevious: (Boolean) -> Unit = {},
@@ -133,6 +147,7 @@ private fun RefuelViewModel.actions() = RefuelActions(
     onPayment = ::onPayment,
     onDiscountUnit = ::onDiscountUnit,
     onStation = ::onStation,
+    onStationOption = ::onStationOption,
     onNotes = ::onNotes,
     onOperator = ::onOperator,
     onMissedPrevious = ::onMissedPrevious,
@@ -196,6 +211,7 @@ internal fun RefuelContent(
             OdometerSection(state, actions)
             TriangleSection(state, actions)
             if (state.scanPhotoToken != null) ScanPhotoRow(actions.onRemoveScanPhoto)
+            if (!state.isEdit) StationSection(state, actions)
             state.warnings.forEach { warning ->
                 if (warning is CheckFillUp.Warning.MoreThanTank) {
                     Banner(
@@ -341,13 +357,8 @@ private fun FuelSection(state: RefuelFormState, actions: RefuelActions) {
                 modifier = Modifier.width(DISCOUNT_UNIT_WIDTH),
             )
         }
-        FwTextField(
-            value = state.station,
-            onValueChange = actions.onStation,
-            label = stringResource(R.string.refuel_station),
-            placeholder = stringResource(R.string.refuel_station_placeholder),
-            modifier = Modifier.onFocusChanged { if (it.isFocused) actions.onFocus(null) },
-        )
+        // Once a location was found, the station is chosen in its own section above.
+        if (!state.stationDetect.hasLocation) StationField(state, actions)
         FwTextField(
             value = state.notes,
             onValueChange = actions.onNotes,

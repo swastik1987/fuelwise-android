@@ -4,9 +4,22 @@ How the on-device scan parsers work, what has been verified and what is still op
 
 ## Pipeline
 
-1. **Camera** (`feature/scan/ScanCamera.kt`): CameraX preview + `ImageAnalysis` (keep latest, ~3 frames/s).
-   ML Kit Text Recognition with the **bundled** Latin model runs on each frame in the app process. Frames are not stored;
-   the current frame is encoded as JPEG only if the user keeps the photo.
+1. **Camera** (`feature/scan/ScanCamera.kt`): CameraX preview + `ImageAnalysis` (keep latest, ~3 frames/s) +
+   `ImageCapture`, all 16:9 so the guide maps onto each image the same way. ML Kit Text Recognition with the
+   **bundled** Latin model runs in the app process. Frames are not stored; the current frame is encoded as JPEG only
+   if the user keeps the photo.
+   - **Crop to the guide** (`GuideRegion.cropOf`, core:domain): only the part of the image under the on-screen guide,
+     plus a 10% margin, is read. Header and footer text ("Minimum Measured Quantity = 2 Litre"), stickers and the
+     STOP button stay out. Boxes are moved back to full-image coordinates for the live labels.
+   - **Live**: frames at about 1280×720 (CameraX's default 640×480 made the digits too small). Frames take turns:
+     plain, contrast-stretched, and stretched with thickened strokes (`DisplayCleanup`, core:domain). Segment
+     displays read badly as they are: recognition misses digits whose segments don't touch, and glare washes out
+     LCD panels. A frame that reads nothing useful doesn't reset the "2 matching readings" count.
+   - **Snap**: one full-resolution photo (long side capped at 2000 px), read plain and with all three clean-ups.
+     `ScanChoice` keeps the reading that checks out (or else has the most fields), also trying all reads' lines
+     together, since one clean-up may get the amount and another the rate.
+   - The pump guide is shaped like an Indian dispenser display (about 0.85 wide to 1 tall) with Amount, Quantity
+     and Rate bands as a framing hint. Reading doesn't depend on the bands.
 2. **Parsing** (`core/domain/scan`, pure Kotlin):
    - `OcrRows` groups recognised lines into visual rows by box overlap (labels and digits are often separate lines).
    - `OcrNumbers` finds numbers and undoes 7-segment/thermal-print confusions: O/o/D/Q→0, I/l/|→1, Z→2, S→5,

@@ -8,16 +8,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,13 +33,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -48,12 +61,14 @@ import app.fuelwise.core.designsystem.component.FwCheckboxRow
 import app.fuelwise.core.designsystem.component.FwEmptyState
 import app.fuelwise.core.designsystem.component.FwInkButton
 import app.fuelwise.core.designsystem.component.FwPrimaryButton
+import app.fuelwise.core.designsystem.component.FwSecondaryButton
 import app.fuelwise.core.designsystem.component.FwSegmentedControl
 import app.fuelwise.core.designsystem.component.FwSwitchRow
 import app.fuelwise.core.designsystem.component.FwTextButton
 import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.scan.GuideRegion
 import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.model.ScanPrefill
 import app.fuelwise.core.ui.format.IndianNumberFormat
@@ -88,9 +103,15 @@ internal fun ScanScreen(
             }
         }
     }
+    val camera = remember { ScanCamera() }
     ScanContent(
         state = state,
         actions = ScanActions(
+            onSnap = {
+                viewModel.onSnapStarted()
+                camera.snap(viewModel::onSnap)
+            },
+            onGuidePlaced = { camera.guide = it },
             onBack = onBack,
             onTypeInstead = onTypeInstead,
             onAllowCamera = { permission.launch(Manifest.permission.CAMERA) },
@@ -101,7 +122,9 @@ internal fun ScanScreen(
             onRescan = viewModel::onRescan,
             onUse = viewModel::onUse,
         ),
-        viewfinder = { ScanCameraPreview(onFrame = viewModel::onFrame, modifier = Modifier.fillMaxSize()) },
+        viewfinder = {
+            ScanCameraPreview(camera = camera, onFrame = viewModel::onFrame, modifier = Modifier.fillMaxSize())
+        },
     )
 }
 
@@ -112,6 +135,9 @@ internal data class ScanActions(
     val onAllowCamera: () -> Unit = {},
     val onMode: (ScanMode) -> Unit = {},
     val onReadNow: () -> Unit = {},
+    val onSnap: () -> Unit = {},
+    /** Where the guide sits over the camera view, so only the display under it is read. */
+    val onGuidePlaced: (GuideRegion) -> Unit = {},
     val onToggleField: (ScanField) -> Unit = {},
     val onAttachPhoto: (Boolean) -> Unit = {},
     val onRescan: () -> Unit = {},
@@ -156,70 +182,171 @@ private fun DeniedState(actions: ScanActions) {
 
 @Composable
 private fun CameraState(state: ScanUiState, actions: ScanActions, viewfinder: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
+    var area by remember { mutableStateOf<Rect?>(null) }
+    var frame by remember { mutableStateOf<Rect?>(null) }
+    val onGuidePlaced by rememberUpdatedState(actions.onGuidePlaced)
+    LaunchedEffect(area, frame) {
+        val a = area ?: return@LaunchedEffect
+        val g = frame ?: return@LaunchedEffect
+        if (a.width <= 0f || a.height <= 0f) return@LaunchedEffect
+        onGuidePlaced(
+            GuideRegion(
+                left = (g.left - a.left) / a.width,
+                top = (g.top - a.top) / a.height,
+                right = (g.right - a.left) / a.width,
+                bottom = (g.bottom - a.top) / a.height,
+                viewAspect = a.width / a.height,
+            ),
+        )
+    }
+    Box(Modifier.fillMaxSize().onGloballyPositioned { area = it.boundsInRoot() }) {
         viewfinder()
         LiveLabels(state)
-        Guide(state, Modifier.align(Alignment.Center))
-        Column(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(FwTheme.spacing.gutter),
-            verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
-        ) {
-            if (state.struggling && state.review == null) Struggling(actions)
-            FwSegmentedControl(
-                options = ScanMode.entries.map { stringResource(it.label()) },
-                selectedIndex = state.mode.ordinal,
-                onSelect = { actions.onMode(ScanMode.entries[it]) },
+        Column(Modifier.fillMaxSize()) {
+            // Room for the top bar drawn over the camera.
+            Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars).height(FwTheme.size.topBarHeight))
+            Guide(
+                state,
+                onFramePlaced = { frame = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = FwTheme.spacing.xxl, vertical = FwTheme.spacing.s),
             )
+            Controls(state, actions)
+        }
+    }
+}
+
+@Composable
+private fun Controls(state: ScanUiState, actions: ScanActions) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(FwTheme.spacing.gutter),
+        verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
+    ) {
+        if (state.struggling && state.review == null) Struggling(actions)
+        FwSegmentedControl(
+            options = ScanMode.entries.map { stringResource(it.label()) },
+            selectedIndex = state.mode.ordinal,
+            onSelect = { actions.onMode(ScanMode.entries[it]) },
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.s)) {
             FwPrimaryButton(
                 stringResource(R.string.scan_read_now),
                 actions.onReadNow,
+                modifier = Modifier.weight(1f),
+                enabled = !state.snapping,
+            )
+            val snapLabel = stringResource(if (state.snapping) R.string.scan_snapping else R.string.scan_snap)
+            val snapDescription = stringResource(R.string.scan_snap_cd)
+            FwSecondaryButton(
+                snapLabel,
+                actions.onSnap,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { if (!state.snapping) contentDescription = snapDescription },
+                enabled = !state.snapping,
                 leadingIcon = FwIcons.Camera,
             )
         }
     }
 }
 
-/** The rounded guide the user fits the display into, with a check once all values agree. */
+/**
+ * The rounded guide the user fits the display into, with a check once all values agree. Only what's under it is
+ * read. For a pump meter it's shaped like an Indian dispenser display: amount and quantity stacked at the top,
+ * density in between, rate at the bottom. [onFramePlaced] gets the frame's bounds in the root.
+ */
 @Composable
-private fun Guide(state: ScanUiState, modifier: Modifier) {
+private fun Guide(state: ScanUiState, onFramePlaced: (Rect) -> Unit, modifier: Modifier) {
     val colors = FwTheme.colors
-    val ratio = if (state.mode == ScanMode.Receipt) RECEIPT_RATIO else DISPLAY_RATIO
-    Box(
-        modifier
-            .fillMaxWidth()
-            .padding(horizontal = FwTheme.spacing.xxl)
-            .aspectRatio(ratio)
-            .border(2.dp, if (state.allValid) colors.positive else colors.onAccent, FwTheme.radius.card),
-        contentAlignment = Alignment.BottomCenter,
-    ) {
+    val ratio = when (state.mode) {
+        ScanMode.PumpMeter -> PUMP_RATIO
+        ScanMode.Receipt -> RECEIPT_RATIO
+        ScanMode.Odometer -> ODOMETER_RATIO
+    }
+    Column(modifier, verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             stringResource(state.mode.guide()),
             style = FwTheme.type.label,
             color = colors.ink,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .padding(FwTheme.spacing.s)
+                .padding(bottom = FwTheme.spacing.s)
                 .background(colors.surface, FwTheme.radius.pill)
                 .padding(horizontal = FwTheme.spacing.s, vertical = FwTheme.spacing.xxs),
         )
-        if (state.allValid) {
-            val done = stringResource(R.string.scan_all_valid_cd)
-            Icon(
-                painterResource(FwIcons.CheckCircleFilled),
-                contentDescription = done,
-                tint = colors.positive,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(FwTheme.spacing.s)
-                    .size(FwTheme.size.iconTile)
-                    .semantics { liveRegion = LiveRegionMode.Polite },
-            )
+        // Not filled: the frame takes the height its shape needs, so the hint stays just above it.
+        Box(Modifier.weight(1f, fill = false).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(ratio)
+                    .onGloballyPositioned { onFramePlaced(it.boundsInRoot()) }
+                    .border(2.dp, if (state.allValid) colors.positive else colors.onAccent, FwTheme.radius.card),
+            ) {
+                if (state.mode == ScanMode.PumpMeter) PumpBands(state.unit)
+                GuideCheck(state)
+            }
         }
     }
+}
+
+/** Where each value sits on a typical dispenser; a hint for framing, the reading doesn't depend on it. */
+@Composable
+private fun PumpBands(unit: QuantityUnit) {
+    val unitText = stringResource(VehicleLabels.unit(unit))
+    Column(Modifier.fillMaxSize().padding(FwTheme.spacing.s)) {
+        BandLabel(stringResource(R.string.scan_field_total), Modifier.weight(AMOUNT_BAND))
+        BandLabel(
+            stringResource(R.string.scan_band_quantity, stringResource(R.string.scan_field_quantity), unitText),
+            Modifier.weight(QUANTITY_BAND),
+        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(FwTheme.size.hairline)
+                .background(FwTheme.colors.onAccent),
+        )
+        Spacer(Modifier.weight(DENSITY_BAND))
+        BandLabel(
+            stringResource(R.string.scan_band_rate, stringResource(R.string.scan_field_rate), unitText),
+            Modifier.weight(RATE_BAND),
+        )
+    }
+}
+
+@Composable
+private fun BandLabel(text: String, modifier: Modifier) {
+    Box(modifier.fillMaxWidth()) {
+        Text(
+            text,
+            style = FwTheme.type.label,
+            color = FwTheme.colors.ink2,
+            modifier = Modifier
+                .background(FwTheme.colors.surface, FwTheme.radius.pill)
+                .padding(horizontal = FwTheme.spacing.xs, vertical = FwTheme.spacing.xxs)
+                .clearAndSetSemantics {},
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.GuideCheck(state: ScanUiState) {
+    if (!state.allValid) return
+    Icon(
+        painterResource(FwIcons.CheckCircleFilled),
+        contentDescription = stringResource(R.string.scan_all_valid_cd),
+        tint = FwTheme.colors.positive,
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(FwTheme.spacing.s)
+            .size(FwTheme.size.iconTile)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    )
 }
 
 /** Values pinned where they were read, mapped from image pixels to the fill-centre preview. */
@@ -361,6 +488,14 @@ private fun ScanField.label(): Int = when (this) {
     ScanField.Station -> R.string.scan_field_station
 }
 
-private const val DISPLAY_RATIO = 1.4f
+// Guide width ÷ height. A dispenser display is about as tall as it is wide; an odometer is a wide strip.
+private const val PUMP_RATIO = 0.85f
+private const val ODOMETER_RATIO = 1.4f
+
+// Pump display bands, top to bottom: amount, quantity, density (not read), rate.
+private const val AMOUNT_BAND = 0.3f
+private const val QUANTITY_BAND = 0.25f
+private const val DENSITY_BAND = 0.2f
+private const val RATE_BAND = 0.25f
 private const val RECEIPT_RATIO = 0.7f
 private const val LABEL_LIFT_PX = 48

@@ -96,6 +96,43 @@ internal object ScanFixtures {
             quantity = 11.66,
             rate = 10_292,
         ),
+        // Real dispenser, Bengaluru, 13 Nov 2026 (owner's photo): Gilbarco Veeder-Root LCD, amount and litres
+        // stacked with the ₹ glyph beside the amount, density between them and the rate, header and footer text.
+        Pump(
+            "Gilbarco LCD with density, header and footer",
+            listOf(
+                at("ENSURE ZERO BEFORE DELIVERY", 0, 0, width = 400),
+                at("2887.14", 1, 1, width = 300),
+                at("₹", 1, 4, width = 30),
+                at("29.32", 2, 2, width = 200),
+                at("Litre", 3, 2),
+                at("821.4", 4, 0, width = 150),
+                at("Density Kg/m3", 5, 0, width = 150),
+                at("98.47", 6, 0, width = 150),
+                at("₹/Litre", 7, 0),
+                at("GILBARCO VEEDER-ROOT", 6, 3, width = 200),
+                at("Minimum Measured Quantity = 2 Litre", 8, 0, width = 400),
+            ),
+            total = 288_714,
+            quantity = 29.32,
+            rate = 9_847,
+        ),
+        Pump(
+            "Gilbarco LCD, segment gaps misread and points dropped",
+            lines(
+                "ENSURE ZERO BEFORE DELIVERY",
+                "2BB7.14 Z",
+                "2932",
+                "Litre",
+                "B2 1.4",
+                "Density Kg/m",
+                "9B.47",
+                "Z/Litre",
+            ),
+            total = 288_714,
+            quantity = 29.32,
+            rate = 9_847,
+        ),
     )
 
     val receipt = lines(

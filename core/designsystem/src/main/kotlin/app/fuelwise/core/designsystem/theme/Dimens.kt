@@ -51,6 +51,7 @@ object FwSize {
     val icon: Dp = 24.dp
     val fab: Dp = 64.dp
     val navBarHeight: Dp = 72.dp
+    val topBarHeight: Dp = 56.dp
     val hairline: Dp = 1.dp
 }
 

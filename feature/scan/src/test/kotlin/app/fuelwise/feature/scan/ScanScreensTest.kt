@@ -7,13 +7,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.scan.GuideRegion
 import app.fuelwise.core.domain.scan.OcrBox
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.ScanPrefill
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,6 +102,37 @@ class ScanScreensTest {
 
     @Test fun odometerDark() = capture("scan_odometer_dark", true) {
         ScanContent(odometer, ScanActions(), fakeCamera)
+    }
+
+    private val snapping = ScanUiState(camera = CameraAccess.Granted, snapping = true)
+
+    @Test fun snappingLight() = capture("scan_snapping_light", false) {
+        ScanContent(snapping, ScanActions(), fakeCamera)
+    }
+
+    @Test fun snappingDark() = capture("scan_snapping_dark", true) { ScanContent(snapping, ScanActions(), fakeCamera) }
+
+    @Test
+    fun theGuideIsReportedForCroppingAndSnapIsTappable() {
+        var region: GuideRegion? = null
+        var snaps = 0
+        val actions = ScanActions(onGuidePlaced = { region = it }, onSnap = { snaps++ })
+        compose.setContent {
+            FuelwiseTheme { ScanContent(ScanUiState(camera = CameraAccess.Granted), actions, fakeCamera) }
+        }
+        compose.waitForIdle()
+
+        val guide = requireNotNull(region)
+        assertThat(guide.left).isGreaterThan(0f)
+        assertThat(guide.right).isLessThan(1f)
+        assertThat(guide.top).isGreaterThan(0f)
+        assertThat(guide.bottom).isLessThan(1f)
+        // Dispenser-shaped: a little taller than wide on screen.
+        val widthPx = (guide.right - guide.left) * guide.viewAspect
+        assertThat(widthPx / (guide.bottom - guide.top)).isWithin(0.01f).of(0.85f)
+
+        compose.onNodeWithContentDescription("Snap: take a sharp photo and read it").performClick()
+        assertThat(snaps).isEqualTo(1)
     }
 
     /** Stands in for the camera feed, which Robolectric can't render. */

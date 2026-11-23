@@ -4,7 +4,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.ComputePredictions
-import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.entry.EntryFacts
+import app.fuelwise.core.domain.entry.LogbookFacts
 import app.fuelwise.core.domain.insights.ComputeMilestones
 import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.prices.SummarizeCityPrices
@@ -66,7 +67,7 @@ class HomeViewModelTest {
             logbook = FakeLogbookRepository(entries, zone),
             categories = FakeCategoryRepository(),
             summarize = ComputeVehicleSummary(consumption, ComputeCostMetrics(), ComputePredictions(clock), clock),
-            lookupIntervals = LookupIntervals(consumption),
+            logbookFacts = LogbookFacts(consumption),
             milestones = ComputeMilestones(consumption, clock),
             care = HomeCareSource(
                 reminderStatuses(FakeReminderRepository(), vehicleRepo, entries, clock),
@@ -123,7 +124,8 @@ class HomeViewModelTest {
         assertThat(state.summary.hasMileage).isTrue()
         assertThat(state.summary.lastRefuel?.id).isEqualTo("r4")
         assertThat(state.recent.map { it.id }).containsExactly("r4", "e1", "r3").inOrder()
-        assertThat(state.kmPerUnit.keys).containsExactly("r2", "r3", "r4")
+        assertThat(state.facts.filterValues { (it as? EntryFacts.Fill)?.kmPerUnit != null }.keys)
+            .containsExactly("r2", "r3", "r4")
         assertThat(state.summary.months.first().month.toString()).isEqualTo("2026-10")
     }
 

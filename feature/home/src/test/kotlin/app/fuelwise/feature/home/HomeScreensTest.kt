@@ -15,6 +15,7 @@ import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.ComputeCostMetrics
 import app.fuelwise.core.domain.engine.ComputePredictions
+import app.fuelwise.core.domain.entry.LogbookFacts
 import app.fuelwise.core.domain.summary.ComputeVehicleSummary
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Refuel
@@ -58,7 +59,7 @@ class HomeScreensTest {
             summary = summarize(SampleVehicles.safari, refuels, expenses, cats, zone),
             recent = recent.take(3),
             categories = cats.associateBy { it.id },
-            kmPerUnit = mapOf("r4" to 15.42, "r3" to 15.61),
+            facts = LogbookFacts(ComputeConsumption())(refuels, expenses, listOf(SampleVehicles.safari), zone),
             hideAmounts = hide,
         )
     }

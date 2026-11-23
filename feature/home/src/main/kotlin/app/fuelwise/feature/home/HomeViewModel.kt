@@ -9,7 +9,8 @@ import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.TripRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
-import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.entry.EntryFacts
+import app.fuelwise.core.domain.entry.LogbookFacts
 import app.fuelwise.core.domain.insights.ComputeMilestones
 import app.fuelwise.core.domain.insights.Milestone
 import app.fuelwise.core.domain.insights.VehicleHistory
@@ -48,7 +49,8 @@ sealed interface HomeUiState {
         val summary: VehicleSummary,
         val recent: List<LogbookEntry>,
         val categories: Map<String, Category>,
-        val kmPerUnit: Map<String, Double>,
+        /** Logbook card figures for the Recent entries (design 23 Nov 2026). */
+        val facts: Map<String, EntryFacts>,
         val hideAmounts: Boolean,
         /** A milestone earned and not yet celebrated (PRD F-17). */
         val milestone: Milestone? = null,
@@ -76,7 +78,7 @@ class HomeViewModel @Inject constructor(
     logbook: LogbookRepository,
     categories: CategoryRepository,
     summarize: ComputeVehicleSummary,
-    lookupIntervals: LookupIntervals,
+    logbookFacts: LogbookFacts,
     milestones: ComputeMilestones,
     private val care: HomeCareSource,
     private val homePrices: HomePricesSource,
@@ -151,7 +153,7 @@ class HomeViewModel @Inject constructor(
                     summary = summarize(selected, refuels, expenses, cats, zoneId, tripList),
                     recent = recent,
                     categories = cats.associateBy { it.id },
-                    kmPerUnit = lookupIntervals.kmPerUnit(refuels),
+                    facts = logbookFacts(refuels, expenses, list, zoneId),
                     hideAmounts = data.hideAmounts,
                     milestone = milestones(VehicleHistory(selected, refuels, expenses)).firstOrNull {
                         it.key !in

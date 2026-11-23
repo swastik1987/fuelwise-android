@@ -84,4 +84,23 @@
     <string name="logbook_range_three_months">Last 3 months</string>
     <string name="logbook_range_year">This year</string>
     <string name="logbook_range_custom">Pick dates…</string>
+    <!-- Month header summaries (design 23 Nov 2026). -->
+    <plurals name="logbook_summary_fills">
+        <item quantity="one">%1$d fill</item>
+        <item quantity="other">%1$d fills</item>
+    </plurals>
+    <plurals name="logbook_summary_charges">
+        <item quantity="one">%1$d charge</item>
+        <item quantity="other">%1$d charges</item>
+    </plurals>
+    <plurals name="logbook_summary_expenses">
+        <item quantity="one">%1$d expense</item>
+        <item quantity="other">%1$d expenses</item>
+    </plurals>
+    <plurals name="logbook_summary_tolls">
+        <item quantity="one">%1$d toll</item>
+        <item quantity="other">%1$d tolls</item>
+    </plurals>
+    <string name="logbook_summary_other">Other</string>
+    <string name="logbook_summary_more">%1$s +%2$d</string>
 </resources>

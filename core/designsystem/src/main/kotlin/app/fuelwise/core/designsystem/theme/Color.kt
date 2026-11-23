@@ -23,7 +23,49 @@ data class FwColors(
     val scrim: Color,
     /** Card border: a hairline in light theme, none in dark. */
     val cardBorder: Color,
+    /** Tinted tiles on Logbook cards: mileage status and expense categories. */
+    val tints: FwTints,
     val isDark: Boolean,
+)
+
+/** A tile background and the text and icon colour on it. */
+@Immutable
+data class FwTint(val container: Color, val content: Color)
+
+/**
+ * Logbook card tints (design "Logbook entry card", 23 Nov 2026). Mileage status uses green and red only; expense
+ * categories never do, so a tinted tile in the All list can't be misread as good or bad mileage.
+ */
+@Immutable
+data class FwTints(
+    val better: FwTint,
+    val worse: FwTint,
+    val neutral: FwTint,
+    val upkeep: FwTint,
+    val battery: FwTint,
+    val paperwork: FwTint,
+    val other: FwTint,
+)
+
+val LightFwTints = FwTints(
+    better = FwTint(Color(0xFFEAF6EF), Color(0xFF1F7A55)),
+    worse = FwTint(Color(0xFFFCEEEA), Color(0xFFB3402F)),
+    neutral = FwTint(Color(0xFFF6F5F2), Color(0xFF4A4741)),
+    upkeep = FwTint(Color(0xFFECEFF7), Color(0xFF3B4F7A)),
+    battery = FwTint(Color(0xFFF1ECF8), Color(0xFF5B3F8C)),
+    paperwork = FwTint(Color(0xFFF7F0E4), Color(0xFF7A5212)),
+    other = FwTint(Color(0xFFEFEEEA), Color(0xFF4A4741)),
+)
+
+/** Dark: the same hues as dim containers with light text, keeping AA contrast on the dark surface. */
+val DarkFwTints = FwTints(
+    better = FwTint(Color(0xFF15281E), Color(0xFF7AD3A2)),
+    worse = FwTint(Color(0xFF2E1916), Color(0xFFFF9A8A)),
+    neutral = FwTint(Color(0xFF1F1F22), Color(0xFFD2D0CA)),
+    upkeep = FwTint(Color(0xFF1A2032), Color(0xFFA9BAE2)),
+    battery = FwTint(Color(0xFF241C33), Color(0xFFC6AEEC)),
+    paperwork = FwTint(Color(0xFF2B2216), Color(0xFFE6C083)),
+    other = FwTint(Color(0xFF222220), Color(0xFFD2D0CA)),
 )
 
 val LightFwColors = FwColors(
@@ -42,6 +84,7 @@ val LightFwColors = FwColors(
     negative = Color(0xFFD93025),
     scrim = Color(0xFF8C8B87),
     cardBorder = Color(0xFFE4E2DC),
+    tints = LightFwTints,
     isDark = false,
 )
 
@@ -61,6 +104,7 @@ val DarkFwColors = FwColors(
     negative = Color(0xFFFF6B5E),
     scrim = Color(0xFF050506),
     cardBorder = Color.Transparent,
+    tints = DarkFwTints,
     isDark = true,
 )
 

@@ -13,8 +13,10 @@ import app.fuelwise.core.data.repository.LogbookFilter
 import app.fuelwise.core.data.repository.LogbookRepository
 import app.fuelwise.core.data.repository.UserDataRepository
 import app.fuelwise.core.data.repository.VehicleRepository
+import app.fuelwise.core.domain.entry.EntryFacts
 import app.fuelwise.core.domain.entry.EntryRangePreset
-import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.entry.LogbookFacts
+import app.fuelwise.core.domain.entry.MonthSummary
 import app.fuelwise.core.domain.entry.entryRange
 import app.fuelwise.core.domain.units.UnitSettings
 import app.fuelwise.core.model.Category
@@ -64,8 +66,11 @@ data class LogbookChrome(
     val query: String = "",
     val searchOpen: Boolean = false,
     val categories: Map<String, Category> = emptyMap(),
-    val kmPerUnit: Map<String, Double> = emptyMap(),
+    /** Per-entry card figures (design "Logbook entry card", 23 Nov 2026). */
+    val facts: Map<String, EntryFacts> = emptyMap(),
     val monthTotals: Map<String, Money> = emptyMap(),
+    /** The month header's right side, by type filter, keyed like [monthTotals]. */
+    val monthSummaries: Map<String, MonthSummary> = emptyMap(),
     /** Month headers show the year only for other years. */
     val currentYear: Int = 0,
     /** Map mode (PRD F-05; design.md 12b): geotagged fill-ups and charges under the same filters. */
@@ -113,7 +118,7 @@ class LogbookViewModel @Inject constructor(
     vehicles: VehicleRepository,
     categories: CategoryRepository,
     private val userData: UserDataRepository,
-    private val lookupIntervals: LookupIntervals,
+    private val logbookFacts: LogbookFacts,
     private val zoneId: ZoneId,
     private val clock: Clock,
 ) : ViewModel() {
@@ -128,6 +133,10 @@ class LogbookViewModel @Inject constructor(
     )
 
     private val controls = MutableStateFlow(Controls())
+
+    private class Cards(val refuels: List<Refuel>, val facts: Map<String, EntryFacts>)
+
+    private class Months(val totals: Map<String, Money>, val summaries: Map<String, MonthSummary>)
 
     private val selectedVehicle: Flow<Triple<List<Vehicle>, Vehicle?, UnitSettings>> =
         combine(vehicles.observeVehicles(includeArchived = true), userData.userData) { all, data ->
@@ -154,13 +163,31 @@ class LogbookViewModel @Inject constructor(
         .map { it.withMonthHeaders(zoneId) }
         .cachedIn(viewModelScope)
 
+    private val cards: Flow<Cards> = combine(
+        entries.observeAllRefuels(),
+        entries.observeAllExpenses(),
+        selectedVehicle,
+    ) { refuels, expenses, (all, _, _) ->
+        Cards(refuels, logbookFacts(refuels, expenses, all, zoneId))
+    }
+
+    private val months: Flow<Months> = combine(
+        filter.flatMapLatest { f -> combine(logbook.monthTotals(f), logbook.filteredEntries(f)) { t, e -> t to e } },
+        controls,
+        cards,
+    ) { (totals, filtered), c, cards ->
+        val summaries = MonthSummary.of(filtered, c.kinds, cards.facts, zoneId)
+        Months(totals, summaries.mapKeys { it.key.toString() })
+    }
+
     val chrome: StateFlow<LogbookChrome> = combine(
         selectedVehicle,
         controls,
         categories.observeCategories(),
-        entries.observeAllRefuels(),
-        filter.flatMapLatest { logbook.monthTotals(it) },
-    ) { (all, selected, units), c, cats, refuels, totals ->
+        cards,
+        months,
+    ) { (all, selected, units), c, cats, cards, months ->
+        val refuels = cards.refuels
         val vehicleId = if (c.allVehicles) null else selected?.id
         LogbookChrome(
             vehicles = all,
@@ -170,8 +197,9 @@ class LogbookViewModel @Inject constructor(
             query = c.query,
             searchOpen = c.searchOpen,
             categories = cats.associateBy { it.id },
-            kmPerUnit = lookupIntervals.kmPerUnit(refuels),
-            monthTotals = totals,
+            facts = cards.facts,
+            monthTotals = months.totals,
+            monthSummaries = months.summaries,
             currentYear = Year.now(clock.withZone(zoneId)).value,
             mapMode = c.mapMode,
             pins = if (c.mapMode) pins(refuels, all, vehicleId, c) else emptyList(),

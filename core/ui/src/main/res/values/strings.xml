@@ -78,6 +78,34 @@
     <string name="logbook_fuel">Fuel</string>
     <string name="logbook_charge">Charge</string>
     <string name="logbook_toll">Toll</string>
+    <!-- Logbook entry card (design 23 Nov 2026). -->
+    <string name="card_vs_avg_up">▲ %1$d%% vs avg</string>
+    <string name="card_vs_avg_down">▼ %1$d%% vs avg</string>
+    <string name="card_at_avg">at your avg</string>
+    <string name="card_cd_above">%1$d%% above your average</string>
+    <string name="card_cd_below">%1$d%% below your average</string>
+    <string name="card_partial">Partial</string>
+    <string name="card_baseline">Baseline</string>
+    <string name="card_restarted">Restarted</string>
+    <string name="card_no_mileage_yet">no %1$s yet</string>
+    <string name="card_cost_per_km">₹%1$s/%2$s</string>
+    <string name="card_price_per_unit">₹%1$s / %2$s</string>
+    <string name="card_plus">+%1$s</string>
+    <string name="card_odometer">odometer</string>
+    <string name="card_not_logged">Not logged</string>
+    <string name="card_tap_to_add">tap to add</string>
+    <string name="card_first_log">First log</string>
+    <string name="card_none_earlier">none earlier</string>
+    <string name="card_same_day">same day</string>
+    <string name="card_since_last">since the last one</string>
+    <plurals name="card_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="card_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
     <string name="picker_next">Next</string>
     <string name="picker_done">Done</string>
     <string name="picker_cancel">Cancel</string>

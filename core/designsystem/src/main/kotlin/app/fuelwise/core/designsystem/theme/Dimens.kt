@@ -18,6 +18,13 @@ object FwSpacing {
     val xxxl: Dp = 40.dp
     val huge: Dp = 56.dp
 
+    /** Logbook entry card: padding 10 vertical, 12 horizontal; 6 between rows and tiles; tile 5 by 8. */
+    val entryCardV: Dp = 10.dp
+    val entryCardH: Dp = 12.dp
+    val entryGap: Dp = 6.dp
+    val entryTileV: Dp = 5.dp
+    val entryTileH: Dp = 8.dp
+
     /** Screen side gutter. */
     val gutter: Dp = 20.dp
 
@@ -37,6 +44,10 @@ object FwRadius {
     val segment = RoundedCornerShape(14.dp)
     val segmentThumb = RoundedCornerShape(11.dp)
     val tile = RoundedCornerShape(12.dp)
+
+    /** Logbook entry card and its three tiles (design 23 Nov 2026). */
+    val entryCard = RoundedCornerShape(16.dp)
+    val entryTile = RoundedCornerShape(10.dp)
     val fab = RoundedCornerShape(20.dp)
     val pill = RoundedCornerShape(percent = 50)
 }
@@ -47,6 +58,8 @@ object FwSize {
     val buttonHeight: Dp = 56.dp
     val chipHeight: Dp = 36.dp
     val entryRowHeight: Dp = 64.dp
+    val entryCardHeight: Dp = 88.dp
+    val entryTileHeight: Dp = 40.dp
     val iconTile: Dp = 40.dp
     val icon: Dp = 24.dp
     val iconSmall: Dp = 16.dp

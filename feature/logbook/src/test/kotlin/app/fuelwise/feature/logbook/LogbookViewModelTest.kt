@@ -4,8 +4,10 @@ import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.fuelwise.core.domain.engine.ComputeConsumption
+import app.fuelwise.core.domain.entry.EntryFacts
 import app.fuelwise.core.domain.entry.EntryRangePreset
-import app.fuelwise.core.domain.entry.LookupIntervals
+import app.fuelwise.core.domain.entry.LogbookFacts
+import app.fuelwise.core.domain.entry.MonthSummary
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
@@ -46,7 +48,7 @@ class LogbookViewModelTest {
         vehicles = FakeVehicleRepository(listOf(SampleVehicles.safari)),
         categories = FakeCategoryRepository(),
         userData = FakeUserDataRepository(),
-        lookupIntervals = LookupIntervals(ComputeConsumption()),
+        logbookFacts = LogbookFacts(ComputeConsumption()),
         zoneId = zone,
         clock = Clock.fixed(Instant.ofEpochMilli(SampleEntries.at(2026, 10, 16, 10)), zone),
     )
@@ -98,9 +100,12 @@ class LogbookViewModelTest {
     }
 
     @Test
-    fun chromeHasEfficiencyForClosingFills() = runTest {
-        val chrome = viewModel().chrome.first { it.selectedVehicle != null && it.monthTotals.isNotEmpty() }
-        assertThat(chrome.kmPerUnit.keys).containsExactly("r2", "r3", "r4")
+    fun chromeHasCardFactsAndMonthSummaries() = runTest {
+        val chrome = viewModel().chrome.first { it.selectedVehicle != null && it.monthSummaries.isNotEmpty() }
+        val measured = chrome.facts.filterValues { (it as? EntryFacts.Fill)?.kmPerUnit != null }
+        assertThat(measured.keys).containsExactly("r2", "r3", "r4")
+        assertThat(chrome.facts).containsKey(SampleEntries.safariService.id)
+        assertThat(chrome.monthSummaries["2026-10"]).isInstanceOf(MonthSummary.Counts::class.java)
         assertThat(chrome.monthTotals.keys).containsExactly("2026-08", "2026-09", "2026-10")
     }
 

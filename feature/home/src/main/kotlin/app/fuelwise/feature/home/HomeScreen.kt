@@ -55,7 +55,7 @@ import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
 import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.ui.care.CareLabels
-import app.fuelwise.core.ui.entry.LogbookEntryRow
+import app.fuelwise.core.ui.entry.LogbookEntryCard
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.format.efficiencyText
 import app.fuelwise.core.ui.format.quantityText
@@ -344,18 +344,18 @@ private fun RangeGauge(rangeKm: Double, state: HomeUiState.Ready, s: VehicleSumm
 
 @Composable
 private fun Recent(state: HomeUiState.Ready, actions: HomeActions) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs)) {
         FwSectionHeader(
             title = stringResource(R.string.home_recent),
             actionLabel = stringResource(R.string.home_see_all),
             onAction = actions.onOpenLogbook,
         )
         state.recent.forEach { entry: LogbookEntry ->
-            LogbookEntryRow(
+            LogbookEntryCard(
                 entry = entry,
                 vehicle = state.vehicle,
                 categories = state.categories,
-                kmPerUnit = state.kmPerUnit[entry.id],
+                facts = state.facts[entry.id],
                 units = state.units,
                 onClick = { actions.onOpenEntry(entry.source, entry.id) },
                 amountText = money(entry.amount, state.hideAmounts, whole = true),

@@ -43,6 +43,9 @@ interface LogbookRepository {
     fun monthTotals(filter: LogbookFilter): Flow<Map<String, Money>>
 
     fun recentEntries(vehicleId: String?, limit: Int): Flow<List<LogbookEntry>>
+
+    /** Every entry under [filter], newest first, unpaged: the month headers' summaries need the whole month. */
+    fun filteredEntries(filter: LogbookFilter): Flow<List<LogbookEntry>>
 }
 
 internal class OfflineLogbookRepository @Inject constructor(private val dao: LogbookDao) : LogbookRepository {
@@ -63,6 +66,13 @@ internal class OfflineLogbookRepository @Inject constructor(private val dao: Log
         )
     }
         .map { rows -> rows.associate { it.month to Money(it.totalPaise) } }
+
+    override fun filteredEntries(filter: LogbookFilter): Flow<List<LogbookEntry>> = with(filter) {
+        dao.recentRows(
+            vehicleId, kindNames(), kinds.isEmpty(), categoryIds.toList(), categoryIds.isEmpty(),
+            paymentNames(), payments.isEmpty(), fromUtcMs, toUtcMs, query.trim(), limit = NO_LIMIT,
+        )
+    }.map { rows -> rows.map { it.toModel() } }
 
     override fun recentEntries(vehicleId: String?, limit: Int): Flow<List<LogbookEntry>> = dao.recentRows(
         vehicleId, emptyList(), allKinds = true, categories = emptyList(), allCategories = true,
@@ -94,5 +104,8 @@ internal class OfflineLogbookRepository @Inject constructor(private val dao: Log
 
     private companion object {
         const val PAGE_SIZE = 50
+
+        /** SQLite: a negative LIMIT means no limit. */
+        const val NO_LIMIT = -1
     }
 }

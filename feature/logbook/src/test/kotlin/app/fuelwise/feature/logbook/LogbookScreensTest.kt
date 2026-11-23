@@ -1,12 +1,17 @@
 package app.fuelwise.feature.logbook
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -18,21 +23,28 @@ import app.fuelwise.core.designsystem.component.FwPhoto
 import app.fuelwise.core.designsystem.component.FwSheetContent
 import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.engine.Interval
 import app.fuelwise.core.domain.engine.IntervalResult
+import app.fuelwise.core.domain.entry.EntryFacts
+import app.fuelwise.core.domain.entry.LogbookFacts
+import app.fuelwise.core.domain.entry.MonthSummary
 import app.fuelwise.core.domain.station.StationOption
 import app.fuelwise.core.model.Category
 import app.fuelwise.core.model.EnergyType
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.Money
+import app.fuelwise.core.model.QuantityUnit
 import app.fuelwise.core.model.SystemCategory
 import app.fuelwise.core.testing.FakeCategoryRepository
 import app.fuelwise.core.testing.SampleEntries
 import app.fuelwise.core.testing.SampleVehicles
+import app.fuelwise.core.ui.entry.LogbookEntryCard
 import app.fuelwise.core.ui.map.LocalMapsEnabled
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.google.common.truth.Truth.assertThat
 import java.time.YearMonth
+import java.time.ZoneId
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
@@ -54,8 +66,17 @@ class LogbookScreensTest {
         vehicles = listOf(SampleVehicles.safari),
         selectedVehicle = SampleVehicles.safari,
         categories = categories,
-        kmPerUnit = mapOf("r2" to 15.29, "r3" to 15.61, "r4" to 15.42),
+        facts = LogbookFacts(ComputeConsumption())(
+            SampleEntries.safariRefuels,
+            listOf(SampleEntries.safariService),
+            listOf(SampleVehicles.safari),
+            ZoneId.of("Asia/Kolkata"),
+        ),
         monthTotals = mapOf("2026-10" to Money(843_986), "2026-09" to Money(744_190)),
+        monthSummaries = mapOf(
+            "2026-10" to MonthSummary.Counts(fills = 1, charges = 0, expenses = 1, tolls = 0),
+            "2026-09" to MonthSummary.Counts(fills = 2, charges = 0, expenses = 0, tolls = 0),
+        ),
         currentYear = 2026,
     )
 
@@ -184,6 +205,45 @@ class LogbookScreensTest {
             repeat(8) { i -> drawRect(30f, 40f + i * 40f, 270f - (i % 3) * 50f, 52f + i * 40f, ink) }
         }
         return FwPhoto(key, bitmap.asImageBitmap())
+    }
+
+    // The design's own examples: a fill well below average, one above, and expenses in each category family.
+    private val worseFill = LogbookEntry.of(SampleEntries.safariRefuels[3]).copy(id = "w", place = "Laghumamma")
+    private val betterFill = LogbookEntry.of(SampleEntries.safariRefuels[2]).copy(id = "b")
+    private val service = LogbookEntry.of(SampleEntries.safariService).copy(id = "s", odometerKm = 30_662.0)
+    private val battery = service.copy(id = "bt", categoryId = SystemCategory.Battery.id, odometerKm = null)
+    private val purchase = service.copy(id = "p", categoryId = SystemCategory.Purchase.id)
+    private val cardFacts = mapOf(
+        "w" to EntryFacts.Fill(QuantityUnit.LITRE, Interval(258.0, 33.1), -0.34, null, 258.0, Money(1_260)),
+        "b" to EntryFacts.Fill(QuantityUnit.LITRE, Interval(640.0, 36.0), 0.15, null, 640.0, Money(571)),
+        "s" to EntryFacts.Spend(hasEarlier = true, kmSinceSame = 3_942.0, daysSinceSame = 264),
+        "bt" to EntryFacts.Spend(hasEarlier = true, kmSinceSame = null, daysSinceSame = 412),
+        "p" to EntryFacts.Spend(hasEarlier = false, kmSinceSame = null, daysSinceSame = null),
+    )
+
+    @Composable
+    private fun Cards() {
+        Column(
+            Modifier.background(FwTheme.colors.bg).padding(FwTheme.spacing.gutter),
+            verticalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs),
+        ) {
+            listOf(worseFill, betterFill, service, battery, purchase).forEach { entry ->
+                LogbookEntryCard(entry, SampleVehicles.safari, categories, cardFacts[entry.id], onClick = {})
+            }
+        }
+    }
+
+    @Test fun entryCardsLight() = capture("logbook_cards_light", false) { Cards() }
+
+    @Test fun entryCardsDark() = capture("logbook_cards_dark", true) { Cards() }
+
+    @Test fun aCardReadsAsOneSentenceWithWordsForTheArrows() {
+        compose.setContent { FuelwiseTheme { Cards() } }
+        compose.onNodeWithContentDescription("34% below your average", substring = true).assertExists()
+        compose.onNodeWithContentDescription("+3,942 km, 264 days ago", substring = true).assertExists()
+        compose.onNodeWithContentDescription("Not logged, tap to add", substring = true).assertExists()
+        compose.onNodeWithContentDescription("First log, none earlier", substring = true).assertExists()
+        compose.onNodeWithText("▼ 34% vs avg").assertDoesNotExist() // Merged into the card's description.
     }
 
     @Composable

@@ -78,6 +78,34 @@
     <string name="logbook_fuel">फ़्यूल</string>
     <string name="logbook_charge">चार्जिंग</string>
     <string name="logbook_toll">टोल</string>
+    <!-- Logbook entry card (design 23 Nov 2026). -->
+    <string name="card_vs_avg_up">▲ %1$d%% औसत से</string>
+    <string name="card_vs_avg_down">▼ %1$d%% औसत से</string>
+    <string name="card_at_avg">आपके औसत पर</string>
+    <string name="card_cd_above">आपके औसत से %1$d%% ज़्यादा</string>
+    <string name="card_cd_below">आपके औसत से %1$d%% कम</string>
+    <string name="card_partial">आंशिक</string>
+    <string name="card_baseline">शुरुआत</string>
+    <string name="card_restarted">फिर से शुरू</string>
+    <string name="card_no_mileage_yet">अभी %1$s नहीं</string>
+    <string name="card_cost_per_km">₹%1$s/%2$s</string>
+    <string name="card_price_per_unit">₹%1$s / %2$s</string>
+    <string name="card_plus">+%1$s</string>
+    <string name="card_odometer">ओडोमीटर</string>
+    <string name="card_not_logged">दर्ज नहीं</string>
+    <string name="card_tap_to_add">जोड़ने के लिए टैप करें</string>
+    <string name="card_first_log">पहली एंट्री</string>
+    <string name="card_none_earlier">पहले कोई नहीं</string>
+    <string name="card_same_day">उसी दिन</string>
+    <string name="card_since_last">पिछली बार से</string>
+    <plurals name="card_days_ago">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
+    </plurals>
+    <plurals name="card_days">
+        <item quantity="one">%1$d दिन</item>
+        <item quantity="other">%1$d दिन</item>
+    </plurals>
     <string name="picker_next">आगे</string>
     <string name="picker_done">हो गया</string>
     <string name="picker_cancel">रद्द करें</string>

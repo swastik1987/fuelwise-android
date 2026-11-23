@@ -5,7 +5,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,6 +47,7 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,10 +60,11 @@ import app.fuelwise.core.designsystem.component.FwSnackbarHost
 import app.fuelwise.core.designsystem.component.FwTextField
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
+import app.fuelwise.core.domain.entry.MonthSummary
 import app.fuelwise.core.model.EntrySource
 import app.fuelwise.core.model.LogbookEntry
 import app.fuelwise.core.model.LogbookKind
-import app.fuelwise.core.ui.entry.LogbookEntryRow
+import app.fuelwise.core.ui.entry.LogbookEntryCard
 import app.fuelwise.core.ui.format.IndianNumberFormat
 import app.fuelwise.core.ui.map.FwPinMap
 import app.fuelwise.core.ui.map.MapPin
@@ -258,15 +259,12 @@ private fun LogbookMap(chrome: LogbookChrome, actions: LogbookActions) {
             }
         }
         selected?.let { pin ->
-            FwCard(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = FwTheme.spacing.m),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-            ) {
-                LogbookEntryRow(
+            Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = FwTheme.spacing.m)) {
+                LogbookEntryCard(
                     entry = pin.entry,
                     vehicle = vehicles[pin.entry.vehicleId],
                     categories = chrome.categories,
-                    kmPerUnit = chrome.kmPerUnit[pin.entry.id],
+                    facts = chrome.facts[pin.entry.id],
                     units = chrome.units.forVehicle(pin.entry.vehicleId),
                     onClick = { actions.onOpen(pin.entry) },
                     showVehicleName = chrome.allVehicles,
@@ -323,7 +321,8 @@ private fun LogbookList(chrome: LogbookChrome, items: LazyPagingItems<LogbookIte
             when (val peeked = items.peek(index)) {
                 is LogbookItem.Header -> stickyHeader(key = "h-${peeked.month}") {
                     val month = items[index] as? LogbookItem.Header ?: peeked
-                    MonthHeader(month, chrome.monthTotals[month.month.toString()], chrome.currentYear)
+                    val key = month.month.toString()
+                    MonthHeader(month, chrome.monthTotals[key], chrome.monthSummaries[key], chrome)
                 }
 
                 is LogbookItem.Row, null -> item(key = peeked?.entry?.let { "${it.source}-${it.id}" } ?: "p-$index") {
@@ -332,17 +331,14 @@ private fun LogbookList(chrome: LogbookChrome, items: LazyPagingItems<LogbookIte
                         entry = row.entry,
                         actions = actions,
                     ) {
-                        LogbookEntryRow(
+                        LogbookEntryCard(
                             entry = row.entry,
                             vehicle = vehicles[row.entry.vehicleId],
                             categories = chrome.categories,
-                            kmPerUnit = chrome.kmPerUnit[row.entry.id],
+                            facts = chrome.facts[row.entry.id],
                             units = chrome.units.forVehicle(row.entry.vehicleId),
                             onClick = { actions.onOpen(row.entry) },
                             showVehicleName = chrome.allVehicles,
-                            modifier = Modifier.background(
-                                FwTheme.colors.bg,
-                            ).padding(horizontal = FwTheme.spacing.gutter),
                         )
                     }
                 }
@@ -354,6 +350,14 @@ private fun LogbookList(chrome: LogbookChrome, items: LazyPagingItems<LogbookIte
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SwipeableRow(entry: LogbookEntry, actions: LogbookActions, content: @Composable () -> Unit) {
+    Box(Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.xxs)) {
+        SwipeableCard(entry, actions, content)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableCard(entry: LogbookEntry, actions: LogbookActions, content: @Composable () -> Unit) {
     val editLabel = stringResource(R.string.logbook_edit)
     val deleteLabel = stringResource(R.string.logbook_delete)
     val state = rememberSwipeToDismissBoxState()
@@ -372,7 +376,7 @@ private fun SwipeableRow(entry: LogbookEntry, actions: LogbookActions, content: 
     SwipeToDismissBox(
         state = state,
         // Swipes also exist as TalkBack actions, since swiping is hard with a screen reader.
-        modifier = Modifier.semantics {
+        modifier = Modifier.clip(FwTheme.radius.entryCard).semantics {
             customActions = listOf(
                 CustomAccessibilityAction(editLabel) {
                     actions.onEdit(entry)
@@ -404,22 +408,39 @@ private fun SwipeableRow(entry: LogbookEntry, actions: LogbookActions, content: 
 }
 
 @Composable
-private fun MonthHeader(header: LogbookItem.Header, total: app.fuelwise.core.model.Money?, currentYear: Int) {
+private fun MonthHeader(
+    header: LogbookItem.Header,
+    total: app.fuelwise.core.model.Money?,
+    summary: MonthSummary?,
+    chrome: LogbookChrome,
+) {
     val locale = LocalConfiguration.current.locales[0]
     Row(
         Modifier.fillMaxWidth().background(
             FwTheme.colors.bg,
-        ).heightIn(min = 44.dp).padding(horizontal = FwTheme.spacing.gutter),
+        ).heightIn(min = FwTheme.size.minTouchTarget).padding(horizontal = FwTheme.spacing.gutter),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs),
     ) {
+        // Current-year months without a year ("November"), earlier ones with it ("July 2025").
         Text(
             header.month.month.getDisplayName(TextStyle.FULL, locale) +
-                if (header.month.year != currentYear) " ${header.month.year}" else "",
+                if (header.month.year != chrome.currentYear) " ${header.month.year}" else "",
             style = FwTheme.type.label.copy(fontWeight = FontWeight.SemiBold),
             color = FwTheme.colors.ink,
-            modifier = Modifier.weight(1f).semantics { heading() },
+            modifier = Modifier.semantics { heading() },
         )
         total?.let { Text(IndianNumberFormat.rupeesWhole(it), style = FwTheme.type.label, color = FwTheme.colors.ink2) }
+        Box(Modifier.weight(1f))
+        summary?.let { s ->
+            Text(
+                monthSummaryText(s, chrome),
+                style = FwTheme.type.caption,
+                color = FwTheme.colors.ink2,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 

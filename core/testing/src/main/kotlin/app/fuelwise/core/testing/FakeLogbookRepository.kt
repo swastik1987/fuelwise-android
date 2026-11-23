@@ -44,6 +44,8 @@ class FakeLogbookRepository(
             .mapValues { (_, month) -> Money(month.sumOf { it.amount.paise }) }
     }
 
+    override fun filteredEntries(filter: LogbookFilter): Flow<List<LogbookEntry>> = all(filter)
+
     override fun recentEntries(vehicleId: String?, limit: Int): Flow<List<LogbookEntry>> =
         all(LogbookFilter(vehicleId = vehicleId)).map { it.take(limit) }
 }

@@ -64,4 +64,9 @@ data class FwTypography(
     val overline: TextStyle = style(11, 14, 600, 0.06.em),
     val mono: TextStyle = style(26, 30, 500, family = GeistMono),
     val monoS: TextStyle = style(13, 18, 500, 0.04.em, family = GeistMono),
+    /** Logbook entry card (design 23 Nov 2026): amount, tile value, and the 11 sp captions and units. */
+    val amount: TextStyle = style(16, 20, 600),
+    val tileValue: TextStyle = style(15, 18, 600),
+    val micro: TextStyle = style(11, 14, 400),
+    val microStrong: TextStyle = style(11, 14, 500),
 )

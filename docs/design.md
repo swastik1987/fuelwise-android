@@ -311,8 +311,12 @@ For each screen: purpose → layout (top to bottom) → states → notes. Frame 
 **12. Logbook ★**
 - **Top:** vehicle switcher, search icon, list/map toggle.
 - **Filter chips row:** All · Fuel · Charge · Expenses · Tolls · Trips · Date.
-- **Grouped by month:** sticky month header with the month total on the right ("October · ₹6,240").
-- **Rows:** entry rows; closing fill-ups show an efficiency chip.
+- **Grouped by month:** sticky month header: month and total on the left ("November ₹6,240"), a summary on the right that follows the type filter: All "2 fills · 1 expense" (zero parts left out), Fuel or Charge "62.4 L · 509 km · 8.2 km/L", Expenses or Tolls the category names. Months with nothing matching are dropped; current-year months have no year ("November"), earlier ones do ("July 2025").
+- **Rows: the entry card (23 Nov 2026), one shell, two variants.** Fuel and expense entries share one 88 dp card (radius 16, padding 10/12, 6 gap) so a mixed list stays even; only the slot contents change, and filters never change the card. Header: date ("Mon, 23 Nov", 14/500) · subtitle (12/400, ellipsis), secondary figure (11/400), amount (16/600, never truncated). Three equal tiles (40 dp, radius 10, padding 5/8): value 15/600 + unit 11/400 over a caption 11/400 (tile 1: 11/500).
+  - *Fuel / charge:* subtitle "Diesel · station" ("Diesel" without one); secondary ₹/km = amount ÷ km since the last fill of that tank; tile 1 km/L with "▲/▼ n% vs avg", tinted green at ≥ +10% and red at ≤ −10% of the tank's average, else neutral; fills with no mileage show a grey "Partial", "Baseline" or "Restarted" with "no km/L yet"; tile 2 litres with "₹/L"; tile 3 odometer with "+km" since the last fill.
+  - *Expense / toll:* subtitle the category; no secondary; tile 1 category icon and name in its category tint; tile 2 odometer ("Not logged / tap to add" when missing); tile 3 "+km" since the last entry of the same category with "n days ago" ("First log / none earlier" for the first).
+  - *Category tints* (never green or red, so a tinted tile can't be read as good or bad mileage): upkeep blue (Service, Repair, Tyres, Wash, Accessories, Extended warranty), battery purple, paperwork and money amber (Purchase, Loan EMI, Insurance, Road tax, Registration, PUC, Fine), grey for Parking, tolls, Other and custom categories. Tokens: `FwTheme.colors.tints`.
+  - Home's Recent list uses the same card. TalkBack reads each card as one sentence, with "34% below your average" for the arrows.
 - Swipe left = delete (undo snackbar), swipe right = edit.
 - **Map mode:** full-screen map with energy-coloured pins, a bottom card carousel of entries in view, and a date-range chip.
 - **Empty:** illustration of an open logbook, "Nothing logged yet", primary "Log your first fill-up".

@@ -102,6 +102,7 @@ class TripsViewModel @Inject constructor(
     private val zoneId: ZoneId,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
     // A month card on Home opens Trips filtered to its month (TripsRoute.month).
     private val filter = MutableStateFlow(
         savedStateHandle.get<String>(TripsRoute::month.name)?.let(::filterFor) ?: TripFilter(),

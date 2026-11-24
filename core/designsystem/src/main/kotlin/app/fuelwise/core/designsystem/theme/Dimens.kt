@@ -60,6 +60,11 @@ object FwSize {
     val entryRowHeight: Dp = 64.dp
     val entryCardHeight: Dp = 88.dp
     val entryTileHeight: Dp = 40.dp
+
+    /** The drawn route on a Trips card (owner choice 24 Nov 2026, option B). */
+    val routeThumb: Dp = 56.dp
+    val routeStroke: Dp = 2.dp
+    val routeDot: Dp = 3.dp
     val iconTile: Dp = 40.dp
     val icon: Dp = 24.dp
     val iconSmall: Dp = 16.dp

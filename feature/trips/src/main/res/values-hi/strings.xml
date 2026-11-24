@@ -6,10 +6,8 @@
     <string name="trips_undo">वापस लें</string>
     <string name="trips_empty">अभी कोई यात्रा नहीं</string>
     <string name="trips_empty_body">यात्रा दर्ज करें: खर्च देखें, दोस्तों में बाँटें और दफ़्तर के क्लेम के लिए बिज़नेस किमी रखें।</string>
-    <string name="trips_add_manual">यात्रा खुद जोड़ें</string>
     <string name="trips_no_vehicles">अभी कोई वाहन नहीं</string>
     <string name="trips_no_vehicles_body">यात्राएँ दर्ज करने के लिए गैराज में वाहन जोड़ें।</string>
-    <string name="trips_month_totals">%1$s किमी · %2$s अनु.</string>
     <string name="trips_filter_this_month">इस महीने</string>
     <string name="trips_filter_last_month">पिछले महीने</string>
     <string name="trips_filter_3_months">3 महीने</string>
@@ -279,4 +277,14 @@
     <string name="trip_settings_delete_location_title">सारा लोकेशन इतिहास मिटाएँ?</string>
     <string name="trip_settings_delete_location_body">इस फ़ोन से सभी सेव रूट और आपकी निजी जगहें हटा दी जाएँगी। यात्राओं की दूरी, समय और खर्च बने रहेंगे। इसे वापस नहीं लाया जा सकता।</string>
     <string name="trip_settings_delete_location_confirm">रूट और निजी जगहें मिटाएँ</string>
+    <!-- Trips cards, option B (owner choice 24 Nov 2026). -->
+    <string name="trips_manual">खुद जोड़ें</string>
+    <plurals name="trips_month_count">
+        <item quantity="one">%1$d यात्रा</item>
+        <item quantity="other">%1$d यात्राएँ</item>
+    </plurals>
+    <string name="trips_card_speed">औसत %1$s किमी/घं</string>
+    <string name="trips_card_no_time">समय दर्ज नहीं</string>
+    <string name="trips_card_per_km">₹%1$s/किमी अनु.</string>
+    <string name="trips_card_no_estimate">अभी अनुमान नहीं</string>
 </resources>

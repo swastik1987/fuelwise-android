@@ -6,10 +6,8 @@
     <string name="trips_undo">Undo</string>
     <string name="trips_empty">No trips yet</string>
     <string name="trips_empty_body">Log a trip to see what it cost, split it with friends and keep business km for claims.</string>
-    <string name="trips_add_manual">Add manual trip</string>
     <string name="trips_no_vehicles">No vehicles yet</string>
     <string name="trips_no_vehicles_body">Add a vehicle in Garage to log trips.</string>
-    <string name="trips_month_totals">%1$s km · %2$s est.</string>
     <string name="trips_filter_this_month">This month</string>
     <string name="trips_filter_last_month">Last month</string>
     <string name="trips_filter_3_months">3 months</string>
@@ -288,4 +286,14 @@
     <string name="trip_settings_delete_location_title">Delete all location history?</string>
     <string name="trip_settings_delete_location_body">Every saved route and your private places are removed from this phone. Trips keep their distance, time and cost. This can\'t be undone.</string>
     <string name="trip_settings_delete_location_confirm">Delete routes and private places</string>
+    <!-- Trips cards, option B (owner choice 24 Nov 2026). -->
+    <string name="trips_manual">Manual trip</string>
+    <plurals name="trips_month_count">
+        <item quantity="one">%1$d trip</item>
+        <item quantity="other">%1$d trips</item>
+    </plurals>
+    <string name="trips_card_speed">%1$s km/h avg</string>
+    <string name="trips_card_no_time">time not logged</string>
+    <string name="trips_card_per_km">₹%1$s/km est.</string>
+    <string name="trips_card_no_estimate">no estimate yet</string>
 </resources>

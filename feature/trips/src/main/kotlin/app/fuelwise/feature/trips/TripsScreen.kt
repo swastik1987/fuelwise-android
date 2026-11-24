@@ -43,16 +43,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -71,6 +74,7 @@ import app.fuelwise.core.designsystem.component.FwTopBar
 import app.fuelwise.core.designsystem.icon.FwIcons
 import app.fuelwise.core.designsystem.theme.FwTheme
 import app.fuelwise.core.domain.trip.ExportRange
+import app.fuelwise.core.domain.trip.RouteSketch
 import app.fuelwise.core.domain.trip.TripRange
 import app.fuelwise.core.model.Trip
 import app.fuelwise.core.model.TripSource
@@ -97,11 +101,19 @@ internal data class TripsActions(
     /** The date filter: a preset, or the picked days for Custom. */
     val onRange: (TripRange) -> Unit = {},
     val onDays: (from: LocalDate, to: LocalDate) -> Unit = { _, _ -> },
+    /** A GPS or automatic trip's card appeared: draw its route thumbnail. */
+    val onSketch: (tripId: String) -> Unit = {},
 )
 
 @Composable
-internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewModel: TripsViewModel = hiltViewModel()) {
+internal fun TripsScreen(
+    links: TripsLinks,
+    startTrip: Boolean = false,
+    viewModel: TripsViewModel = hiltViewModel(),
+    routeSketches: RouteSketchViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val sketches by routeSketches.sketches.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val resources = LocalResources.current
     val context = LocalContext.current
@@ -191,7 +203,9 @@ internal fun TripsScreen(links: TripsLinks, startTrip: Boolean = false, viewMode
                 onChangeVehicle = { changingVehicle = it },
                 onRange = viewModel::selectRange,
                 onDays = viewModel::selectDays,
+                onSketch = routeSketches::load,
             ),
+            sketches = sketches,
         )
         FwSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
     }
@@ -270,6 +284,7 @@ internal fun TripsContent(
     links: TripsLinks,
     actions: TripsActions = TripsActions(),
     zone: ZoneId = ZoneId.systemDefault(),
+    sketches: Map<String, RouteSketch?> = emptyMap(),
 ) {
     Column(Modifier.fillMaxSize().background(FwTheme.colors.bg)) {
         FwTopBar(
@@ -341,10 +356,9 @@ internal fun TripsContent(
             state.months.forEach { month ->
                 item(key = "month-${month.month}") { MonthHeader(month) }
                 items(month.rows, key = { it.trip.id }) { row ->
-                    if (row.trip.source == TripSource.Auto) {
-                        AutoTripRow(row, zone, links.onOpenTrip, actions)
-                    } else {
-                        TripRowItem(row, zone, links.onOpenTrip)
+                    val card = TripCardInput(row, zone, sketches[row.trip.id], links.onOpenTrip, actions.onSketch)
+                    Box(Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.xxs)) {
+                        if (row.trip.source == TripSource.Auto) AutoTripRow(card, actions) else TripCard(card)
                     }
                 }
             }
@@ -355,15 +369,16 @@ internal fun TripsContent(
 /** "Start trip" (accent) and "Add manual trip"; while recording, the accent button leads back to the live screen. */
 @Composable
 private fun StartButtons(recording: RecordingBanner?, links: TripsLinks, actions: TripsActions) {
-    Column(
-        Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    // Side by side (owner choice 24 Nov 2026), so the trips start higher up the screen.
+    Row(
+        Modifier.padding(horizontal = FwTheme.spacing.gutter, vertical = FwTheme.spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.s),
     ) {
         if (recording == null) {
             FwPrimaryButton(
                 stringResource(R.string.trips_start),
                 actions.onStart,
-                Modifier.fillMaxWidth(),
+                Modifier.weight(1f),
                 leadingIcon = FwIcons.Route,
             )
         } else {
@@ -371,14 +386,14 @@ private fun StartButtons(recording: RecordingBanner?, links: TripsLinks, actions
             FwPrimaryButton(
                 stringResource(label, formatKm(recording.km)),
                 links.onOpenLive,
-                Modifier.fillMaxWidth(),
+                Modifier.weight(1f),
                 leadingIcon = FwIcons.Route,
             )
         }
         FwSecondaryButton(
-            stringResource(R.string.trips_add_manual),
+            stringResource(R.string.trips_manual),
             links.onAddManual,
-            Modifier.fillMaxWidth(),
+            Modifier.weight(1f),
             leadingIcon = FwIcons.ManualTrip,
         )
     }
@@ -445,22 +460,34 @@ private fun MonthHeader(month: TripMonthUi) {
     val name = month.month.month.getDisplayName(TextStyle.FULL, locale)
     // The year only when it isn't this one, as in the Logbook.
     val title = if (month.month.year == LocalDate.now().year) name else "$name ${month.month.year}"
+    val count = month.rows.size
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(start = FwTheme.spacing.gutter, end = FwTheme.spacing.gutter, top = 20.dp, bottom = 4.dp)
+            .heightIn(min = FwTheme.size.minTouchTarget)
+            .padding(horizontal = FwTheme.spacing.gutter)
             .semantics(mergeDescendants = true) { heading() },
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(FwTheme.spacing.xs),
     ) {
-        FwOverline(title, Modifier.weight(1f))
+        // Logbook month header style (design 23 Nov 2026): month and distance left, a summary right.
+        Text(title, style = FwTheme.type.label.copy(fontWeight = FontWeight.SemiBold), color = FwTheme.colors.ink)
         Text(
-            stringResource(
-                R.string.trips_month_totals,
-                formatKm(month.km),
-                IndianNumberFormat.rupeesWhole(month.cost),
-            ),
+            stringResource(R.string.trips_km, formatKm(month.km)),
+            style = FwTheme.type.label,
+            color = FwTheme.colors.ink2,
+        )
+        Box(Modifier.weight(1f))
+        Text(
+            listOfNotNull(
+                pluralStringResource(R.plurals.trips_month_count, count, count),
+                month.cost.takeIf { it.paise > 0 }?.let {
+                    stringResource(R.string.trips_cost_est, IndianNumberFormat.rupeesWhole(it))
+                },
+            ).joinToString(" · "),
             style = FwTheme.type.caption,
             color = FwTheme.colors.ink2,
+            maxLines = 1,
         )
     }
 }
@@ -470,16 +497,16 @@ private fun MonthHeader(month: TripMonthUi) {
  * actions are offered to TalkBack, since a swipe isn't discoverable without sight.
  */
 @Composable
-private fun AutoTripRow(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit, actions: TripsActions) {
+private fun AutoTripRow(card: TripCardInput, actions: TripsActions) {
     val state = rememberSwipeToDismissBoxState()
     val scope = rememberCoroutineScope()
     val notMine = stringResource(R.string.trips_not_my_drive)
     val change = stringResource(R.string.trips_change_vehicle)
-    val id = row.trip.id
+    val id = card.row.trip.id
     SwipeToDismissBox(
         state = state,
         backgroundContent = { SwipeBackground(state.dismissDirection, notMine, change) },
-        modifier = Modifier.semantics {
+        modifier = Modifier.clip(FwTheme.radius.entryCard).semantics {
             customActions = listOf(
                 CustomAccessibilityAction(notMine) {
                     actions.onNotMyDrive(id)
@@ -501,7 +528,7 @@ private fun AutoTripRow(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit, ac
             scope.launch { state.reset() }
         },
     ) {
-        Box(Modifier.background(FwTheme.colors.bg)) { TripRowItem(row, zone, onOpen) }
+        TripCard(card)
     }
 }
 
@@ -518,31 +545,6 @@ private fun SwipeBackground(direction: SwipeToDismissBoxValue, notMine: String, 
     ) {
         Text(label, style = FwTheme.type.label, color = FwTheme.colors.bg)
     }
-}
-
-@Composable
-private fun TripRowItem(row: TripRow, zone: ZoneId, onOpen: (String) -> Unit) {
-    val trip = row.trip
-    val time = Instant.ofEpochMilli(trip.startUtcMs).atZone(zone).toLocalTime()
-    val meta = listOfNotNull(
-        shortDate(trip.startUtcMs, zone),
-        time.format(TIME_FORMAT),
-        tripDuration(trip),
-        purposeName(trip),
-        row.vehicleName,
-        // Recorded on its own (PRD F-21.3): "auto" tag, design.md screen 17.
-        if (trip.source == TripSource.Auto) stringResource(R.string.trips_auto_tag) else null,
-    ).joinToString(" · ")
-    FwEntryRow(
-        icon = TripLabels.purposeIcon(trip.purpose),
-        tint = FwTheme.colors.ink,
-        title = tripTitle(trip),
-        meta = meta,
-        amount = stringResource(R.string.trips_km, formatKm(trip.distanceKm)),
-        chip = row.cost?.let { stringResource(R.string.trips_cost_est, IndianNumberFormat.rupeesWhole(it)) },
-        onClick = { onOpen(trip.id) },
-        modifier = Modifier.padding(horizontal = FwTheme.spacing.gutter),
-    )
 }
 
 private val DAY_MONTH = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)

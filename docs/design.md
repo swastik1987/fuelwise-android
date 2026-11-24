@@ -352,8 +352,9 @@ For each screen: purpose → layout (top to bottom) → states → notes. Frame 
 ### Trips
 
 **17. Trips list**
-- Week groups with totals (km, ₹ est.). "Show all on map" button (date range).
-- Big "Start trip" button at top, plus "Add manual trip".
+- Month groups with the Logbook month header (24 Nov 2026): month and km on the left ("October 169 km"), "2 trips · ₹1,279 est." on the right. Date filter chips; the map icon shows every route.
+- "Start trip" (accent) and "Manual trip" side by side at the top.
+- **Rows: route-first card (owner choice 24 Nov 2026, option B)** on the Logbook card shell: header date · purpose · start time (vehicle name with several vehicles, "Auto" tag), distance on the right; below, a 56 dp route thumbnail drawn on the phone from the saved route (start dot green, end ink; no map tiles, no network) beside the "From → To" line and two tiles: duration with average speed, and estimated cost with ₹/km. Manual trips, and trips whose route was cleared, show an icon instead of the route. Thumbnails are drawn once per trip, off the main thread, as cards appear.
 - If automatic trips are off: a quiet card "Record trips automatically" → screen 32.
 - Automatic trips show a small "auto" tag and a stop marker when a likely fill-up was detected. Swipe actions: "Not my drive" (delete), "Change vehicle".
 

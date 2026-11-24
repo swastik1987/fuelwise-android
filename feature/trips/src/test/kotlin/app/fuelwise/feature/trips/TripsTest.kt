@@ -18,6 +18,7 @@ import app.fuelwise.core.designsystem.theme.FuelwiseTheme
 import app.fuelwise.core.domain.engine.ComputeConsumption
 import app.fuelwise.core.domain.trip.EstimateTripCost
 import app.fuelwise.core.domain.trip.ExportRange
+import app.fuelwise.core.domain.trip.RouteSketch
 import app.fuelwise.core.domain.trip.TrackSummary
 import app.fuelwise.core.domain.trip.TripCostBasis
 import app.fuelwise.core.domain.trip.TripCostEstimate
@@ -56,6 +57,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -350,6 +352,27 @@ class TripsTest {
         assertThat(list.state.first { !it.loading }.offerAutoTrips).isFalse()
     }
 
+    @Test
+    fun routeThumbnailsAreDrawnOnceFromTheSavedRoute() = runTest {
+        val repo = FakeTripRepository()
+        val gps = mysuru.copy(id = "gps", source = TripSource.Gps)
+        repo.finishRecording(
+            gps,
+            (0..20).map {
+                TrackPoint(it * 5_000L, 12.97 + it * 0.002, 77.64 - it * 0.001, 8f, 12f, 0)
+            },
+        )
+        val vm = RouteSketchViewModel(repo, Dispatchers.Unconfined)
+        vm.load("gps")
+        vm.load("nothing-saved")
+        val sketches = vm.sketches.first { it.size == 2 }
+        assertThat(requireNotNull(sketches["gps"]).size).isAtLeast(2)
+        assertThat(sketches).containsEntry("nothing-saved", null)
+        // Asked again, it isn't decrypted again.
+        vm.load("gps")
+        assertThat(vm.sketches.value["gps"]).isSameInstanceAs(sketches["gps"])
+    }
+
     private fun TestScope.listViewModel(repo: FakeTripRepository, saved: SavedStateHandle = SavedStateHandle()) =
         TripsViewModel(
             repo,
@@ -559,9 +582,28 @@ class TripsTest {
         TripsContent(listState().copy(offerAutoTrips = true), TripsLinks(), zone = zone)
     }
 
-    @Test fun listLight() = capture("trips_list_light", false) { TripsContent(listState(), TripsLinks(), zone = zone) }
+    @Test fun listLight() = capture("trips_list_light", false) {
+        TripsContent(listState(), TripsLinks(), zone = zone, sketches = listSketches)
+    }
 
-    @Test fun listDark() = capture("trips_list_dark", true) { TripsContent(listState(), TripsLinks(), zone = zone) }
+    @Test fun listDark() = capture("trips_list_dark", true) {
+        TripsContent(listState(), TripsLinks(), zone = zone, sketches = listSketches)
+    }
+
+    // Whitefield to HSR Layout, roughly: west then south-west.
+    private val listSketches = mapOf(
+        "c1" to RouteSketch.of(
+            listOf(
+                12.9698 to 77.7500,
+                12.9600 to 77.7200,
+                12.9550 to 77.7000,
+                12.9400 to 77.6900,
+                12.9300 to 77.6700,
+                12.9200 to 77.6500,
+                12.9116 to 77.6474,
+            ).mapIndexed { i, (lat, lng) -> TrackPoint(i * 60_000L, lat, lng, 8f, 10f, 0) },
+        ),
+    )
 
     @Test fun detailLight() = capture("trip_detail_light", false) {
         TripDetailContent(detailState(), TripsLinks(), TripDetailActions())
@@ -607,6 +649,8 @@ class TripsTest {
                     TripRow(
                         mysuru.copy(
                             id = "c1",
+                            source = TripSource.Gps,
+                            recordedSeconds = 3_480,
                             startUtcMs = SampleEntries.at(2026, 10, 15, 18),
                             endUtcMs = SampleEntries.at(2026, 10, 15, 19),
                             distanceKm = 23.1,
